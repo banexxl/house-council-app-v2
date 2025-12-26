@@ -145,7 +145,7 @@ Rules:
                               {
                                    type: "input_image",
                                    image_url: signed.signedUrl,
-                                   detail: "auto", // REQUIRED by TS
+                                   detail: "auto"
                               },
                          ],
                     },
