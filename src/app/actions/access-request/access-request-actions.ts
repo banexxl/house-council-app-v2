@@ -421,7 +421,7 @@ export const approveAccessRequest = async (
 
 export const getAccessRequestBuildingOptions = async (): Promise<{
      success: boolean;
-     data?: Array<{ id: string; label: string; country?: string }>;
+     data?: Array<{ id: string; label: string; country?: string; city?: string }>;
      countries?: string[];
 }> => {
      try {
@@ -438,18 +438,20 @@ export const getAccessRequestBuildingOptions = async (): Promise<{
 
           const seen = new Set<string>();
           const countriesSet = new Set<string>();
-          const options = (data || []).reduce<Array<{ id: string; label: string; country?: string }>>((acc, loc: any) => {
+          const options = (data || []).reduce<Array<{ id: string; label: string; country?: string; city?: string }>>((acc, loc: any) => {
                if (!loc?.building_id || seen.has(loc.building_id)) return acc;
                const address = [loc.street_address, loc.street_number, loc.city]
                     .filter((part: string) => !!part && part.trim().length > 0)
                     .join(' ')
                     .trim();
                const country = (loc.country || '').trim();
+               const city = (loc.city || '').trim();
                if (country) countriesSet.add(country);
                acc.push({
                     id: loc.building_id,
                     label: address || loc.location_id || loc.building_id,
                     country,
+                    city,
                });
                seen.add(loc.building_id);
                return acc;

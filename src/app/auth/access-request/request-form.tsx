@@ -5,10 +5,13 @@ import Script from 'next/script';
 import { Autocomplete, Button, Card, CardContent, Stack, TextField, Typography, Alert } from '@mui/material';
 import { getAccessRequestApartments, submitAccessRequest } from 'src/app/actions/access-request/access-request-actions';
 
-type BuildingOption = { id: string; label: string; country?: string };
+type BuildingOption = { id: string; label: string; country?: string; city?: string };
 type ApartmentOption = { id: string; label: string };
 const LOAD_MORE_OPTION_ID = '__load_more_buildings__';
 const INITIAL_BUILDING_BATCH = 10;
+const DEFAULT_CITY_LABEL = 'Other / Unspecified';
+const getOptionCity = (option: Pick<BuildingOption, 'city'>) =>
+  (option.city || '').trim() || DEFAULT_CITY_LABEL;
 
 const AccessRequestForm = ({
   formSecret,
@@ -27,6 +30,7 @@ const AccessRequestForm = ({
   const [isPending, startTransition] = useTransition();
   const [recaptchaReady, setRecaptchaReady] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
+  const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [recaptchaWidgetId, setRecaptchaWidgetId] = useState<number | null>(null);
   const [selectedBuilding, setSelectedBuilding] = useState<BuildingOption | null>(null);
   const [apartments, setApartments] = useState<ApartmentOption[]>([]);
@@ -37,11 +41,15 @@ const AccessRequestForm = ({
   const [open, setOpen] = useState(false);
   const [visibleCount, setVisibleCount] = useState(INITIAL_BUILDING_BATCH);
   const [visibleOptions, setVisibleOptions] = useState<BuildingOption[]>(() => {
-    const filtered = buildingOptions.filter((o) => !selectedCountry || o.country === selectedCountry);
+    const filtered = buildingOptions.filter(
+      (o) => (!selectedCountry || o.country === selectedCountry) && (!selectedCity || getOptionCity(o) === selectedCity)
+    );
     return filtered.slice(0, INITIAL_BUILDING_BATCH);
   });
   const [hasLoadedAll, setHasLoadedAll] = useState(
-    buildingOptions.filter((o) => !selectedCountry || o.country === selectedCountry).length <= INITIAL_BUILDING_BATCH
+    buildingOptions.filter(
+      (o) => (!selectedCountry || o.country === selectedCountry) && (!selectedCity || getOptionCity(o) === selectedCity)
+    ).length <= INITIAL_BUILDING_BATCH
   );
   const loadMoreOption = useMemo<BuildingOption>(
     () => ({ id: LOAD_MORE_OPTION_ID, label: 'Load more' }),
@@ -51,12 +59,25 @@ const AccessRequestForm = ({
     () => (hasLoadedAll ? visibleOptions : [...visibleOptions, loadMoreOption]),
     [hasLoadedAll, loadMoreOption, visibleOptions]
   );
+  const cityOptions = useMemo(
+    () => {
+      const cities = new Set<string>();
+      buildingOptions.forEach((option) => {
+        if (selectedCountry && option.country !== selectedCountry) return;
+        cities.add(getOptionCity(option));
+      });
+      return Array.from(cities).sort((a, b) => a.localeCompare(b));
+    },
+    [buildingOptions, selectedCountry]
+  );
   const handleLoadMore = useCallback(() => {
-    const filteredLen = buildingOptions.filter((o) => !selectedCountry || o.country === selectedCountry).length;
+    const filteredLen = buildingOptions.filter(
+      (o) => (!selectedCountry || o.country === selectedCountry) && (!selectedCity || getOptionCity(o) === selectedCity)
+    ).length;
     setVisibleCount((prev) => Math.min(filteredLen, prev + INITIAL_BUILDING_BATCH));
     // Keep dropdown open so the user can keep expanding.
     setTimeout(() => setOpen(true), 0);
-  }, [buildingOptions, selectedCountry]);
+  }, [buildingOptions, selectedCity, selectedCountry]);
   const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '';
 
   useEffect(() => {
@@ -68,11 +89,13 @@ const AccessRequestForm = ({
   }, [selectedBuilding]);
 
   useEffect(() => {
-    const filtered = buildingOptions.filter((o) => !selectedCountry || o.country === selectedCountry);
+    const filtered = buildingOptions.filter(
+      (o) => (!selectedCountry || o.country === selectedCountry) && (!selectedCity || getOptionCity(o) === selectedCity)
+    );
     const nextCount = Math.min(visibleCount, filtered.length);
     setVisibleOptions(filtered.slice(0, nextCount));
     setHasLoadedAll(nextCount >= filtered.length);
-  }, [buildingOptions, visibleCount, selectedCountry]);
+  }, [buildingOptions, selectedCity, selectedCountry, visibleCount]);
 
   useEffect(() => {
     setSelectedBuilding(null);
@@ -80,7 +103,7 @@ const AccessRequestForm = ({
     setVisibleCount(INITIAL_BUILDING_BATCH);
     setSelectedApartment(null);
     setApartments([]);
-  }, [selectedCountry]);
+  }, [selectedCity, selectedCountry]);
 
   useEffect(() => {
     if (!selectedBuilding) {
@@ -196,6 +219,7 @@ const AccessRequestForm = ({
         setEmail('');
         setMessage('');
         setSelectedCountry(null);
+        setSelectedCity(null);
         setSelectedBuilding(null);
         setSelectedApartment(null);
         setInputValue('');
@@ -212,6 +236,7 @@ const AccessRequestForm = ({
     !lastName.trim() ||
     !email.trim() ||
     !selectedCountry ||
+    !selectedCity ||
     !selectedBuilding ||
     !selectedApartment ||
     isPending ||
@@ -249,7 +274,10 @@ const AccessRequestForm = ({
           <Autocomplete
             options={countries}
             value={selectedCountry}
-            onChange={(_, val) => setSelectedCountry(val || null)}
+            onChange={(_, val) => {
+              setSelectedCountry(val || null);
+              setSelectedCity(null);
+            }}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -261,8 +289,23 @@ const AccessRequestForm = ({
             )}
           />
           <Autocomplete
-            open={open}
+            options={cityOptions}
+            value={selectedCity}
+            onChange={(_, val) => setSelectedCity(val || null)}
             disabled={isPending || !selectedCountry}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="City"
+                required
+                disabled={isPending || !selectedCountry}
+                fullWidth
+              />
+            )}
+          />
+          <Autocomplete
+            open={open}
+            disabled={isPending || !selectedCountry || !selectedCity}
             onOpen={() => setOpen(true)}
             onClose={() => setOpen(false)}
             options={optionsWithLoadMore}
@@ -319,7 +362,7 @@ const AccessRequestForm = ({
                 {...params}
                 label="Building"
                 required
-                disabled={isPending || !selectedCountry}
+                disabled={isPending || !selectedCountry || !selectedCity}
                 fullWidth
               />
             )}
