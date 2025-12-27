@@ -36,7 +36,7 @@ import dayjs, { Dayjs } from 'dayjs'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
-import { updateClientSubscriptionForClient } from 'src/app/actions/subscription-plan/subscription-plan-actions'
+import { updateClientSubscriptionForClient, deleteClientSubscription } from 'src/app/actions/subscription-plan/subscription-plan-actions'
 import type { Theme } from '@mui/material/styles'
 
 interface ClientNewFormProps {
@@ -53,6 +53,8 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
   const [modal, setModal] = useState<{ open: boolean; type?: string }>({ open: false, type: undefined });
   const [modalLoading, setModalLoading] = useState(false);
   const [modalResult, setModalResult] = useState<string | null>(null);
+  const [deleteSubscriptionDialog, setDeleteSubscriptionDialog] = useState<{ open: boolean }>({ open: false });
+  const [deleteSubscriptionLoading, setDeleteSubscriptionLoading] = useState(false);
   const [unassignedLocations, setUnassignedLocations] = useState<any[]>([]);
   const [initialValues, setInitialValues] = useState<Client>(clientData || clientInitialValues)
   const { t } = useTranslation()
@@ -214,6 +216,33 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
       setModalResult(t('clients.clientNotSaved'));
     }
     setModalLoading(false);
+  };
+
+  const handleDeleteSubscription = async () => {
+    if (!clientData?.id) {
+      toast.error(t('common.actionDeleteError'));
+      return;
+    }
+    setDeleteSubscriptionLoading(true);
+    try {
+      const { success, error } = await deleteClientSubscription(clientData.id);
+      if (success) {
+        formik.setValues({
+          ...formik.values,
+          subscription_plan_id: '',
+          next_payment_date: null,
+          subscription_status: '',
+        });
+        toast.success(t('common.actionDeleteSuccess'));
+      } else {
+        toast.error(error || t('common.actionDeleteError'));
+      }
+    } catch (error) {
+      toast.error(t('common.actionDeleteError'));
+    } finally {
+      setDeleteSubscriptionLoading(false);
+      setDeleteSubscriptionDialog({ open: false });
+    }
   };
 
   const removeStoredImage = async (storedRef?: string | null) => {
@@ -482,7 +511,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
             <>
               <Divider sx={{ my: 3 }}>{t('clients.clientSubscriptionPlan')}</Divider>
               <Grid container spacing={3} sx={{ minWidth: 0 }}>
-                <Grid size={{ xs: 12, md: 4 }} sx={{ minWidth: 0 }}>
+                <Grid size={{ xs: 12, md: 3 }} sx={{ minWidth: 0 }}>
                   <TextField
                     select
                     fullWidth
@@ -500,7 +529,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
                     ))}
                   </TextField>
                 </Grid>
-                <Grid size={{ xs: 12, md: 4 }} sx={{ minWidth: 0 }}>
+                <Grid size={{ xs: 12, md: 3 }} sx={{ minWidth: 0 }}>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label={t('clients.clientCardExpirationDate')}
@@ -511,7 +540,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
                     />
                   </LocalizationProvider>
                 </Grid>
-                <Grid size={{ xs: 12, md: 4 }} sx={{ minWidth: 0 }}>
+                <Grid size={{ xs: 12, md: 3 }} sx={{ minWidth: 0 }}>
                   <TextField
                     select
                     fullWidth
@@ -527,6 +556,17 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
                     ))}
                   </TextField>
                 </Grid>
+                <Grid size={{ xs: 12, md: 3 }} sx={{ minWidth: 0 }}>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    disabled={formik.isSubmitting || !clientData?.id || deleteSubscriptionLoading}
+                    onClick={() => setDeleteSubscriptionDialog({ open: true })}
+                    sx={{ mt: 1 }}
+                  >
+                    {deleteSubscriptionLoading ? t('common.lblWorking') : t('common.btnDelete')}
+                  </Button>
+                </Grid>
 
               </Grid>
               {clientSubscription && (
@@ -536,6 +576,18 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
                   </Typography>
                 </Box>
               )}
+              <PopupModal
+                isOpen={deleteSubscriptionDialog.open}
+                onClose={() => !deleteSubscriptionLoading && setDeleteSubscriptionDialog({ open: false })}
+                onConfirm={handleDeleteSubscription}
+                title={t('warning.deleteWarningTitle')}
+                type="confirmation"
+                confirmText={t('common.btnDelete')}
+                cancelText={t('common.btnClose')}
+                loading={deleteSubscriptionLoading}
+              >
+                {t('warning.deleteWarningMessage')}
+              </PopupModal>
             </>
           )}
           {

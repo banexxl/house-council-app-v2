@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { SvgIcon } from "@mui/material";
-
 // === ICONS ===
 import HomeSmileIcon from "src/icons/untitled-ui/duocolor/home-smile";
 import Users03Icon from "src/icons/untitled-ui/duocolor/users-03";
@@ -14,7 +13,6 @@ import CalendarIcon from "src/icons/untitled-ui/duocolor/calendar";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
 import ReceiptCheckIcon from "src/icons/untitled-ui/duocolor/receipt-check";
-import ChatIcon from "@mui/icons-material/Chat";
 import StorageIcon from '@mui/icons-material/Storage';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -32,7 +30,6 @@ export const useSections = (role: Role | null) => {
     return filterByRole(NAV_SECTIONS(t), role);
   }, [t, role]);
 };
-
 
 export interface NavItem {
   title: string;

@@ -12,7 +12,7 @@ import { notFound, useRouter } from "next/navigation"
 import { SubscriptionFormHeader } from "./subscription-form-header"
 import { isUUIDv4 } from "src/utils/uuid"
 import { BaseEntity, FeatureExtension } from "src/types/base-entity"
-import { updateFeature } from "src/app/actions/feature/feature-actions"
+import { updateFeaturePrice } from "src/app/actions/feature/feature-actions"
 import { useState, useCallback, useEffect, useMemo } from "react"
 
 interface SubscriptionEditorProps {
@@ -95,7 +95,7 @@ export default function SubscriptionEditor({ features, subscriptionPlansData }: 
 
      const handleFeaturePriceSave = useCallback(async (featureId: string) => {
           const price = featurePrices[featureId];
-          const { success } = await updateFeature(featureId, { price_per_month: price });
+          const { success } = await updateFeaturePrice(featureId, { price_per_month: price });
           if (success) {
                toast.success("Feature price updated successfully!");
                const { monthly_total_price_per_apartment, total_price_per_apartment_with_discounts } = getCalculatedPrices(formik.values, featurePrices);

@@ -5,7 +5,7 @@ import { TABLES } from "src/libs/supabase/tables";
 import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
 import { Feature } from "src/types/base-entity";
 
-export const updateFeature = async (id: string, feature: Partial<Feature>): Promise<{ success: boolean; updatedFeature?: Feature; error?: any }> => {
+export const updateFeaturePrice = async (id: string, feature: Partial<Feature>): Promise<{ success: boolean; updatedFeature?: Feature; error?: any }> => {
 
      const supabase = await useServerSideSupabaseAnonClient();
 

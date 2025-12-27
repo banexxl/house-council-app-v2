@@ -822,3 +822,36 @@ export const checkClientSubscriptionStatus = async (
      }
      return { success: true, isActive: data?.status === 'active' || data?.status === 'trialing' };
 };
+
+export const deleteClientSubscription = async (
+     clientId: string
+): Promise<{ success: boolean; error?: string }> => {
+     const supabase = await useServerSideSupabaseAnonClient();
+     const { error } = await supabase
+          .from(TABLES.CLIENT_SUBSCRIPTION)
+          .delete()
+          .eq('client_id', clientId);
+     if (error) {
+          await logServerAction({
+               user_id: clientId ?? '',
+               action: 'Delete Client Subscription',
+               payload: { clientId },
+               status: 'fail',
+               error: error.message,
+               duration_ms: 0,
+               type: 'db'
+          });
+          return { success: false, error: error.message };
+     }
+     await logServerAction({
+          user_id: clientId ?? '',
+          action: 'Delete Client Subscription',
+          payload: { clientId },
+          status: 'success',
+          error: '',
+          duration_ms: 0,
+          type: 'db'
+     });
+     revalidatePath(`/dashboard/clients/${clientId}`);
+     return { success: true };
+}
