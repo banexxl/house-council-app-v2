@@ -17,6 +17,7 @@ import ReceiptCheckIcon from "src/icons/untitled-ui/duocolor/receipt-check";
 import ChatIcon from "@mui/icons-material/Chat";
 import StorageIcon from '@mui/icons-material/Storage';
 import ConstructionIcon from '@mui/icons-material/Construction';
+import SettingsIcon from '@mui/icons-material/Settings';
 import ConnectWithoutContactIcon from '@mui/icons-material/ConnectWithoutContact';
 import { tokens } from "src/locales/tokens";
 import { paths } from "src/paths";
@@ -112,6 +113,16 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
           { title: t(tokens.nav.create), path: paths.dashboard.subscriptions.new, roles: ["admin"] },
         ],
       },
+      {
+        title: t(tokens.nav.features),
+        path: paths.dashboard.features.index,
+        roles: ["admin"],
+        icon: (
+          <SvgIcon fontSize="small">
+            <SettingsIcon />
+          </SvgIcon>
+        ),
+      }
     ],
   },
 

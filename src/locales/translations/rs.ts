@@ -613,6 +613,7 @@ export const rs = {
    [tokens.nav.edit]: 'Uredi',
    [tokens.nav.error]: 'Greška',
    [tokens.nav.feed]: 'Feed',
+   [tokens.nav.features]: 'Funkcije',
    [tokens.nav.fileManager]: 'Fajlovi',
    [tokens.nav.files]: 'Datoteke',
    [tokens.nav.finance]: 'Finansije',

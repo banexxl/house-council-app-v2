@@ -371,6 +371,7 @@ export const tokens = {
     ecommerce: 'nav.ecommerce',
     edit: 'nav.edit',
     error: 'nav.error',
+    features: 'nav.features',
     feed: 'nav.feed',
     fileManager: 'nav.fileManager',
     files: 'nav.files',

@@ -24,6 +24,9 @@ export const paths = {
       index: '/dashboard/buildings',
       new: '/dashboard/buildings/new',
     },
+    features: {
+      index: '/dashboard/features',
+    },
     locations: {
       index: '/dashboard/locations',
       new: '/dashboard/locations/new',

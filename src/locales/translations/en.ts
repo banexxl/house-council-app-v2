@@ -373,6 +373,7 @@ export const en = {
   [tokens.nav.edit]: 'Edit',
   [tokens.nav.error]: 'Error',
   [tokens.nav.feed]: 'Feed',
+  [tokens.nav.features]: 'Features',
   [tokens.nav.fileManager]: 'File Manager',
   [tokens.nav.finance]: 'Finance',
   [tokens.nav.fleet]: 'Fleet',

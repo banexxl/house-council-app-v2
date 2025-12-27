@@ -532,6 +532,7 @@ export const de = {
   [tokens.nav.edit]: 'Bearbeiten',
   [tokens.nav.error]: 'Fehler',
   [tokens.nav.feed]: 'Füttern',
+  [tokens.nav.features]: 'Eigenschaften',
   [tokens.nav.fileManager]: 'Dateimanager',
   [tokens.nav.finance]: 'Finanzen',
   [tokens.nav.fleet]: 'Flotte',
