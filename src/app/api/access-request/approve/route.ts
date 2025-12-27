@@ -8,6 +8,8 @@ export async function GET(request: Request) {
      const payload = searchParams.get('payload') || '';
      const sig = searchParams.get('sig') || '';
      const action = (searchParams.get('action') || 'approve') as 'approve' | 'reject';
+     console.log('action', action);
+
      const preferJson = searchParams.get('format') === 'json' || request.headers.get('accept')?.includes('application/json');
 
      const result = await approveAccessRequest(payload, sig, action);

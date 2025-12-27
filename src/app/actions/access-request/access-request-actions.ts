@@ -1,7 +1,7 @@
 'use server';
 
 import crypto from 'crypto';
-import { sendAccessRequestApprovedEmail, sendAccessRequestClientEmail } from 'src/libs/email/node-mailer';
+import { sendAccessDeniedEmail, sendAccessRequestApprovedEmail, sendAccessRequestClientEmail } from 'src/libs/email/node-mailer';
 import { TABLES } from 'src/libs/supabase/tables';
 import { useServerSideSupabaseServiceRoleClient, useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import log from 'src/utils/logger';
@@ -310,6 +310,15 @@ export const approveAccessRequest = async (
      }
 
      if (action === 'reject') {
+          const deniedEmail = await sendAccessDeniedEmail(parsed.email, {
+               locale: 'rs',
+               name: parsed.name,
+               email: parsed.email,
+               contactSupportUrl: `${process.env.NEXT_PUBLIC_BASE_URL || ''}/auth/contact-support`,
+          });
+          if (!deniedEmail.ok) {
+               return { success: false, error: deniedEmail.error || 'Failed to send denial email', email: parsed.email, name: parsed.name };
+          }
           return { success: true, rejected: true, email: parsed.email, name: parsed.name };
      }
 

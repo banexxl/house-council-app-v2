@@ -207,6 +207,10 @@ export const sendAccessDeniedEmail = async (
   data: { locale: string; name: string; email: string; contactSupportUrl: string }
 ): Promise<{ ok: boolean; error?: string }> => {
   const { subject, injectedHtml } = await buildAccessDeniedEmail(data);
+  console.log('subject', subject);
+  console.log('inserted', injectedHtml);
+
+
   try {
     const info = await transporter.sendMail({
       from: process.env.EMAIL_SMTP_USER!,
@@ -215,6 +219,8 @@ export const sendAccessDeniedEmail = async (
       html: injectedHtml,
       text: `Hi ${data.name || 'there'}, your access request has been denied. If you believe this is a mistake, please contact support at: ${data.contactSupportUrl}`,
     });
+    console.log('email sent info', info);
+
     if ((info as any)?.response) return { ok: true };
     if ((info as any)?.rejected?.length) return { ok: false, error: 'rejected' };
     return { ok: true };
