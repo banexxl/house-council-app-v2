@@ -197,38 +197,51 @@ export const GenericTable = <T extends { id: string }>(
                                                        key={item.id}
                                                        sx={{ cursor: baseUrl ? 'pointer' : 'default' }}
                                                   >
-                                                       {columns.map((col) => (
-                                                            <TableCell key={String(col.key)}>
-                                                                 {typeof item[col.key] === 'boolean' ? (
-                                                                      <SvgIcon>
-                                                                           {item[col.key] ? (
-                                                                                <CheckCircleIcon color="success" />
-                                                                           ) : (
-                                                                                <CancelIcon color="error" />
-                                                                           )}
-                                                                      </SvgIcon>
-                                                                 ) : typeof item[col.key] === 'string' && /^https?:\/\//.test(item[col.key] as string) ? (
-                                                                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                                           <img src={item[col.key] as string} alt="cell-img" style={{ maxWidth: 64, maxHeight: 64, borderRadius: 4 }} />
-                                                                      </Box>
-                                                                 ) : (
-                                                                      <Box
-                                                                           component={Link}
-                                                                           href={baseUrl ? `${baseUrl}/${item.id}` : '#'}
-                                                                           sx={{
-                                                                                display: 'block',
-                                                                                color: 'inherit',
-                                                                                textDecoration: 'none',
-                                                                                pointerEvents: baseUrl ? 'auto' : 'none',
-                                                                           }}
-                                                                      >
-                                                                           {col.render
-                                                                                ? col.render(item[col.key], item)
-                                                                                : String(item[col.key])}
-                                                                      </Box>
-                                                                 )}
-                                                            </TableCell>
-                                                       ))}
+                                                       {columns.map((col) => {
+                                                            const value = item[col.key];
+                                                            const content = col.render
+                                                                 ? col.render(value, item)
+                                                                 : typeof value === 'boolean'
+                                                                      ? (
+                                                                           <SvgIcon>
+                                                                                {value ? (
+                                                                                     <CheckCircleIcon color="success" />
+                                                                                ) : (
+                                                                                     <CancelIcon color="error" />
+                                                                                )}
+                                                                           </SvgIcon>
+                                                                      )
+                                                                      : typeof value === 'string' && /^https?:\/\//.test(value as string)
+                                                                           ? (
+                                                                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                                                     <img src={value as string} alt="cell-img" style={{ maxWidth: 64, maxHeight: 64, borderRadius: 4 }} />
+                                                                                </Box>
+                                                                           )
+                                                                           : String(value);
+
+                                                            // If a custom render is provided, we don't wrap with Link to avoid nested anchors.
+                                                            const shouldWrapWithLink = !!baseUrl && !col.render;
+
+                                                            return (
+                                                                 <TableCell key={String(col.key)}>
+                                                                      {shouldWrapWithLink ? (
+                                                                           <Box
+                                                                                component={Link}
+                                                                                href={`${baseUrl}/${item.id}`}
+                                                                                sx={{
+                                                                                     display: 'block',
+                                                                                     color: 'inherit',
+                                                                                     textDecoration: 'none',
+                                                                                }}
+                                                                           >
+                                                                                {content}
+                                                                           </Box>
+                                                                      ) : (
+                                                                           content
+                                                                      )}
+                                                                 </TableCell>
+                                                            );
+                                                       })}
                                                        <TableCell>
                                                             {rowActions.length > 0 ? (
                                                                  <Box sx={{ display: 'flex', gap: 1 }}>
