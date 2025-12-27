@@ -5,6 +5,7 @@ import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient
 import { Client, ClientMember } from 'src/types/client'
 import { Tenant } from 'src/types/tenant'
 import { Admin } from 'src/types/admin'
+import { Feature } from 'src/types/base-entity'
 import { cache } from 'react';
 import { TABLES } from 'src/libs/supabase/tables';
 import { updateTenantActivityStatus } from 'src/app/actions/tenant/tenant-actions';
@@ -18,6 +19,10 @@ export type UserDataCombined = {
      admin: Admin | null
      userData: User | null
      error?: string
+     /** Features allowed by the client's subscription plan (filtered for tenants) */
+     allowedFeatures?: Feature[]
+     allowedFeatureSlugs?: string[]
+     subscriptionPlanId?: string | null
 }
 
 /**
@@ -102,6 +107,70 @@ export const getViewer = cache(async (): Promise<UserDataCombined> => {
           if (error) {
                console.error('Failed to update tenant activity status:', error);
           }
+     }
+
+     // Resolve client id for feature access (client, member, or tenant via building)
+     let featureClientId: string | null = client?.id ?? clientMember?.client_id ?? null;
+     if (!featureClientId && tenant?.apartment?.building?.id) {
+          const building = await maybeSingle<{ client_id: string | null }>(
+               db.from(TABLES.BUILDINGS).select('client_id').eq('id', tenant.apartment.building.id),
+          );
+          featureClientId = building?.client_id ?? null;
+     }
+
+     let allowedFeatures: Feature[] = [];
+     let allowedFeatureSlugs: string[] = [];
+     let subscriptionPlanId: string | null = null;
+
+     if (featureClientId) {
+          const clientSubscription = await maybeSingle<{ subscription_plan_id: string | null }>(
+               db.from(TABLES.CLIENT_SUBSCRIPTION)
+                    .select('subscription_plan_id')
+                    .eq('client_id', featureClientId),
+          );
+          subscriptionPlanId = clientSubscription?.subscription_plan_id ?? null;
+
+          if (subscriptionPlanId) {
+               const { data: featureLinks, error: featureLinksError } = await db
+                    .from(TABLES.SUBSCRIPTION_PLANS_FEATURES)
+                    .select('feature_id')
+                    .eq('subscription_plan_id', subscriptionPlanId);
+
+               if (!featureLinksError) {
+                    const featureIds = (featureLinks ?? [])
+                         .map((row: any) => row?.feature_id)
+                         .filter(Boolean);
+
+                    if (featureIds.length > 0) {
+                         const { data: featuresData, error: featuresError } = await db
+                              .from(TABLES.FEATURES)
+                              .select('*')
+                              .in('id', featureIds);
+
+                         if (!featuresError && Array.isArray(featuresData)) {
+                              allowedFeatures = featuresData as Feature[];
+                              allowedFeatureSlugs = allowedFeatures
+                                   .map((f) => f.slug)
+                                   .filter(Boolean) as string[];
+                         }
+                    }
+               }
+          }
+     }
+
+     // Tenants inherit client features except location/tenant management
+     if (tenant && !client && !clientMember && allowedFeatures.length > 0) {
+          const tenantBlocked = new Set(['locations', 'tenants', 'geo-location-management']);
+          allowedFeatures = allowedFeatures.filter((f) => !tenantBlocked.has((f.slug || '').toLowerCase()));
+          allowedFeatureSlugs = allowedFeatures
+               .map((f) => f.slug)
+               .filter(Boolean) as string[];
+     }
+
+     if (featureClientId) {
+          result.allowedFeatures = allowedFeatures;
+          result.allowedFeatureSlugs = allowedFeatureSlugs.map((s) => s.toLowerCase());
+          result.subscriptionPlanId = subscriptionPlanId;
      }
 
      return result;

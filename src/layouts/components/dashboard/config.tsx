@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { SvgIcon } from "@mui/material";
+import { isFeatureAllowed } from "src/config/feature-access";
 // === ICONS ===
 import HomeSmileIcon from "src/icons/untitled-ui/duocolor/home-smile";
 import Users03Icon from "src/icons/untitled-ui/duocolor/users-03";
@@ -22,13 +23,14 @@ import { paths } from "src/paths";
 
 export type Role = "admin" | "client" | "clientMember" | "tenant";
 
-export const useSections = (role: Role | null) => {
+export const useSections = (role: Role | null, featureSlugs?: string[] | null) => {
   const { t } = useTranslation();
+  const featuresSet = featureSlugs ? new Set(featureSlugs.map((s) => s.toLowerCase())) : null;
 
   return useMemo(() => {
     if (!role) return [];                   // loading → no sections yet
-    return filterByRole(NAV_SECTIONS(t), role);
-  }, [t, role]);
+    return filterByRole(NAV_SECTIONS(t), role, featuresSet);
+  }, [t, role, featuresSet]);
 };
 
 export interface NavItem {
@@ -38,6 +40,7 @@ export interface NavItem {
   label?: ReactNode;
   items?: NavItem[];       // children -> shows expander when length > 0
   roles: Role[];           // who sees this node
+  featureKey?: string;     // optional subscription feature slug required to see this item
 }
 
 export interface NavSection {
@@ -150,6 +153,7 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
       },
       {
         title: t(tokens.nav.locations),
+        featureKey: 'locations',
         roles: ["admin", "client", "clientMember"],
         icon: (
           <SvgIcon fontSize="small">
@@ -157,12 +161,13 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
           </SvgIcon>
         ),
         items: [
-          { title: t(tokens.nav.list), path: paths.dashboard.locations.index, roles: ["admin", "client", "clientMember"] },
-          { title: t(tokens.nav.locationAdd), path: paths.dashboard.locations.new, roles: ["admin", "client", "clientMember"] },
+          { title: t(tokens.nav.list), path: paths.dashboard.locations.index, roles: ["admin", "client", "clientMember"], featureKey: 'locations' },
+          { title: t(tokens.nav.locationAdd), path: paths.dashboard.locations.new, roles: ["admin", "client", "clientMember"], featureKey: 'locations' },
         ],
       },
       {
         title: t(tokens.nav.buildings),
+        featureKey: 'buildings',
         roles: ["admin", "client", "clientMember"],
         icon: (
           <SvgIcon fontSize="small">
@@ -170,12 +175,13 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
           </SvgIcon>
         ),
         items: [
-          { title: t(tokens.nav.list), path: paths.dashboard.buildings.index, roles: ["admin", "client", "clientMember"] },
-          { title: t(tokens.nav.buildingAdd), path: paths.dashboard.buildings.new, roles: ["admin", "client", "clientMember"] },
+          { title: t(tokens.nav.list), path: paths.dashboard.buildings.index, roles: ["admin", "client", "clientMember"], featureKey: 'buildings' },
+          { title: t(tokens.nav.buildingAdd), path: paths.dashboard.buildings.new, roles: ["admin", "client", "clientMember"], featureKey: 'buildings' },
         ],
       },
       {
         title: t(tokens.nav.apartments),
+        featureKey: 'apartments',
         roles: ["admin", "client", "clientMember"],
         icon: (
           <SvgIcon fontSize="small">
@@ -183,12 +189,13 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
           </SvgIcon>
         ),
         items: [
-          { title: t(tokens.nav.list), path: paths.dashboard.apartments.index, roles: ["admin", "client", "clientMember"] },
-          { title: t(tokens.nav.apartmentAdd), path: paths.dashboard.apartments.new, roles: ["admin", "client", "clientMember"] },
+          { title: t(tokens.nav.list), path: paths.dashboard.apartments.index, roles: ["admin", "client", "clientMember"], featureKey: 'apartments' },
+          { title: t(tokens.nav.apartmentAdd), path: paths.dashboard.apartments.new, roles: ["admin", "client", "clientMember"], featureKey: 'apartments' },
         ],
       },
       {
         title: t(tokens.nav.tenants),
+        featureKey: 'tenants',
         roles: ["admin", "client", "clientMember"],
         icon: (
           <SvgIcon fontSize="small">
@@ -196,13 +203,14 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
           </SvgIcon>
         ),
         items: [
-          { title: t(tokens.nav.list), path: paths.dashboard.tenants.index, roles: ["admin", "client", "clientMember"] },
-          { title: t(tokens.nav.tenantAdd), path: paths.dashboard.tenants.new, roles: ["admin", "client", "clientMember"] },
+          { title: t(tokens.nav.list), path: paths.dashboard.tenants.index, roles: ["admin", "client", "clientMember"], featureKey: 'tenants' },
+          { title: t(tokens.nav.tenantAdd), path: paths.dashboard.tenants.new, roles: ["admin", "client", "clientMember"], featureKey: 'tenants' },
         ],
       },
       {
         title: t(tokens.nav.socialMedia),
         // path: paths.dashboard.social.profile,
+        featureKey: 'social',
         roles: ["client", "clientMember", "admin"],
         path: paths.dashboard.social.feed,
         icon: (
@@ -213,6 +221,7 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
       },
       {
         title: t(tokens.nav.announcements),
+        featureKey: 'announcements',
         roles: ["admin", "client", "clientMember"],
         path: paths.dashboard.announcements.index,
         icon: (
@@ -223,6 +232,7 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
       },
       {
         title: t(tokens.nav.calendar),
+        featureKey: 'calendar',
         path: paths.dashboard.calendar,
         roles: ["admin", "client", "clientMember"],
         icon: (
@@ -233,6 +243,7 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
       },
       {
         title: t(tokens.nav.polls),
+        featureKey: 'polls',
         roles: ["admin", "client", "clientMember"],
         icon: (
           <SvgIcon fontSize="small">
@@ -244,16 +255,19 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
             title: t(tokens.nav.list),
             path: paths.dashboard.polls.index,
             roles: ["admin", "client", "clientMember"],
+            featureKey: 'polls',
           },
           {
             title: t(tokens.nav.create),
             path: paths.dashboard.polls.create,
             roles: ["admin", "client", "clientMember"],
+            featureKey: 'polls',
           },
         ],
       },
       {
         title: t(tokens.nav.fileManager),
+        featureKey: 'file-manager',
         path: paths.dashboard.fileManager,
         roles: ["client", "clientMember", "admin"],
         icon: (
@@ -264,6 +278,7 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
       },
       {
         title: t(tokens.nav.serviceRequests),
+        featureKey: 'service-requests',
         roles: ["client", "clientMember", "admin"],
         icon: (
           <SvgIcon fontSize="small">
@@ -271,8 +286,8 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
           </SvgIcon>
         ),
         items: [
-          { title: t(tokens.nav.list), path: paths.dashboard.serviceRequests.index, roles: ["client", "clientMember", "admin"] },
-          { title: t(tokens.nav.create), path: paths.dashboard.serviceRequests.create, roles: ["client", "clientMember", "admin"] },
+          { title: t(tokens.nav.list), path: paths.dashboard.serviceRequests.index, roles: ["client", "clientMember", "admin"], featureKey: 'service-requests' },
+          { title: t(tokens.nav.create), path: paths.dashboard.serviceRequests.create, roles: ["client", "clientMember", "admin"], featureKey: 'service-requests' },
         ]
       },
     ],
@@ -296,10 +311,11 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
       {
         title: t(tokens.nav.socialMedia),
         // path: paths.dashboard.social.profile,
+        featureKey: 'social',
         roles: ["tenant"],
         items: [
-          { title: t(tokens.nav.profile), path: paths.dashboard.social.profile, roles: ["tenant"] },
-          { title: t(tokens.nav.feed), path: paths.dashboard.social.feed, roles: ["tenant"] },
+          { title: t(tokens.nav.profile), path: paths.dashboard.social.profile, roles: ["tenant"], featureKey: 'social' },
+          { title: t(tokens.nav.feed), path: paths.dashboard.social.feed, roles: ["tenant"], featureKey: 'social' },
         ],
         icon: (
           <SvgIcon fontSize="small">
@@ -309,6 +325,7 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
       },
       {
         title: t(tokens.announcements.managementTitle),
+        featureKey: 'announcements',
         path: paths.dashboard.announcements.tenant,
         roles: ["tenant"],
         icon: (
@@ -319,6 +336,7 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
       },
       {
         title: t(tokens.nav.calendar),
+        featureKey: 'calendar',
         path: paths.dashboard.calendar,
         roles: ["tenant"],
         icon: (
@@ -329,6 +347,7 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
       },
       {
         title: t(tokens.nav.polls),
+        featureKey: 'polls',
         path: paths.dashboard.polls.voting,
         roles: ["tenant"],
         icon: (
@@ -339,6 +358,7 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
       },
       {
         title: t(tokens.nav.serviceRequests),
+        featureKey: 'service-requests',
         roles: ["tenant"],
         icon: (
           <SvgIcon fontSize="small">
@@ -346,8 +366,8 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
           </SvgIcon>
         ),
         items: [
-          { title: t(tokens.nav.list), path: paths.dashboard.serviceRequests.index, roles: ["tenant"] },
-          { title: t(tokens.nav.create), path: paths.dashboard.serviceRequests.create, roles: ["tenant"] },
+          { title: t(tokens.nav.list), path: paths.dashboard.serviceRequests.index, roles: ["tenant"], featureKey: 'service-requests' },
+          { title: t(tokens.nav.create), path: paths.dashboard.serviceRequests.create, roles: ["tenant"], featureKey: 'service-requests' },
         ]
       }
     ],
@@ -374,11 +394,30 @@ const filterItemsByRole = (items: NavItem[], role: Role): NavItem[] =>
     })
     .filter(Boolean) as NavItem[];
 
-const filterByRole = (sections: NavSection[], role: Role): NavSection[] =>
+const filterItemsByFeature = (items: NavItem[], role: Role, features?: Set<string> | null): NavItem[] =>
+  items
+    .map((item) => {
+      const children = item.items ? filterItemsByFeature(item.items, role, features) : undefined;
+      const featureAllowed = role === 'admin' || !features || !item.featureKey || isFeatureAllowed(item.featureKey, features);
+      const anyChild = !!(children && children.length);
+
+      if (!featureAllowed && !anyChild) return null;
+
+      if (!featureAllowed && anyChild) {
+        const { path, ...rest } = item;
+        return { ...rest, items: children };
+      }
+
+      return { ...item, items: children };
+    })
+    .filter(Boolean) as NavItem[];
+
+const filterByRole = (sections: NavSection[], role: Role, features?: Set<string> | null): NavSection[] =>
   sections
     .map((section) => {
       if (!section.roles.includes(role)) return null;
-      const items = filterItemsByRole(section.items, role);
+      const itemsByRole = filterItemsByRole(section.items, role);
+      const items = filterItemsByFeature(itemsByRole, role, features);
       if (!items.length) return null;
       return { ...section, items };
     })

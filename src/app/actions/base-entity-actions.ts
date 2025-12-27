@@ -230,8 +230,6 @@ export const deleteEntity = async (table: string, id: string): Promise<{ success
                payload: { table, id },
                status: 'fail',
                type: 'db',
-
-
           });
           return { success: false, error: error.message };
      }

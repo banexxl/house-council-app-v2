@@ -10,12 +10,14 @@ import { VerticalLayout } from './vertical-layout';
 import { PresenceInitializer } from 'src/components/presence-initializer';
 import { supabaseBrowserClient } from 'src/libs/supabase/sb-client';
 import { TABLES } from 'src/libs/supabase/tables';
+import { useFeatureAccess } from 'src/contexts/feature-access';
 
 type Role = 'admin' | 'client' | 'clientMember' | 'tenant';
 interface LayoutProps { children?: ReactNode; }
 
 export const Layout: FC<LayoutProps> = (props) => {
   const settings = useSettings();
+  const { slugs: featureSlugs, provided: featuresProvided } = useFeatureAccess();
   const [role, setRole] = useState<Role | null>(() => {
     if (typeof window === 'undefined') return null;
     const cached = window.localStorage.getItem('dashboardRole') as Role | null;
@@ -48,7 +50,7 @@ export const Layout: FC<LayoutProps> = (props) => {
   }, []);
 
   // ALWAYS call the hook (stable hook order)
-  const sections = useSections(role);
+  const sections = useSections(role, featuresProvided ? featureSlugs : undefined);
 
   // Sidebar skeleton while resolving role (no flicker of wrong items)
   if (role === null) {
