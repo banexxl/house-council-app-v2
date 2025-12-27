@@ -314,7 +314,7 @@ export const approveAccessRequest = async (
                locale: 'rs',
                name: parsed.name,
                email: parsed.email,
-               contactSupportUrl: `${process.env.NEXT_PUBLIC_BASE_URL || ''}/auth/contact-support`,
+               contactSupportUrl: `https://nest-link.app/contact`,
           });
           if (!deniedEmail.ok) {
                return { success: false, error: deniedEmail.error || 'Failed to send denial email', email: parsed.email, name: parsed.name };
