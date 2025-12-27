@@ -982,7 +982,13 @@ export const en = {
   [tokens.email.accessApprovedSecurityNote]: 'For security, please sign in and change your password right away.',
   [tokens.email.accessApprovedGreeting]: 'Hi {{name}},',
   [tokens.email.accessApprovedGreetingFallback]: 'there',
+  [tokens.email.accessDeniedTitle]: 'Your Nest Link access request',
+  [tokens.email.accessDeniedIntro]: 'We regret to inform you that your request for access to Nest Link has been denied.',
+  [tokens.email.accessDeniedGreeting]: 'Hi {{name}},',
+  [tokens.email.accessDeniedGreetingFallback]: 'there',
   [tokens.email.accessRequestTitle]: 'New Access Request',
+  [tokens.email.accessDeniedBody]: 'If you believe this is an error or need further information, please contact our support.',
+
   [tokens.email.accessRequestIntro]: 'You received a new access request from a tenant prospect.',
   [tokens.email.accessRequestNameLabel]: 'Name',
   [tokens.email.accessRequestEmailLabel]: 'Email',

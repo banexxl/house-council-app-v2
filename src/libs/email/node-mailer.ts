@@ -9,7 +9,7 @@ import { buildSubscriptionEndingSupportEmail } from './messages/subscription-end
 import { buildSuccessfulRegistrationEmail, buildClientContactMessageEmail } from './messages/support-registration';
 import { buildNotificationGenericHtml } from './messages/notification-generic';
 import { buildAccessRequestClientEmail } from './messages/access-request-client';
-import { buildAccessRequestApprovedEmail } from './messages/access-request-approved';
+import { buildAccessDeniedEmail, buildAccessRequestApprovedEmail } from './messages/access-request-approved';
 import { readClientSubscriptionPlanFromClientId } from 'src/app/actions/subscription-plan/subscription-plan-actions';
 
 const transporter = nodemailer.createTransport({
@@ -193,6 +193,27 @@ export const sendAccessRequestApprovedEmail = async (
       subject,
       html: injectedHtml,
       text: `Hi ${data.name || 'there'}, your tenant account is ready. Login: ${data.loginUrl} with email ${data.email} and password ${data.password}. Please change your password after logging in.`,
+    });
+    if ((info as any)?.response) return { ok: true };
+    if ((info as any)?.rejected?.length) return { ok: false, error: 'rejected' };
+    return { ok: true };
+  } catch (e: any) {
+    return { ok: false, error: e?.message || 'sendMail failed' };
+  }
+};
+
+export const sendAccessDeniedEmail = async (
+  to: string,
+  data: { locale: string; name: string; email: string; contactSupportUrl: string }
+): Promise<{ ok: boolean; error?: string }> => {
+  const { subject, injectedHtml } = await buildAccessDeniedEmail(data);
+  try {
+    const info = await transporter.sendMail({
+      from: process.env.EMAIL_SMTP_USER!,
+      to,
+      subject,
+      html: injectedHtml,
+      text: `Hi ${data.name || 'there'}, your access request has been denied. If you believe this is a mistake, please contact support at: ${data.contactSupportUrl}`,
     });
     if ((info as any)?.response) return { ok: true };
     if ((info as any)?.rejected?.length) return { ok: false, error: 'rejected' };

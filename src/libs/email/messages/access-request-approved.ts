@@ -60,3 +60,25 @@ export const buildAccessRequestApprovedEmail = async (
 
   return { subject, injectedHtml };
 };
+
+export const buildAccessDeniedEmail = async (
+  data: { locale: string; name: string; email: string; contactSupportUrl: string }
+): Promise<{ subject: string; injectedHtml: string }> => {
+  const t = await getServerI18n(data.locale || 'rs');
+
+  const safe = (val?: string | null) => (val || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const name = safe(data.name) || t(serverTokens.email.accessDeniedGreetingFallback) || 'there';
+  const contactSupportUrl = safe(data.contactSupportUrl);
+
+  const subject =
+    t(serverTokens.email.accessDeniedTitle) ||
+    'Your Nest Link access request has been denied';
+
+  const injectedHtml = `
+      <p>${t(serverTokens.email.accessDeniedGreeting, { name }) || `Hi ${name},`}</p>
+      <p>${t(serverTokens.email.accessDeniedBody) || 'Your access request has been denied. If you believe this is a mistake, please contact support.'}</p>
+      <p><a href="${contactSupportUrl}">${t(serverTokens.email.accessDeniedContactSupportLinkText) || 'Contact Support'}</a></p>
+    `;
+
+  return { subject, injectedHtml };
+}
