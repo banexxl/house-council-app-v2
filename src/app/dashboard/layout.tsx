@@ -51,7 +51,7 @@ export default function DashboardClientLayout({ children }: Props) {
      useEffect(() => {
           if (!viewer || viewer.admin) return;
           const hasFeatureData = Array.isArray(viewer.allowedFeatureSlugs);
-          const allowed = new Set((viewer.allowedFeatureSlugs || []).map((s: string) => s.toLowerCase()));
+          const allowed = new Set<string>((viewer.allowedFeatureSlugs || []).map((s: string) => s.toLowerCase()));
           if (!hasFeatureData) return;
 
           const guards: { feature: string; match: RegExp }[] = [
