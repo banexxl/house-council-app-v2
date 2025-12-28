@@ -21,6 +21,7 @@ export const createSubscriptionPlan = async (subscriptionPlan: SubscriptionPlan)
           .insert({ ...subscriptionPlan, features: undefined })
           .select()
           .single();
+     console.log('errorrrr', error);
 
      if (error) {
           return { createSubscriptionPlanSuccess: false, createSubscriptionPlanError: error };

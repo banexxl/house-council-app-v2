@@ -62,7 +62,8 @@ export default function SubscriptionEditor({ features, subscriptionPlansData }: 
           }),
           onSubmit: async (values: SubscriptionPlan) => {
                const { monthly_total_price_per_apartment, total_price_per_apartment_with_discounts } = getCalculatedPrices(values, featurePrices);
-               const payload = { ...values, monthly_total_price_per_apartment, total_price_per_apartment_with_discounts } as SubscriptionPlan;
+               const payload = { ...values, id: subscriptionPlansData?.id, monthly_total_price_per_apartment, total_price_per_apartment_with_discounts } as SubscriptionPlan;
+
                try {
                     let response;
                     if (values.id && values.id !== '') {

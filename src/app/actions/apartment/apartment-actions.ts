@@ -9,6 +9,7 @@ import { validate as isUUID } from "uuid";
 import { toStorageRef } from "src/utils/sb-bucket";
 import { TABLES } from "src/libs/supabase/tables";
 import { ApartmentImage } from "src/types/apartment";
+import { syncPolarSeatsForClient } from "src/libs/polar/sync-subscription-seats";
 
 // ===== Actions =====
 
@@ -274,7 +275,7 @@ export async function createOrUpdateApartment(payload: Apartment) {
           // enforce building capacity
           const { data: building, error: buildingError } = await supabase
                .from(TABLES.BUILDINGS)
-               .select("number_of_apartments")
+               .select("client_id,number_of_apartments")
                .eq("id", (apartmentPayload as any).building_id)
                .single();
 
@@ -317,6 +318,32 @@ export async function createOrUpdateApartment(payload: Apartment) {
                }
           }
 
+          // ✅ NEW: sync Polar seats
+          // You must know the clientId here.
+          // If apartmentPayload has client_id, use it.
+          // Otherwise derive clientId from the building.
+          const clientId = building.client_id
+
+          const sync = await syncPolarSeatsForClient({ clientId });
+
+          if (!sync.success) {
+               // rollback the apartment creation
+               await supabase.from(TABLES.APARTMENTS).delete().eq("id", data.id);
+
+               await logServerAction({
+                    action: "createApartment",
+                    duration_ms: Date.now() - t0,
+                    error: `Apartment created but Polar seat sync failed: ${sync.error}`,
+                    payload,
+                    status: "fail",
+                    type: "api",
+                    user_id: null,
+                    id: data.id,
+               });
+
+               return { success: false, error: `Apartment was not saved because billing sync failed: ${sync.error}` };
+          }
+
           await logServerAction({ action: "createApartment", duration_ms: Date.now() - t0, error: "", payload, status: "success", type: "db", user_id: null, id: "" });
           return { success: true, data };
      }
@@ -325,6 +352,61 @@ export async function createOrUpdateApartment(payload: Apartment) {
 export async function deleteApartment(id: string) {
      const t0 = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
+
+     // 0) Resolve clientId BEFORE deleting anything
+     const { data: aptRow, error: aptErr } = await supabase
+          .from(TABLES.APARTMENTS)
+          .select("building_id")
+          .eq("id", id)
+          .single();
+
+     if (aptErr) {
+          await logServerAction({
+               action: "deleteApartment - resolve building_id failed",
+               duration_ms: Date.now() - t0,
+               error: aptErr.message,
+               payload: { id },
+               status: "fail",
+               type: "db",
+               user_id: null,
+          });
+          return { success: false, error: "Failed to resolve apartment building." };
+     }
+
+     const buildingId = (aptRow as any)?.building_id;
+
+     const { data: building, error: buildingError } = await supabase
+          .from(TABLES.BUILDINGS)
+          .select("client_id")
+          .eq("id", buildingId)
+          .single();
+
+     if (buildingError) {
+          await logServerAction({
+               action: "deleteApartment - resolve client_id failed",
+               duration_ms: Date.now() - t0,
+               error: buildingError.message,
+               payload: { id, buildingId },
+               status: "fail",
+               type: "db",
+               user_id: null,
+          });
+          return { success: false, error: "Failed to resolve client for apartment." };
+     }
+
+     const clientId = (building as any)?.client_id as string | undefined;
+     if (!clientId) {
+          await logServerAction({
+               action: "deleteApartment - clientId missing",
+               duration_ms: Date.now() - t0,
+               error: "clientId is null",
+               payload: { id, buildingId },
+               status: "fail",
+               type: "db",
+               user_id: null,
+          });
+          return { success: false, error: "Client could not be resolved for this apartment." };
+     }
 
      // 1) fetch image refs
      const { data: imgs } = await supabase
@@ -335,7 +417,7 @@ export async function deleteApartment(id: string) {
      // 2) remove from storage (group by bucket)
      if (imgs?.length) {
           const byBucket = new Map<string, string[]>();
-          for (const r of imgs) {
+          for (const r of imgs as any[]) {
                const bucket = r.storage_bucket;
                const path = r.storage_path; // legacy rows may be null; in that case we skip
                if (!path) continue;
@@ -343,28 +425,93 @@ export async function deleteApartment(id: string) {
                arr.push(path);
                byBucket.set(bucket, arr);
           }
+
           for (const [bucket, paths] of byBucket) {
                if (!paths.length) continue;
                const { error: delErr } = await supabase.storage.from(bucket).remove(paths);
                if (delErr) {
-                    await logServerAction({ action: "deleteApartment - storage remove failed", duration_ms: Date.now() - t0, error: delErr.message, payload: { id, bucket, count: paths.length }, status: "fail", type: "db", user_id: null });
-                    // we keep going to try DB cleanup anyway
+                    await logServerAction({
+                         action: "deleteApartment - storage remove falied",
+                         duration_ms: Date.now() - t0,
+                         error: delErr.message,
+                         payload: { id, bucket, count: paths.length },
+                         status: "fail",
+                         type: "db",
+                         user_id: null,
+                    });
+                    // continue to try DB cleanup anyway
                }
           }
      }
 
      // 3) delete DB image rows
-     await supabase.from(TABLES.APARTMENT_IMAGES).delete().eq("apartment_id", id);
+     const { error: imgDbErr } = await supabase
+          .from(TABLES.APARTMENT_IMAGES)
+          .delete()
+          .eq("apartment_id", id);
+
+     if (imgDbErr) {
+          await logServerAction({
+               action: "deleteApartment - image rows delete failed",
+               duration_ms: Date.now() - t0,
+               error: imgDbErr.message,
+               payload: { id },
+               status: "fail",
+               type: "db",
+               user_id: null,
+          });
+          // continue to try deleting apartment anyway
+     }
 
      // 4) delete the apartment
      const { error } = await supabase.from(TABLES.APARTMENTS).delete().eq("id", id);
+
      if (error) {
-          await logServerAction({ action: "deleteApartment", duration_ms: Date.now() - t0, error: error.message, payload: { id }, status: "fail", type: "db", user_id: null });
+          await logServerAction({
+               action: "deleteApartment",
+               duration_ms: Date.now() - t0,
+               error: error.message,
+               payload: { id },
+               status: "fail",
+               type: "db",
+               user_id: null,
+          });
           return { success: false, error: error.message };
      }
 
-     await logServerAction({ action: "deleteApartment", duration_ms: Date.now() - t0, error: "", payload: { id }, status: "success", type: "db", user_id: null });
-     revalidatePath('/dashboard/apartments');
+     // 5) ✅ sync Polar seats AFTER delete
+     const sync = await syncPolarSeatsForClient({ clientId });
+
+     if (!sync.success) {
+          await logServerAction({
+               action: "deleteApartment - polar seat sync failed",
+               duration_ms: Date.now() - t0,
+               error: sync.error ?? "Unknown Polar sync error",
+               payload: { id, clientId },
+               status: "fail",
+               type: "api",
+               user_id: null,
+          });
+
+          // NOTE: we cannot easily rollback a hard delete here without soft delete.
+          return {
+               success: false,
+               error:
+                    "Apartment deleted, but billing sync failed. Please try again or contact support.",
+          };
+     }
+
+     await logServerAction({
+          action: "deleteApartment",
+          duration_ms: Date.now() - t0,
+          error: "",
+          payload: { id, clientId, newQuantity: sync.quantity },
+          status: "success",
+          type: "db",
+          user_id: null,
+     });
+
+     revalidatePath("/dashboard/apartments");
      return { success: true, data: null };
 }
 
@@ -389,3 +536,4 @@ export async function checkIfApartmentExistsInBuilding(buildingId: string, apart
      }
      return { exists: !!data?.length, apartmentid: data?.[0]?.id };
 }
+

@@ -40,6 +40,8 @@ export type SubscriptionPlan = {
      total_price_per_apartment_with_discounts: number;
      max_number_of_apartments: number;
      max_number_of_team_members: number;
+     polar_product_id_monthly?: string | null;
+     polar_product_id_annually?: string | null;
 };
 
 export const subscriptionPlanInitialValues: SubscriptionPlan = {
@@ -59,6 +61,8 @@ export const subscriptionPlanInitialValues: SubscriptionPlan = {
      total_price_per_apartment_with_discounts: 0,
      max_number_of_apartments: 1,
      max_number_of_team_members: 0,
+     polar_product_id_monthly: null,
+     polar_product_id_annually: null
 };
 
 export const subscriptionPlanValidationSchema = Yup.object({
