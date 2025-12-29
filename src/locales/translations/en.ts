@@ -884,6 +884,16 @@ export const en = {
   [tokens.subscriptionPlans.subscriptionPlanStatusCanceled]: 'Canceled',
   [tokens.subscriptionPlans.subscriptionPlanCurrentPlan]: 'Current Plan',
   [tokens.subscriptionPlans.subscriptionPlanExpirationDate]: 'Expiration Date',
+  [tokens.subscriptionPlans.externalUUIDs]: 'External UUIDs',
+  [tokens.subscriptionPlans.polarProductIdMonthly]: 'Polar product ID (monthly)',
+  [tokens.subscriptionPlans.polarProductIdAnnually]: 'Polar product ID (annual)',
+  [tokens.subscriptionPlans.polarProductIdHelper]: 'Optional. Provide at least one monthly or annual Polar product ID.',
+  [tokens.subscriptionPlans.validation.required]: 'Required',
+  [tokens.subscriptionPlans.validation.mustBePositive]: 'Must be positive',
+  [tokens.subscriptionPlans.validation.maxHundred]: 'Must be 100 or less',
+  [tokens.subscriptionPlans.validation.maxMillion]: 'Must be 1,000,000 or less',
+  [tokens.subscriptionPlans.validation.uuidInvalid]: 'Must be a valid UUID',
+  [tokens.subscriptionPlans.validation.atLeastOnePolarProductId]: 'At least one Polar product ID (monthly or annual) is required',
   //#endregion
   //#region Page Errors
   [tokens.errors.page.notFound]: 'Page not found',

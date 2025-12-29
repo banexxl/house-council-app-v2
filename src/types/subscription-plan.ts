@@ -44,6 +44,8 @@ export type SubscriptionPlan = {
      polar_product_id_annually?: string | null;
 };
 
+const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export const subscriptionPlanInitialValues: SubscriptionPlan = {
      id: '',
      created_at: new Date(),
@@ -65,20 +67,36 @@ export const subscriptionPlanInitialValues: SubscriptionPlan = {
      polar_product_id_annually: null
 };
 
-export const subscriptionPlanValidationSchema = Yup.object({
-     name: Yup.string().required("Required"),
+export const polarProductIdSchema = (t: (key: string) => string) =>
+     Yup.string()
+          .nullable()
+          .transform((value) => (value === '' ? null : value))
+          .matches(uuidRegex, { message: t('subscriptionPlans.validation.uuidInvalid'), excludeEmptyString: true })
+          .test(
+               "at-least-one-polar-product-id",
+               t('subscriptionPlans.validation.atLeastOnePolarProductId'),
+               function () {
+                    const { polar_product_id_monthly, polar_product_id_annually } = this.parent as SubscriptionPlan;
+                    return Boolean(polar_product_id_monthly || polar_product_id_annually);
+               }
+          );
+
+export const subscriptionPlanValidationSchema = (t: (key: string) => string) => Yup.object({
+     name: Yup.string().required(t('subscriptionPlans.validation.required')),
      description: Yup.string(),
-     status: Yup.string().required("Required"),
+     status: Yup.string().required(t('subscriptionPlans.validation.required')),
      is_billed_annually: Yup.boolean(),
-     annual_discount_percentage: Yup.number().min(0, "Must be positive").max(100, "Must be 100 or less"),
+     annual_discount_percentage: Yup.number().min(0, t('subscriptionPlans.validation.mustBePositive')).max(100, t('subscriptionPlans.validation.maxHundred')),
      is_discounted: Yup.boolean(),
-     discount_percentage: Yup.number().min(0, "Must be positive").max(100, "Must be 100 or less"),
-     base_price: Yup.number().min(0, "Must be positive").max(1000000, "Must be 1,000,000 or less"),
-     monthly_total_price_per_apartment: Yup.number().min(0, "Must be positive").max(1000000, "Must be 1,000,000 or less"),
-     total_price_per_apartment_with_discounts: Yup.number().min(0, "Must be positive").max(1000000, "Must be 1,000,000 or less"),
-     max_number_of_apartments: Yup.number().min(0, "Must be positive").required("Required"),
-     max_number_of_team_members: Yup.number().min(0, "Must be positive").required("Required"),
-})
+     discount_percentage: Yup.number().min(0, t('subscriptionPlans.validation.mustBePositive')).max(100, t('subscriptionPlans.validation.maxHundred')),
+     base_price: Yup.number().min(0, t('subscriptionPlans.validation.mustBePositive')).max(1000000, t('subscriptionPlans.validation.maxMillion')),
+     monthly_total_price_per_apartment: Yup.number().min(0, t('subscriptionPlans.validation.mustBePositive')).max(1000000, t('subscriptionPlans.validation.maxMillion')),
+     total_price_per_apartment_with_discounts: Yup.number().min(0, t('subscriptionPlans.validation.mustBePositive')).max(1000000, t('subscriptionPlans.validation.maxMillion')),
+     max_number_of_apartments: Yup.number().min(0, t('subscriptionPlans.validation.mustBePositive')).required(t('subscriptionPlans.validation.required')),
+     max_number_of_team_members: Yup.number().min(0, t('subscriptionPlans.validation.mustBePositive')).required(t('subscriptionPlans.validation.required')),
+     polar_product_id_monthly: polarProductIdSchema(t),
+     polar_product_id_annually: polarProductIdSchema(t),
+});
 
 export interface ClientSubscription {
      id: string;

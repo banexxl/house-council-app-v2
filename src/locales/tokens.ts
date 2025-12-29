@@ -1097,6 +1097,18 @@ export const tokens = {
     subscriptionPlanStatusCanceled: 'subscriptionPlans.statusCanceled',
     subscriptionPlanCurrentPlan: 'subscriptionPlans.currentPlan',
     subscriptionPlanExpirationDate: 'subscriptionPlans.expirationDate',
+    externalUUIDs: 'subscriptionPlans.externalUUIDs',
+    polarProductIdMonthly: 'subscriptionPlans.polarProductIdMonthly',
+    polarProductIdAnnually: 'subscriptionPlans.polarProductIdAnnually',
+    polarProductIdHelper: 'subscriptionPlans.polarProductIdHelper',
+    validation: {
+      required: 'subscriptionPlans.validation.required',
+      mustBePositive: 'subscriptionPlans.validation.mustBePositive',
+      maxHundred: 'subscriptionPlans.validation.maxHundred',
+      maxMillion: 'subscriptionPlans.validation.maxMillion',
+      uuidInvalid: 'subscriptionPlans.validation.uuidInvalid',
+      atLeastOnePolarProductId: 'subscriptionPlans.validation.atLeastOnePolarProductId',
+    },
   },
   tenants: {
     tenantsList: 'tenants.tenantsList',

@@ -1,7 +1,6 @@
 "use client"
 
 import { useFormik } from "formik"
-import * as Yup from "yup"
 import { Card, CardContent, TextField, Typography, Grid, Select, MenuItem, InputLabel, FormControl, Switch, FormControlLabel, Checkbox, Stack, Button, Box } from "@mui/material"
 import SaveIcon from "@mui/icons-material/Save"
 import { type SubscriptionPlan, subscriptionPlanInitialValues, subscriptionPlanStatusOptions, subscriptionPlanValidationSchema } from "src/types/subscription-plan"
@@ -57,9 +56,7 @@ export default function SubscriptionEditor({ features, subscriptionPlansData }: 
                base_price: subscriptionPlansData?.base_price || 0,
                features: subscriptionPlansData?.features?.map((f: any) => f.id) || [],
           },
-          validationSchema: Yup.object().shape({
-               ...subscriptionPlanValidationSchema.fields,
-          }),
+          validationSchema: subscriptionPlanValidationSchema(t),
           onSubmit: async (values: SubscriptionPlan) => {
                const { monthly_total_price_per_apartment, total_price_per_apartment_with_discounts } = getCalculatedPrices(values, featurePrices);
                const payload = { ...values, id: subscriptionPlansData?.id, monthly_total_price_per_apartment, total_price_per_apartment_with_discounts } as SubscriptionPlan;
@@ -387,7 +384,6 @@ export default function SubscriptionEditor({ features, subscriptionPlansData }: 
                               </Card>
                          </Stack >
                     </Grid>
-
                     <Grid size={{ xs: 12, md: 6 }}>
                          <Card>
                               <CardContent>
@@ -513,6 +509,48 @@ export default function SubscriptionEditor({ features, subscriptionPlansData }: 
 
                               </CardContent>
                          </Card>
+                         <Card sx={{ mt: 3 }}>
+                              <CardContent>
+                                   <Typography variant="h6" gutterBottom>
+                                        {t("subscriptionPlans.externalUUIDs")}
+                                   </Typography>
+                                   <TextField
+                                        fullWidth
+                                        id="polar_product_id_monthly"
+                                        name="polar_product_id_monthly"
+                                        label={t("subscriptionPlans.polarProductIdMonthly")}
+                                        value={formik.values.polar_product_id_monthly || ""}
+                                        onChange={(event) => formik.setFieldValue("polar_product_id_monthly", event.target.value)}
+                                        onBlur={() => formik.setFieldTouched("polar_product_id_monthly", true)}
+                                        placeholder="be9ce4b1-164e-4f38-933d-fc451744820a"
+                                        error={formik.touched.polar_product_id_monthly && Boolean(formik.errors.polar_product_id_monthly)}
+                                        helperText={
+                                             formik.touched.polar_product_id_monthly && formik.errors.polar_product_id_monthly
+                                                  ? formik.errors.polar_product_id_monthly
+                                                  : t("subscriptionPlans.polarProductIdHelper")
+                                        }
+                                        sx={{ mb: 2 }}
+                                   />
+                                   <TextField
+                                        fullWidth
+                                        id="polar_product_id_annually"
+                                        name="polar_product_id_annually"
+                                        label={t("subscriptionPlans.polarProductIdAnnually")}
+                                        value={formik.values.polar_product_id_annually || ""}
+                                        onChange={(event) => formik.setFieldValue("polar_product_id_annually", event.target.value)}
+                                        onBlur={() => formik.setFieldTouched("polar_product_id_annually", true)}
+                                        placeholder="be9ce4b1-164e-4f38-933d-fc451744820a"
+                                        error={formik.touched.polar_product_id_annually && Boolean(formik.errors.polar_product_id_annually)}
+                                        helperText={
+                                             formik.touched.polar_product_id_annually && formik.errors.polar_product_id_annually
+                                                  ? formik.errors.polar_product_id_annually
+                                                  : t("subscriptionPlans.polarProductIdHelper")
+                                        }
+                                   />
+
+                              </CardContent>
+                         </Card>
+
                     </Grid>
                     <Grid size={{ xs: 12, md: 6 }}>
                          <Button
