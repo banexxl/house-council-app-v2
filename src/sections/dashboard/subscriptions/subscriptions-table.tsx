@@ -126,7 +126,7 @@ export const SubscriptionTable: FC<SubscriptionListTableProps> = ({ subscription
                                              setDeletingIds(prev => [...prev, plan.id!]);
                                              const res = await deleteSubscriptionPlansByIds([plan.id!]);
                                              if (res.deleteSubscriptionPlansSuccess) {
-                                                  toast.success(t('common.deleteSuccess'));
+                                                  toast.success(t('common.actionDeleteSuccess'));
                                              } else {
                                                   toast.error(t('common.actionDeleteError'));
                                              }
