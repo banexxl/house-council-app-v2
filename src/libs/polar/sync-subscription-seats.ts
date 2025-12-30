@@ -4,20 +4,16 @@ import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
 import { logServerAction } from "src/libs/supabase/server-logging";
 import { TABLES } from "src/libs/supabase/tables";
 
-type SyncSeatsArgs = {
-     clientId: string;
-     // if your apartments are per building, you can pass building_id and derive client_id,
-     // but best is to pass clientId directly.
-};
+type SyncSeatsArgs = { clientId: string };
 
 export async function syncPolarSeatsForClient({ clientId }: SyncSeatsArgs) {
      const t0 = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
 
-     // 1️⃣ Load active / trialing subscription
+     // 1) Load active/trialing subscription + current quantity (store it locally if you can)
      const { data: sub, error: subErr } = await supabase
           .from("tblClient_Subscription")
-          .select("id, status, polar_subscription_id")
+          .select("id, status, polar_subscription_id, polar_customer_id") // add more if needed
           .eq("client_id", clientId)
           .in("status", ["trialing", "active"])
           .maybeSingle();
@@ -39,68 +35,11 @@ export async function syncPolarSeatsForClient({ clientId }: SyncSeatsArgs) {
           return { success: false as const, error: "No active Polar subscription found for this client." };
      }
 
-     // 2️⃣ Fetch all buildings for client
-     const { data: buildings, error: bErr } = await supabase
-          .from(TABLES.BUILDINGS)
-          .select("id")
-          .eq("client_id", clientId);
-
-     if (bErr) {
-          await logServerAction({
-               action: "syncPolarSeatsForClient",
-               duration_ms: Date.now() - t0,
-               error: bErr.message,
-               payload: { clientId },
-               status: "fail",
-               type: "db",
-               user_id: null,
-          });
-          return { success: false as const, error: "Failed to fetch client buildings." };
-     }
-
-     const buildingIds = (buildings ?? []).map((b: any) => b.id);
-
-     // No buildings → no apartments
-     if (buildingIds.length === 0) {
-          // Decide policy: quantity 1 vs 0
-          // We default to 1 to avoid invalid subscription quantity
-          try {
-               await polar.subscriptions.update({
-                    id: sub.polar_subscription_id,
-                    quantity: 1,
-               } as any);
-
-               await logServerAction({
-                    action: "syncPolarSeatsForClient",
-                    duration_ms: Date.now() - t0,
-                    error: "",
-                    payload: { clientId, newQuantity: 1 },
-                    status: "success",
-                    type: "api",
-                    user_id: null,
-               });
-
-               return { success: true as const, quantity: 1 };
-          } catch (e: any) {
-               await logServerAction({
-                    action: "syncPolarSeatsForClient",
-                    duration_ms: Date.now() - t0,
-                    error: e?.message ?? "Polar update failed",
-                    payload: { clientId, newQuantity: 1 },
-                    status: "fail",
-                    type: "api",
-                    user_id: null,
-               });
-
-               return { success: false as const, error: e?.message ?? "Failed to update Polar subscription quantity." };
-          }
-     }
-
-     // 3️⃣ Count apartments across all buildings
+     // 2) Count apartments for client via join (tblApartments -> tblBuildings -> client_id)
      const { count, error: countErr } = await supabase
           .from(TABLES.APARTMENTS)
-          .select("id", { count: "exact", head: true })
-          .in("building_id", buildingIds);
+          .select("id, building_id!inner(id, client_id)", { count: "exact", head: true })
+          .eq("building_id.client_id", clientId);
 
      if (countErr) {
           await logServerAction({
@@ -115,9 +54,31 @@ export async function syncPolarSeatsForClient({ clientId }: SyncSeatsArgs) {
           return { success: false as const, error: "Failed to count apartments." };
      }
 
-     const newQuantity = Math.max(1, count ?? 0);
+     const newQuantity = Math.max(1, count ?? 0); // <-- policy: min 1
 
-     // 4️⃣ Update Polar subscription quantity
+     // 3) Fetch current subscription in Polar (so we can skip if unchanged)
+     let currentQuantity: number | null = null;
+     try {
+          const current = await polar.subscriptions.get({ id: sub.polar_subscription_id } as any);
+          currentQuantity = (current as any)?.quantity ?? null;
+     } catch {
+          // not fatal — we'll just attempt update
+     }
+
+     if (currentQuantity !== null && currentQuantity === newQuantity) {
+          await logServerAction({
+               action: "syncPolarSeatsForClient",
+               duration_ms: Date.now() - t0,
+               error: "",
+               payload: { clientId, newQuantity, skipped: true },
+               status: "success",
+               type: "api",
+               user_id: null,
+          });
+          return { success: true as const, quantity: newQuantity, skipped: true as const };
+     }
+
+     // 4) Update Polar subscription quantity
      try {
           await polar.subscriptions.update({
                id: sub.polar_subscription_id,
@@ -128,11 +89,7 @@ export async function syncPolarSeatsForClient({ clientId }: SyncSeatsArgs) {
                action: "syncPolarSeatsForClient",
                duration_ms: Date.now() - t0,
                error: "",
-               payload: {
-                    clientId,
-                    newQuantity,
-                    polar_subscription_id: sub.polar_subscription_id,
-               },
+               payload: { clientId, newQuantity, polar_subscription_id: sub.polar_subscription_id },
                status: "success",
                type: "api",
                user_id: null,
@@ -144,11 +101,7 @@ export async function syncPolarSeatsForClient({ clientId }: SyncSeatsArgs) {
                action: "syncPolarSeatsForClient",
                duration_ms: Date.now() - t0,
                error: e?.message ?? "Polar update failed",
-               payload: {
-                    clientId,
-                    newQuantity,
-                    polar_subscription_id: sub.polar_subscription_id,
-               },
+               payload: { clientId, newQuantity, polar_subscription_id: sub.polar_subscription_id },
                status: "fail",
                type: "api",
                user_id: null,

@@ -536,4 +536,3 @@ export async function checkIfApartmentExistsInBuilding(buildingId: string, apart
      }
      return { exists: !!data?.length, apartmentid: data?.[0]?.id };
 }
-
