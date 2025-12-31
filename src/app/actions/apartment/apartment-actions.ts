@@ -505,7 +505,7 @@ export async function deleteApartment(id: string) {
           action: "deleteApartment",
           duration_ms: Date.now() - t0,
           error: "",
-          payload: { id, clientId, newQuantity: sync.quantity },
+          payload: { id, clientId, newQuantity: sync.usage },
           status: "success",
           type: "db",
           user_id: null,
