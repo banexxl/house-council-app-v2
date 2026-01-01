@@ -12,7 +12,7 @@ export async function syncPolarSeatsForClient({ clientId }: SyncSeatsArgs) {
 
      // 1) Load active subscription + Polar customer id
      const { data: sub, error: subErr } = await supabase
-          .from("tblClient_Subscription")
+          .from(TABLES.CLIENT_SUBSCRIPTION)
           .select("id, status, polar_subscription_id, polar_customer_id")
           .eq("client_id", clientId)
           .in("status", ["trialing", "active"])
@@ -24,7 +24,7 @@ export async function syncPolarSeatsForClient({ clientId }: SyncSeatsArgs) {
 
      // 2) Count apartments
      const { count, error } = await supabase
-          .from("tblApartments")
+          .from(TABLES.APARTMENTS)
           .select("id, tblBuildings!inner(client_id)", { count: "exact", head: true })
           .eq("tblBuildings.client_id", clientId);
 
