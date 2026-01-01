@@ -23,12 +23,12 @@ export async function syncPolarSeatsForClient({ clientId }: SyncSeatsArgs) {
      }
 
      // 2) Count apartments
-     const { count, error: countErr } = await supabase
-          .from(TABLES.APARTMENTS)
-          .select("id", { count: "exact", head: true })
-          .eq("building_id.client_id", clientId);
+     const { count, error } = await supabase
+          .from("tblApartments")
+          .select("id, tblBuildings!inner(client_id)", { count: "exact", head: true })
+          .eq("tblBuildings.client_id", clientId);
 
-     if (countErr) {
+     if (error) {
           return { success: false as const, error: "Failed to count apartments." };
      }
 
