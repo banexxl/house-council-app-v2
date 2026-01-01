@@ -38,7 +38,7 @@ export async function syncPolarSeatsForClient({ clientId }: SyncSeatsArgs) {
 
      // 3) Ingest the usage event into Polar
      try {
-          polar.subscriptions.update({
+          await polar.subscriptions.update({
                id: sub.polar_subscription_id,
                subscriptionUpdate: {
                     seats: apartmentsCount,
