@@ -13,22 +13,24 @@ export async function syncPolarSeatsForClient({ clientId }: SyncSeatsArgs) {
      // 1) Load active subscription + Polar customer id
      const { data: sub, error: subErr } = await supabase
           .from("tblClient_Subscription")
-          .select("id, status, polar_subscription_id, polar_customer_id")
+          .select("id, status, polar_subscription_id")
           .eq("client_id", clientId)
           .in("status", ["trialing", "active"])
           .maybeSingle();
+     console.log('get subscription', sub, subErr);
 
-     if (subErr || !sub?.polar_subscription_id || !sub.polar_customer_id) {
+     if (subErr || !sub?.polar_subscription_id) {
           return { success: false as const, error: "No active Polar subscription found." };
      }
 
      // 2) Count apartments
-     const { count, error: countErr } = await supabase
-          .from(TABLES.APARTMENTS)
-          .select("id", { count: "exact", head: true })
-          .eq("building_id.client_id", clientId);
+     const { count, error } = await supabase
+          .from("tblApartments")
+          .select("id, tblBuildings!inner(client_id)", { count: "exact", head: true })
+          .eq("tblBuildings.client_id", clientId);
+     console.log('count apartments', count, error);
 
-     if (countErr) {
+     if (error) {
           return { success: false as const, error: "Failed to count apartments." };
      }
 
@@ -36,22 +38,12 @@ export async function syncPolarSeatsForClient({ clientId }: SyncSeatsArgs) {
 
      // 3) Ingest the usage event into Polar
      try {
-          await polar.events.ingest({
-               events: [
-                    {
-                         // Match your meter filter: event_name must equal "apartment_usage"
-                         name: "apartment_usage",
-
-                         // Identify the customer
-                         customerId: sub.polar_customer_id,
-
-                         // Provide the property your meter sums
-                         metadata: {
-                              apartments_count: apartmentsCount,
-                         },
-                    },
-               ],
-          });
+          polar.subscriptions.update({
+               id: sub.polar_subscription_id,
+               subscriptionUpdate: {
+                    seats: apartmentsCount,
+               }
+          })
 
           await logServerAction({
                action: "syncPolarSeatsForClient",
@@ -60,7 +52,6 @@ export async function syncPolarSeatsForClient({ clientId }: SyncSeatsArgs) {
                payload: {
                     clientId,
                     apartmentsCount,
-                    polar_customer_id: sub.polar_customer_id,
                },
                status: "success",
                type: "api",
