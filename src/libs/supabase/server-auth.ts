@@ -123,12 +123,12 @@ export const getViewer = cache(async (): Promise<UserDataCombined> => {
      let subscriptionPlanId: string | null = null;
 
      if (featureClientId) {
-          const clientSubscription = await maybeSingle<{ subscription_plan_id: string | null }>(
+          const clientSubscription = await maybeSingle<{ subscription_id: string | null }>(
                db.from(TABLES.CLIENT_SUBSCRIPTION)
-                    .select('subscription_plan_id')
+                    .select('subscription_id')
                     .eq('client_id', featureClientId),
           );
-          subscriptionPlanId = clientSubscription?.subscription_plan_id ?? null;
+          subscriptionPlanId = clientSubscription?.subscription_id ?? null;
 
           if (subscriptionPlanId) {
                const { data: featureLinks, error: featureLinksError } = await db

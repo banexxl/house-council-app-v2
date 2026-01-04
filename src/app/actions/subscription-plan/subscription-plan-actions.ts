@@ -21,7 +21,6 @@ export const createSubscriptionPlan = async (subscriptionPlan: SubscriptionPlan)
           .insert({ ...subscriptionPlan, features: undefined })
           .select()
           .single();
-     console.log('errorrrr', error);
 
      if (error) {
           return { createSubscriptionPlanSuccess: false, createSubscriptionPlanError: error };
@@ -292,7 +291,7 @@ export const readSubscriptionPlanFromClientId = async (clientId: string): Promis
      // Fetch the subscription_id from tblClient_Subscription based on client_id
      const { data: clientSubscription, error: clientSubscriptionError } = await supabase
           .from(TABLES.CLIENT_SUBSCRIPTION)
-          .select("subscription_plan_id")
+          .select("subscription_id")
           .eq("client_id", clientId)
           .single();
 
@@ -307,7 +306,7 @@ export const readSubscriptionPlanFromClientId = async (clientId: string): Promis
      const { data: subscriptionPlan, error: planError } = await supabase
           .from(TABLES.SUBSCRIPTION_PLANS)
           .select(`*`)
-          .eq("id", clientSubscription.subscription_plan_id)
+          .eq("id", clientSubscription.subscription_id)
           .single()
 
      if (planError) {
@@ -465,7 +464,7 @@ export const subscribeClientAction = async (
           .from(TABLES.CLIENT_SUBSCRIPTION)
           .insert({
                client_id: clientId,
-               subscription_plan_id: subscriptionPlanId,
+               subscription_id: subscriptionPlanId,
                status: "trialing",
                created_at: new Date().toISOString(),
                updated_at: new Date().toISOString(),
@@ -633,7 +632,7 @@ export const readClientSubscriptionPlanFromClientId = async (clientId: string): 
           .from(TABLES.CLIENT_SUBSCRIPTION)
           .select(`
     *,
-    subscription_plan:subscription_plan_id (*)
+    subscription_plan:subscription_id (*)
   `)
           .eq("client_id", clientId)
           .single();
@@ -719,7 +718,7 @@ export const updateClientSubscriptionForClient = async (
 
      if (existing?.id) {
           const updatePayload: any = {
-               subscription_plan_id: subscriptionPlanId,
+               subscription_id: subscriptionPlanId,
                next_payment_date: nextPaymentDate,
                updated_at: nowIso,
           };
@@ -764,7 +763,7 @@ export const updateClientSubscriptionForClient = async (
           .from(TABLES.CLIENT_SUBSCRIPTION)
           .insert({
                client_id: clientId,
-               subscription_plan_id: subscriptionPlanId,
+               subscription_id: subscriptionPlanId,
                status: subscriptionStatus ?? 'active',
                created_at: nowIso,
                updated_at: nowIso,
