@@ -20,7 +20,7 @@ import { Scrollbar } from 'src/components/scrollbar';
 import type { SeverityPillColor } from 'src/components/severity-pill';
 import { SeverityPill } from 'src/components/severity-pill';
 import { paths } from 'src/paths';
-import type { Invoice, InvoiceStatus } from 'src/types/invoice';
+import type { Invoice, InvoiceStatus } from 'src/types/polar-order-types';
 import { getInitials } from 'src/utils/get-initials';
 
 type GroupedInvoices = {

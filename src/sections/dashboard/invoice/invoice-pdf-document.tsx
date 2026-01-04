@@ -6,7 +6,7 @@ import numeral from 'numeral';
 import { Document, Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 import { useTheme } from '@mui/material/styles';
 
-import type { Invoice } from 'src/types/invoice';
+import type { Invoice } from 'src/types/polar-order-types';
 
 const useStyles = () => {
   const theme = useTheme();

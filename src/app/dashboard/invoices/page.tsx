@@ -20,7 +20,7 @@ import { InvoiceListContainer } from 'src/sections/dashboard/invoice/invoice-lis
 import { InvoiceListSidebar } from 'src/sections/dashboard/invoice/invoice-list-sidebar';
 import { InvoiceListSummary } from 'src/sections/dashboard/invoice/invoice-list-summary';
 import { InvoiceListTable } from 'src/sections/dashboard/invoice/invoice-list-table';
-import type { Invoice, InvoiceStatus } from 'src/types/invoice';
+import type { Invoice, InvoiceStatus } from 'src/types/polar-order-types';
 
 interface Filters {
   clients?: string[];

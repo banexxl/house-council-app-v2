@@ -19,20 +19,18 @@ import { useTranslation } from 'react-i18next';
 import { Scrollbar } from 'src/components/scrollbar';
 import type { SeverityPillColor } from 'src/components/severity-pill';
 import { SeverityPill } from 'src/components/severity-pill';
-import type { Invoice, InvoiceStatus } from 'src/types/invoice';
-import { invoiceStatusTokenMap } from 'src/types/invoice';
+import type { PolarOrder, InvoiceStatus } from 'src/types/polar-order-types';
+import { invoiceStatusTokenMap } from 'src/types/polar-order-types';
 
 const statusColorMap: Record<InvoiceStatus, SeverityPillColor> = {
-  succeeded: 'success',
-  processing: 'info',
   pending: 'warning',
-  failed: 'error',
+  paid: 'success',
   refunded: 'secondary',
-  cancelled: 'error',
+  partially_refunded: 'info',
 };
 
 interface OverviewTransactionsProps {
-  invoices: Invoice[];
+  invoices: PolarOrder[];
 }
 
 export const OverviewTransactions: FC<OverviewTransactionsProps> = ({ invoices }) => {
@@ -92,12 +90,10 @@ export const OverviewTransactions: FC<OverviewTransactionsProps> = ({ invoices }
         variant="scrollable"
       >
         <Tab label={t('common.all', 'All')} value="all" />
-        <Tab label={t(invoiceStatusTokenMap.succeeded, 'Paid')} value="succeeded" />
+        <Tab label={t(invoiceStatusTokenMap.paid, 'Paid')} value="paid" />
         <Tab label={t(invoiceStatusTokenMap.pending, 'Pending')} value="pending" />
-        <Tab label={t(invoiceStatusTokenMap.processing, 'Processing')} value="processing" />
-        <Tab label={t(invoiceStatusTokenMap.failed, 'Failed')} value="failed" />
         <Tab label={t(invoiceStatusTokenMap.refunded, 'Refunded')} value="refunded" />
-        <Tab label={t(invoiceStatusTokenMap.cancelled, 'Cancelled')} value="cancelled" />
+        <Tab label={t(invoiceStatusTokenMap.partially_refunded, 'Partially Refunded')} value="partially_refunded" />
       </Tabs>
       <Divider />
       <Scrollbar sx={{ overflowX: 'auto' }} autoHide={false} forceVisible="x">
@@ -113,14 +109,14 @@ export const OverviewTransactions: FC<OverviewTransactionsProps> = ({ invoices }
             </TableHead>
             <TableBody>
               {paginated.map((invoice) => {
-                const issuedAt = invoice.issueDate ?? invoice.dueDate ?? Date.now();
+                const issuedAt = new Date(invoice.created_at);
                 const createdAtMonth = format(issuedAt, 'LLL').toUpperCase();
                 const createdAtDay = format(issuedAt, 'd');
                 const statusColor = statusColorMap[invoice.status] ?? 'info';
-                const amount = numeral(invoice.totalAmount || 0).format('0,0.00');
-                const currency = (invoice as any)?.currency?.code || (invoice as any)?.currency || '';
-                const clientName = invoice.client?.name || invoice.client?.company || invoice.client?.email || '-';
-                const description = invoice.number ? `#${invoice.number}` : '';
+                const amount = numeral(invoice.total_amount || 0).format('0,0.00');
+                const currency = invoice.currency || '';
+                const clientName = invoice.customer?.name || invoice.customer?.email || '-';
+                const description = invoice.invoice_number ? `#${invoice.invoice_number}` : '';
                 const statusLabel = t(invoiceStatusTokenMap[invoice.status], invoice.status);
 
                 return (

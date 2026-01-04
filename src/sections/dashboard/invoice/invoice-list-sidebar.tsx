@@ -21,7 +21,7 @@ import type { Theme } from '@mui/material/styles/createTheme';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
 import { Scrollbar } from 'src/components/scrollbar';
-import type { InvoiceStatus } from 'src/types/invoice';
+import type { InvoiceStatus } from 'src/types/polar-order-types';
 
 const clients: string[] = [
   'Blind Spots Inc.',

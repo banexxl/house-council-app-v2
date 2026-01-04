@@ -9,8 +9,6 @@ import Link01Icon from '@untitled-ui/icons-react/build/esm/Link01';
 import { useSettings } from 'src/hooks/use-settings';
 import { OverviewEvents } from 'src/sections/dashboard/overview/overview-events';
 import { OverviewTransactions } from 'src/sections/dashboard/overview/overview-transactions';
-import Briefcase01Icon from '@untitled-ui/icons-react/build/esm/Briefcase01';
-import ArrowRightIcon from '@untitled-ui/icons-react/build/esm/ArrowRight';
 import { Grid } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { OverviewStatusCard } from 'src/sections/dashboard/overview/overview-status-card';
@@ -24,14 +22,14 @@ import { tokens } from 'src/locales/tokens';
 
 import type { IncidentReport } from 'src/types/incident-report';
 import type { CalendarEvent } from 'src/types/calendar';
-import type { Invoice } from 'src/types/invoice';
+import type { PolarOrder } from 'src/types/polar-order-types';
 import { paths } from 'src/paths';
 import { OverviewLinkCard } from 'src/sections/dashboard/overview/info-card';
 
 type DashboardProps = {
   incidents: IncidentReport[];
   events: { upcoming: CalendarEvent[]; past: CalendarEvent[] };
-  invoices: Invoice[];
+  invoices: PolarOrder[];
   showTransactions?: boolean;
 };
 

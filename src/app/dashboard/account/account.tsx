@@ -16,7 +16,7 @@ import { AccountSecuritySettings } from 'src/sections/dashboard/account/account-
 import { Client, ClientMember } from 'src/types/client';
 import { SubscriptionPlan } from 'src/types/subscription-plan';
 import { ClientBillingInformation } from 'src/types/client-billing-information';
-import { Invoice } from 'src/types/payment';
+import { PolarOrder } from 'src/types/polar-order-types';
 import { User } from '@supabase/supabase-js';
 import { ServerLog } from 'src/libs/supabase/server-logging';
 import { useTranslation } from 'react-i18next';
@@ -27,7 +27,7 @@ export interface AccountProps {
      userData: User;
      clientSubscriptionPlan: SubscriptionPlan | null;
      clientBillingInfo: ClientBillingInformation[] | null;
-     clientInvoices: Invoice[] | undefined | null;
+     clientInvoices: PolarOrder[] | undefined | null;
      subscriptionPlans: SubscriptionPlan[] | null;
      allTeamMembers: ClientMember[] | null;
      clientLogs: ServerLog[] | null;

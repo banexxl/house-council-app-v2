@@ -8,7 +8,7 @@ import { DefaultPageSkeleton } from "src/sections/dashboard/skeletons/default-pa
 import { listIncidentReports, listIncidentReportsForClient } from "src/app/actions/incident/incident-report-actions";
 import { listDashboardEvents } from "src/app/actions/calendar/calendar-actions";
 import { readAllClientPayments } from "src/app/actions/client/client-payment-actions";
-import type { Invoice, InvoiceStatus } from "src/types/invoice";
+import type { PolarOrder } from "src/types/polar-order-types";
 import { getBuildingIDsFromUserId } from "src/app/actions/building/building-actions";
 import type { IncidentReport } from "src/types/incident-report";
 
@@ -43,29 +43,12 @@ const Page = async () => {
 
   const eventsRes = await listDashboardEvents({ upcomingLimit: 5, pastLimit: 5, upcomingDaysWindow: 10, buildingIds: tenantBuildingIds });
   const events = eventsRes.success ? eventsRes.data : { upcoming: [], past: [] };
-  let invoices: Invoice[] = [];
+  let invoices: PolarOrder[] = [];
   const showTransactions = !!clientId;
   if (clientId) {
     const paymentsRes = await readAllClientPayments(clientId);
     if (paymentsRes.readClientPaymentsSuccess && Array.isArray(paymentsRes.readClientPaymentsData)) {
-      invoices = paymentsRes.readClientPaymentsData.map((p: any) => ({
-        id: p.id,
-        currency: p.currency || '',
-        client: {
-          name: p.client?.name || p.client?.company || p.client?.contact_person || p.client?.email || '',
-          email: p.client?.email || '',
-          address: p.billing_information?.address || p.billing_information?.street_address,
-          company: p.client?.company || p.client?.company_name,
-          taxId: p.client?.tax_id || p.billing_information?.tax_id,
-        },
-        issueDate: p.created_at ? new Date(p.created_at).getTime() : undefined,
-        dueDate: p.due_date ? new Date(p.due_date).getTime() : undefined,
-        number: p.invoice_number || p.number || '',
-        status: (p.status as InvoiceStatus) || 'pending',
-        subtotalAmount: p.subtotal_amount ?? undefined,
-        taxAmount: p.tax_amount ?? undefined,
-        totalAmount: p.total_paid ?? p.totalAmount ?? 0,
-      }));
+      invoices = paymentsRes.readClientPaymentsData as PolarOrder[];
     }
   }
 

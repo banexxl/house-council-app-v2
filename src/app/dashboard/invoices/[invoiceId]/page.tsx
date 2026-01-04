@@ -23,7 +23,7 @@ import { paths } from 'src/paths';
 import { InvoicePdfDialog } from 'src/sections/dashboard/invoice/invoice-pdf-dialog';
 import { InvoicePdfDocument } from 'src/sections/dashboard/invoice/invoice-pdf-document';
 import { InvoicePreview } from 'src/sections/dashboard/invoice/invoice-preview';
-import type { Invoice } from 'src/types/invoice';
+import type { Invoice } from 'src/types/polar-order-types';
 import { getInitials } from 'src/utils/get-initials';
 
 // const useInvoice = (): Invoice | null => {

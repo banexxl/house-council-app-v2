@@ -7,7 +7,7 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import SvgIcon from '@mui/material/SvgIcon';
 
-import type { Invoice } from 'src/types/invoice';
+import type { Invoice } from 'src/types/polar-order-types';
 
 import { InvoicePdfDocument } from './invoice-pdf-document';
 

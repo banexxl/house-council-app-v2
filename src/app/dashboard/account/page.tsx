@@ -8,7 +8,7 @@ import { readBillingInfoFromClientId } from 'src/app/actions/client/client-billi
 import { readAllClientPayments } from 'src/app/actions/client/client-payment-actions';
 import { SubscriptionPlan } from 'src/types/subscription-plan';
 import { ClientBillingInformation } from 'src/types/client-billing-information';
-import { Invoice } from 'src/types/payment';
+import { PolarOrder } from 'src/types/polar-order-types';
 import { readAllClientTeamMembers } from 'src/app/actions/client/client-members';
 import { getAllLogsFromEmail, ServerLog } from 'src/libs/supabase/server-logging';
 
@@ -16,7 +16,7 @@ const Page = async () => {
 
   let clientSubscriptionPlan: SubscriptionPlan | null = null
   let clientBillingInfo: ClientBillingInformation[] | null = null
-  let clientInvoices: Invoice[] | null = null
+  let clientInvoices: PolarOrder[] | null = null
   let allSubscriptions: SubscriptionPlan[] | null = null;
   let allTeamMembers: ClientMember[] | null = null;
   let allLogsFromEmail: ServerLog[] | null = null;

@@ -14,7 +14,7 @@ import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 
 import { Logo } from 'src/components/logo';
-import type { Invoice } from 'src/types/invoice';
+import type { Invoice } from 'src/types/polar-order-types';
 
 interface InvoicePreviewProps {
   invoice: Invoice;

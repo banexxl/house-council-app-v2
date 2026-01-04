@@ -14,28 +14,27 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
 import { AccountPlanIcon } from './account-plan-icon';
-import { Invoice } from 'src/types/payment';
 import { ClientBillingInformation } from 'src/types/client-billing-information';
 import { GenericTable } from 'src/components/generic-table';
 import { SubscriptionPlan } from 'src/types/subscription-plan';
 import { deleteClientBillingInformation } from 'src/app/actions/client/client-billing-actions';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import { PolarOrder } from 'src/types/polar-order-types';
 
 
 interface AccountBillingSettingsProps {
   plan: string;
-  invoices: Invoice[] | undefined | null;
+  invoices: PolarOrder[] | undefined | null;
   billingInfo: ClientBillingInformation[] | null;
   subscriptionPlans: SubscriptionPlan[] | null;
 }
 
 export const AccountBillingSettings: FC<AccountBillingSettingsProps> = (props) => {
   const { plan: currentPlan, invoices = [], billingInfo = [], subscriptionPlans = [] } = props;
-  // Ensure invoices have a non-optional id (GenericTable constraint) by falling back to invoice_number
-  const normalizedInvoices = (invoices || []).map((inv) => ({
-    ...inv,
-    id: inv.id || inv.invoice_number
+  const normalizedInvoices = (invoices || []).map((order) => ({
+    ...order,
+    id: order.id,
   }));
   type NormalizedInvoice = typeof normalizedInvoices[number];
   const [selectedPlan, setSelectedPlan] = useState<string>(currentPlan);
@@ -223,21 +222,12 @@ export const AccountBillingSettings: FC<AccountBillingSettingsProps> = (props) =
               columns={[
                 { key: 'created_at', label: t('account.billing.invoiceDate'), render: (value: any) => value ? format(new Date(value), 'dd MMM yyyy') : 'N/A' },
                 { key: 'invoice_number', label: t('account.billing.invoiceNumber', 'Invoice #') },
-                { key: 'total_paid', label: t('account.billing.invoiceTotal'), render: (value: any) => numeral(value).format('$0,0.00') },
-                { key: 'billing_information', label: t('account.billing.invoiceBillingInfo'), render: (value: any) => value && value.card_number ? `**** ${String(value.card_number).slice(-4)}` : 'N/A' },
-                { key: 'client', label: t('account.billing.invoiceClient'), render: (value: any) => value && value.name ? value.name : 'N/A' }
+                { key: 'total_amount', label: t('account.billing.invoiceTotal'), render: (value: any) => numeral(value).format('$0,0.00') },
+                { key: 'billing_name', label: t('account.billing.invoiceBillingInfo') },
+                { key: 'customer', label: t('account.billing.invoiceClient'), render: (value: any) => value && value.name ? value.name : 'N/A' }
               ]}
               rowActions={[
-                (invoice) => (
-                  <Link
-                    href={invoice.invoice_url || '#'}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    underline="always"
-                  >
-                    {t('account.billing.invoiceView')}
-                  </Link>
-                )
+                () => null
               ]}
               tableTitle={t('account.billing.invoiceHistoryTitle')}
               tableSubtitle={t('account.billing.invoiceHistorySubheader')}
