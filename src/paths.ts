@@ -42,11 +42,6 @@ export const paths = {
       index: '/dashboard/clients',
       details: '/dashboard/clients/',
       new: '/dashboard/clients/new',
-      billingInformation: {
-        index: '/dashboard/clients/billing-information',
-        new: '/dashboard/clients/billing-information/new',
-        details: '/dashboard/clients/billing-information/',
-      },
       clientSettings: {
         index: '/dashboard/clients/client-settings',
         new: '/dashboard/clients/client-settings/new',

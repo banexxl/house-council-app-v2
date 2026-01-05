@@ -14,21 +14,21 @@ import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 
 import { Logo } from 'src/components/logo';
-import type { Invoice } from 'src/types/polar-order-types';
+import type { PolarOrder } from 'src/types/polar-order-types';
 
 interface InvoicePreviewProps {
-  invoice: Invoice;
+  invoice: PolarOrder;
 }
 
 export const InvoicePreview: FC<InvoicePreviewProps> = (props) => {
   const { invoice, ...other } = props;
 
   const items = invoice.items || [];
-  const dueDate = invoice.dueDate && format(invoice.dueDate, 'dd MMM yyyy');
-  const issueDate = invoice.issueDate && format(invoice.issueDate, 'dd MMM yyyy');
-  const subtotalAmount = numeral(invoice.subtotalAmount).format(`${invoice.currency}0,0.00`);
-  const taxAmount = numeral(invoice.taxAmount).format(`${invoice.currency}0,0.00`);
-  const totalAmount = numeral(invoice.totalAmount).format(`${invoice.currency}0,0.00`);
+  const dueDate = invoice.due_amount ? 'Due on receipt' : '';
+  const issueDate = invoice.created_at && format(new Date(invoice.created_at), 'dd MMM yyyy');
+  const subtotalAmount = numeral(invoice.subtotal_amount).format(`${invoice.currency}0,0.00`);
+  const taxAmount = numeral(invoice.tax_amount).format(`${invoice.currency}0,0.00`);
+  const totalAmount = numeral(invoice.total_amount).format(`${invoice.currency}0,0.00`);
 
   return (
     <Card
@@ -65,7 +65,7 @@ export const InvoicePreview: FC<InvoicePreviewProps> = (props) => {
             align="right"
             variant="subtitle2"
           >
-            {invoice.number}
+            {invoice.invoice_number}
           </Typography>
         </div>
       </Stack>
@@ -145,7 +145,7 @@ export const InvoicePreview: FC<InvoicePreviewProps> = (props) => {
             >
               Number
             </Typography>
-            <Typography variant="body2">{invoice.number}</Typography>
+            <Typography variant="body2">{invoice.invoice_number}</Typography>
           </Grid>
         </Grid>
       </Box>
@@ -157,13 +157,13 @@ export const InvoicePreview: FC<InvoicePreviewProps> = (props) => {
           Billed to
         </Typography>
         <Typography variant="body2">
-          {invoice.client.name}
+          {invoice.billing_name}
           <br />
-          {invoice.client.company}
+          {invoice.customer?.email}
           <br />
-          {invoice.client.taxId}
+          {invoice.customer?.tax_id?.join(', ')}
           <br />
-          {invoice.client.address}
+          {`${invoice.billing_address.line1}, ${invoice.billing_address.postal_code} ${invoice.billing_address.city}, ${invoice.billing_address.country}`}
         </Typography>
       </Box>
       <Table sx={{ mt: 4 }}>
@@ -178,14 +178,14 @@ export const InvoicePreview: FC<InvoicePreviewProps> = (props) => {
         </TableHead>
         <TableBody>
           {items.map((item, index) => {
-            const unitAmount = numeral(item.unitAmount).format(`${item.currency}0,0.00`);
-            const totalAmount = numeral(item.totalAmount).format(`${item.currency}0,0.00`);
+            const unitAmount = numeral(item.amount).format(`${invoice.currency}0,0.00`);
+            const totalAmount = numeral(item.amount + item.tax_amount).format(`${invoice.currency}0,0.00`);
 
             return (
               <TableRow key={item.id}>
                 <TableCell>{index + 1}</TableCell>
-                <TableCell>{item.description}</TableCell>
-                <TableCell>{item.quantity}</TableCell>
+                <TableCell>{item.label}</TableCell>
+                <TableCell>1</TableCell>
                 <TableCell>{unitAmount}</TableCell>
                 <TableCell align="right">{totalAmount}</TableCell>
               </TableRow>

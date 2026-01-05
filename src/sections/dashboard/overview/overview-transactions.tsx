@@ -1,24 +1,15 @@
-import { FC, useMemo, useState } from 'react';
+import { FC, MouseEvent, useMemo, useState } from 'react';
 import { format } from 'date-fns';
 import numeral from 'numeral';
 import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
-import CardHeader from '@mui/material/CardHeader';
-import Divider from '@mui/material/Divider';
 import Tab from '@mui/material/Tab';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TablePagination from '@mui/material/TablePagination';
-import TableRow from '@mui/material/TableRow';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 
-import { Scrollbar } from 'src/components/scrollbar';
 import type { SeverityPillColor } from 'src/components/severity-pill';
 import { SeverityPill } from 'src/components/severity-pill';
+import { GenericTable } from 'src/components/generic-table';
 import type { PolarOrder, InvoiceStatus } from 'src/types/polar-order-types';
 import { invoiceStatusTokenMap } from 'src/types/polar-order-types';
 
@@ -55,19 +46,14 @@ export const OverviewTransactions: FC<OverviewTransactionsProps> = ({ invoices }
     setPage(0);
   };
 
-  const handleChangePage = (_: unknown, newPage: number) => setPage(newPage);
+  const handleChangePage = (_: MouseEvent<HTMLButtonElement> | null, newPage: number) => setPage(newPage);
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
 
   return (
-    <Card>
-      <CardHeader
-        title={t('invoice.table.title', 'Latest Transactions')}
-        subheader={t('invoice.table.subtitle', 'Based on the selected period')}
-        sx={{ pb: 0 }}
-      />
+    <>
       <Tabs
         value={statusFilter}
         sx={(theme) => ({
@@ -95,112 +81,106 @@ export const OverviewTransactions: FC<OverviewTransactionsProps> = ({ invoices }
         <Tab label={t(invoiceStatusTokenMap.refunded, 'Refunded')} value="refunded" />
         <Tab label={t(invoiceStatusTokenMap.partially_refunded, 'Partially Refunded')} value="partially_refunded" />
       </Tabs>
-      <Divider />
-      <Scrollbar sx={{ overflowX: 'auto' }} autoHide={false} forceVisible="x">
-        <Box>
-          <Table stickyHeader size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell width={90}>{t('invoice.table.date', 'Date')}</TableCell>
-                <TableCell width={100}>{t('invoice.table.client', 'Client')}</TableCell>
-                <TableCell width={100}>{t('invoice.table.status', 'Status')}</TableCell>
-                <TableCell width={100}>{t('invoice.table.amount', 'Amount')}</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {paginated.map((invoice) => {
-                const issuedAt = new Date(invoice.created_at);
+      <Box sx={{ mt: 2 }}>
+        <GenericTable<PolarOrder>
+          items={filtered}
+          count={filtered.length}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          tableTitle={'invoice.table.title'}
+          tableSubtitle={'invoice.table.subtitle'}
+          dense
+          columns={[
+            {
+              key: 'created_at',
+              label: t('invoice.table.date', 'Date'),
+              render: (value) => {
+                const issuedAt = new Date(value as string);
+                if (Number.isNaN(issuedAt.getTime())) return '-';
                 const createdAtMonth = format(issuedAt, 'LLL').toUpperCase();
                 const createdAtDay = format(issuedAt, 'd');
-                const statusColor = statusColorMap[invoice.status] ?? 'info';
-                const amount = numeral(invoice.total_amount || 0).format('0,0.00');
-                const currency = invoice.currency || '';
+                return (
+                  <Box
+                    sx={{
+                      p: 1,
+                      backgroundColor: (theme) =>
+                        theme.palette.mode === 'dark' ? 'neutral.800' : 'neutral.100',
+                      borderRadius: 2,
+                      maxWidth: 'fit-content',
+                    }}
+                  >
+                    <Typography
+                      align="center"
+                      color="text.primary"
+                      variant="caption"
+                    >
+                      {createdAtMonth}
+                    </Typography>
+                    <Typography
+                      align="center"
+                      color="text.primary"
+                      variant="h6"
+                    >
+                      {createdAtDay}
+                    </Typography>
+                  </Box>
+                );
+              },
+            },
+            {
+              key: 'customer',
+              label: t('invoice.table.client', 'Client'),
+              render: (_value, invoice) => {
                 const clientName = invoice.customer?.name || invoice.customer?.email || '-';
                 const description = invoice.invoice_number ? `#${invoice.invoice_number}` : '';
-                const statusLabel = t(invoiceStatusTokenMap[invoice.status], invoice.status);
-
                 return (
-                  <TableRow
-                    key={invoice.id}
-                    hover
-                    sx={{ '&:last-child td, &:last-child th': { border: 0 }, height: 64 }}
-                  >
-                    <TableCell width={90}>
-                      <Box
-                        sx={{
-                          p: 1,
-                          backgroundColor: (theme) =>
-                            theme.palette.mode === 'dark' ? 'neutral.800' : 'neutral.100',
-                          borderRadius: 2,
-                          maxWidth: 'fit-content',
-                        }}
-                      >
-                        <Typography
-                          align="center"
-                          color="text.primary"
-                          variant="caption"
-                        >
-                          {createdAtMonth}
-                        </Typography>
-                        <Typography
-                          align="center"
-                          color="text.primary"
-                          variant="h6"
-                        >
-                          {createdAtDay}
-                        </Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <Typography variant="subtitle2" noWrap>{clientName}</Typography>
-                        <Typography
-                          color="text.secondary"
-                          variant="body2"
-                          noWrap
-                        >
-                          {description}
-                        </Typography>
-                      </div>
-                    </TableCell>
-                    <TableCell >
-                      <SeverityPill color={statusColor}>{statusLabel}</SeverityPill>
-                    </TableCell>
-                    <TableCell >
-                      <Typography
-                        color="text.primary"
-                        variant="subtitle2"
-                        noWrap
-                      >
-                        {amount} {currency}
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-              {paginated.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={4}>
-                    <Typography color="text.secondary" variant="body2">
-                      {t('invoice.table.empty', 'No transactions yet.')}
+                  <Box>
+                    <Typography variant="subtitle2" noWrap>{clientName}</Typography>
+                    <Typography
+                      color="text.secondary"
+                      variant="body2"
+                      noWrap
+                    >
+                      {description}
                     </Typography>
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </Box>
-      </Scrollbar>
-      <TablePagination
-        component="div"
-        count={filtered.length}
-        page={page}
-        onPageChange={handleChangePage}
-        rowsPerPage={rowsPerPage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-        rowsPerPageOptions={[10, 25, 50]}
-        labelRowsPerPage={t('common.rowsPerPage', 'Rows per page:')}
-      />
-    </Card>
+                  </Box>
+                );
+              },
+            },
+            {
+              key: 'status',
+              label: t('invoice.table.status', 'Status'),
+              render: (value) => {
+                const status = (value || 'pending') as InvoiceStatus;
+                const statusColor = statusColorMap[status] ?? 'info';
+                const statusLabel = t(invoiceStatusTokenMap[status], status);
+                return <SeverityPill color={statusColor}>{statusLabel}</SeverityPill>;
+              },
+            },
+            {
+              key: 'total_amount',
+              label: t('invoice.table.amount', 'Amount'),
+              render: (value, invoice) => {
+                const amount = numeral((value as number) || 0).format('0,0.00');
+                const currency = invoice.currency || '';
+                return (
+                  <Typography
+                    color="text.primary"
+                    variant="subtitle2"
+                    noWrap
+                  >
+                    {amount} {currency}
+                  </Typography>
+                );
+              },
+            },
+          ]}
+          // Single no-op action to keep the actions column empty instead of "N/A"
+          rowActions={[() => null]}
+        />
+      </Box>
+    </>
   );
 };

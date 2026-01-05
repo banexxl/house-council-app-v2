@@ -7,12 +7,12 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import SvgIcon from '@mui/material/SvgIcon';
 
-import type { Invoice } from 'src/types/polar-order-types';
+import type { PolarOrder } from 'src/types/polar-order-types';
 
 import { InvoicePdfDocument } from './invoice-pdf-document';
 
 interface InvoicePdfDialogProps {
-  invoice?: Invoice;
+  invoice?: PolarOrder;
   onClose?: () => void;
   open?: boolean;
 }

@@ -8,14 +8,12 @@ import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 
-import { AccountBillingSettings } from 'src/sections/dashboard/account/account-billing-settings';
 import { AccountGeneralSettings } from 'src/sections/dashboard/account/account-general-settings';
 import { AccountNotificationsSettings } from 'src/sections/dashboard/account/account-notifications-settings';
 import { AccountTeamSettings } from 'src/sections/dashboard/account/account-team-settings';
 import { AccountSecuritySettings } from 'src/sections/dashboard/account/account-security-settings';
 import { Client, ClientMember } from 'src/types/client';
 import { SubscriptionPlan } from 'src/types/subscription-plan';
-import { ClientBillingInformation } from 'src/types/client-billing-information';
 import { PolarOrder } from 'src/types/polar-order-types';
 import { User } from '@supabase/supabase-js';
 import { ServerLog } from 'src/libs/supabase/server-logging';
@@ -26,14 +24,13 @@ export interface AccountProps {
      client: Client;
      userData: User;
      clientSubscriptionPlan: SubscriptionPlan | null;
-     clientBillingInfo: ClientBillingInformation[] | null;
      clientInvoices: PolarOrder[] | undefined | null;
      subscriptionPlans: SubscriptionPlan[] | null;
      allTeamMembers: ClientMember[] | null;
      clientLogs: ServerLog[] | null;
 }
 
-const Account = ({ client, userData, clientSubscriptionPlan, clientBillingInfo, clientInvoices, subscriptionPlans, allTeamMembers, clientLogs }: AccountProps) => {
+const Account = ({ client, userData, clientSubscriptionPlan, clientInvoices, subscriptionPlans, allTeamMembers, clientLogs }: AccountProps) => {
 
      const { t } = useTranslation();
      const [currentTab, setCurrentTab] = useState<string>('general');
@@ -177,14 +174,6 @@ const Account = ({ client, userData, clientSubscriptionPlan, clientBillingInfo, 
                                    <Box sx={{ minWidth: 0 }}>
                                         {currentTab === 'general' && (
                                              <AccountGeneralSettings client={client} />
-                                        )}
-                                        {currentTab === 'billing' && (
-                                             <AccountBillingSettings
-                                                  plan={clientSubscriptionPlan?.id!}
-                                                  invoices={clientInvoices}
-                                                  billingInfo={clientBillingInfo}
-                                                  subscriptionPlans={subscriptionPlans}
-                                             />
                                         )}
                                         {currentTab === 'team' && (
                                              <AccountTeamSettings

@@ -4,10 +4,8 @@ import { getViewer } from 'src/libs/supabase/server-auth';
 import { redirect } from 'next/navigation';
 import { ClientMember } from 'src/types/client';
 import { readAllActiveSubscriptionPlans, readSubscriptionPlanFromClientId } from 'src/app/actions/subscription-plan/subscription-plan-actions';
-import { readBillingInfoFromClientId } from 'src/app/actions/client/client-billing-actions';
 import { readAllClientPayments } from 'src/app/actions/client/client-payment-actions';
 import { SubscriptionPlan } from 'src/types/subscription-plan';
-import { ClientBillingInformation } from 'src/types/client-billing-information';
 import { PolarOrder } from 'src/types/polar-order-types';
 import { readAllClientTeamMembers } from 'src/app/actions/client/client-members';
 import { getAllLogsFromEmail, ServerLog } from 'src/libs/supabase/server-logging';
@@ -15,7 +13,6 @@ import { getAllLogsFromEmail, ServerLog } from 'src/libs/supabase/server-logging
 const Page = async () => {
 
   let clientSubscriptionPlan: SubscriptionPlan | null = null
-  let clientBillingInfo: ClientBillingInformation[] | null = null
   let clientInvoices: PolarOrder[] | null = null
   let allSubscriptions: SubscriptionPlan[] | null = null;
   let allTeamMembers: ClientMember[] | null = null;
@@ -32,7 +29,6 @@ const Page = async () => {
     const [
       { getClientByIdActionSuccess, getClientByIdActionData },
       { readSubscriptionPlanFromClientIdSuccess, subscriptionPlan, readSubscriptionPlanFromClientIdError },
-      { readClientBillingInformationSuccess, readClientBillingInformationData, readClientBillingInformationError },
       { readClientPaymentsSuccess, readClientPaymentsData, readClientPaymentsError },
       { readAllActiveSubscriptionPlansSuccess, activeSubscriptionPlansData, readAllActiveSubscriptionPlansError },
       { readAllClientTeamMembersSuccess, readAllClientTeamMembersError, readAllClientTeamMembersData },
@@ -40,7 +36,6 @@ const Page = async () => {
     ] = await Promise.all([
       readClientByIdAction(client.id),
       readSubscriptionPlanFromClientId(client.id),
-      readBillingInfoFromClientId(client.id),
       readAllClientPayments(client.id),
       readAllActiveSubscriptionPlans(),
       readAllClientTeamMembers(client.id),
@@ -53,10 +48,6 @@ const Page = async () => {
 
     if (readSubscriptionPlanFromClientIdSuccess && subscriptionPlan) {
       clientSubscriptionPlan = subscriptionPlan;
-    }
-
-    if (readClientBillingInformationSuccess && readClientBillingInformationData) {
-      clientBillingInfo = readClientBillingInformationData;
     }
 
     if (readClientPaymentsSuccess && readClientPaymentsData) {
@@ -80,7 +71,6 @@ const Page = async () => {
     client={client!}
     userData={userData!}
     clientSubscriptionPlan={clientSubscriptionPlan!}
-    clientBillingInfo={clientBillingInfo}
     clientInvoices={clientInvoices}
     subscriptionPlans={allSubscriptions!}
     allTeamMembers={allTeamMembers!}

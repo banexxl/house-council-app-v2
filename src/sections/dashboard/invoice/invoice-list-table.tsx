@@ -20,14 +20,14 @@ import { Scrollbar } from 'src/components/scrollbar';
 import type { SeverityPillColor } from 'src/components/severity-pill';
 import { SeverityPill } from 'src/components/severity-pill';
 import { paths } from 'src/paths';
-import type { Invoice, InvoiceStatus } from 'src/types/polar-order-types';
+import type { PolarOrder, InvoiceStatus } from 'src/types/polar-order-types';
 import { getInitials } from 'src/utils/get-initials';
 
 type GroupedInvoices = {
-  [key in InvoiceStatus]: Invoice[];
+  [key in InvoiceStatus]: PolarOrder[];
 };
 
-const groupInvoices = (invoices: Invoice[]): GroupedInvoices => {
+const groupInvoices = (invoices: PolarOrder[]): GroupedInvoices => {
   return invoices.reduce(
     (acc, invoice) => {
       const { status } = invoice;
@@ -38,36 +38,32 @@ const groupInvoices = (invoices: Invoice[]): GroupedInvoices => {
       };
     },
     {
-      cancelled: [],
-      succeeded: [],
       pending: [],
-      processing: [],
-      failed: [],
-      refunded: []
+      paid: [],
+      refunded: [],
+      partially_refunded: [],
     }
   );
 };
 
 const statusColorsMap: Record<InvoiceStatus, SeverityPillColor> = {
-  cancelled: 'error',
-  succeeded: 'success',
   pending: 'warning',
-  processing: 'primary',
-  failed: 'primary',
-  refunded: 'primary'
+  paid: 'success',
+  refunded: 'primary',
+  partially_refunded: 'info',
 };
 
 interface InvoiceRowProps {
-  invoice: Invoice;
+  invoice: PolarOrder;
 }
 
 const InvoiceRow: FC<InvoiceRowProps> = (props) => {
   const { invoice, ...other } = props;
 
   const statusColor = statusColorsMap[invoice.status];
-  const totalAmount = numeral(invoice.totalAmount).format('0,0.00');
-  const issueDate = invoice.issueDate && format(invoice.issueDate, 'dd/MM/yyyy');
-  const dueDate = invoice.dueDate && format(invoice.dueDate, 'dd/MM/yyyy');
+  const totalAmount = numeral(invoice.total_amount).format('0,0.00');
+  const issueDate = invoice.created_at ? format(new Date(invoice.created_at), 'dd/MM/yyyy') : '';
+  const dueDate = ''; // PolarOrder does not currently expose a due date field
 
   return (
     <TableRow
@@ -93,27 +89,27 @@ const InvoiceRow: FC<InvoiceRowProps> = (props) => {
               width: 42,
             }}
           >
-            {getInitials(invoice.client.name)}
+            {getInitials(invoice.customer?.name || invoice.customer?.email || '')}
           </Avatar>
           <div>
             <Typography
               color="text.primary"
               variant="subtitle2"
             >
-              {invoice.number}
+              {invoice.invoice_number}
             </Typography>
             <Typography
               color="text.secondary"
               variant="body2"
             >
-              {invoice.client.name}
+              {invoice.customer?.name || invoice.customer?.email}
             </Typography>
           </div>
         </Stack>
       </TableCell>
       <TableCell>
         <Typography variant="subtitle2">
-          {invoice.currency.code}
+          {invoice.currency}
           {totalAmount}
         </Typography>
       </TableCell>
@@ -160,7 +156,7 @@ InvoiceRow.propTypes = {
 interface InvoiceListTableProps {
   count?: number;
   group?: boolean;
-  items?: Invoice[];
+  items?: PolarOrder[];
   onPageChange?: (event: MouseEvent<HTMLButtonElement> | null, newPage: number) => void;
   onRowsPerPageChange?: (event: ChangeEvent<HTMLInputElement>) => void;
   page?: number;

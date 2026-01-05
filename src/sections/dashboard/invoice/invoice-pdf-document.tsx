@@ -6,7 +6,7 @@ import numeral from 'numeral';
 import { Document, Image, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 import { useTheme } from '@mui/material/styles';
 
-import type { Invoice } from 'src/types/polar-order-types';
+import type { PolarOrder } from 'src/types/polar-order-types';
 
 const useStyles = () => {
   const theme = useTheme();
@@ -122,7 +122,7 @@ const useStyles = () => {
 };
 
 interface InvoicePdfDocumentProps {
-  invoice: Invoice;
+  invoice: PolarOrder;
 }
 
 export const InvoicePdfDocument: FC<InvoicePdfDocumentProps> = (props) => {
@@ -130,11 +130,11 @@ export const InvoicePdfDocument: FC<InvoicePdfDocumentProps> = (props) => {
   const styles = useStyles();
 
   const items = invoice.items || [];
-  const dueDate = invoice.dueDate && format(invoice.dueDate, 'dd MMM yyyy');
-  const issueDate = invoice.issueDate && format(invoice.issueDate, 'dd MMM yyyy');
-  const subtotalAmount = numeral(invoice.subtotalAmount).format(`${invoice.currency}0,0.00`);
-  const taxAmount = numeral(invoice.taxAmount).format(`${invoice.currency}0,0.00`);
-  const totalAmount = numeral(invoice.totalAmount).format(`${invoice.currency}0,0.00`);
+  const dueDate = invoice.due_amount ? 'Due on receipt' : '';
+  const issueDate = invoice.created_at && format(new Date(invoice.created_at), 'dd MMM yyyy');
+  const subtotalAmount = numeral(invoice.subtotal_amount).format(`${invoice.currency}0,0.00`);
+  const taxAmount = numeral(invoice.tax_amount).format(`${invoice.currency}0,0.00`);
+  const totalAmount = numeral(invoice.total_amount).format(`${invoice.currency}0,0.00`);
 
   return (
     <Document>
@@ -152,7 +152,7 @@ export const InvoicePdfDocument: FC<InvoicePdfDocumentProps> = (props) => {
           </View>
           <View>
             <Text style={[styles.h4, styles.uppercase, styles.colorSuccess]}>{invoice.status}</Text>
-            <Text style={styles.subtitle2}>{invoice.number}</Text>
+            <Text style={styles.subtitle2}>{invoice.invoice_number}</Text>
           </View>
         </View>
         <View style={styles.company}>
@@ -181,15 +181,15 @@ export const InvoicePdfDocument: FC<InvoicePdfDocumentProps> = (props) => {
           </View>
           <View>
             <Text style={[styles.subtitle2, styles.gutterBottom]}>Number</Text>
-            <Text style={styles.body2}>{invoice.number}</Text>
+            <Text style={styles.body2}>{invoice.invoice_number}</Text>
           </View>
         </View>
         <View style={styles.billing}>
           <Text style={[styles.subtitle2, styles.gutterBottom]}>Billed to</Text>
-          <Text style={styles.body2}>Tracey Herman</Text>
-          <Text style={styles.body2}>Countdown Grey Lynn</Text>
-          <Text style={styles.body2}>6934656584231</Text>
-          <Text style={styles.body2}>271 Richmond Rd, Grey Lynn, Auckland 1022, New Zealand</Text>
+          <Text style={styles.body2}>{invoice.billing_name}</Text>
+          <Text style={styles.body2}>{invoice.customer?.email}</Text>
+          <Text style={styles.body2}>{invoice.customer?.tax_id?.join(', ')}</Text>
+          <Text style={styles.body2}>{`${invoice.billing_address.line1}, ${invoice.billing_address.postal_code} ${invoice.billing_address.city}, ${invoice.billing_address.country}`}</Text>
         </View>
         <View style={styles.items}>
           <View style={styles.itemRow}>
@@ -210,8 +210,8 @@ export const InvoicePdfDocument: FC<InvoicePdfDocumentProps> = (props) => {
             </View>
           </View>
           {items.map((item, index) => {
-            const unitAmount = numeral(item.unitAmount).format(`${item.currency}0,0.00`);
-            const totalAmount = numeral(item.totalAmount).format(`${item.currency}0,0.00`);
+            const unitAmount = numeral(item.amount).format(`${invoice.currency}0,0.00`);
+            const totalAmount = numeral(item.amount + item.tax_amount).format(`${invoice.currency}0,0.00`);
 
             return (
               <View
@@ -222,10 +222,10 @@ export const InvoicePdfDocument: FC<InvoicePdfDocumentProps> = (props) => {
                   <Text style={styles.body2}>{index + 1}</Text>
                 </View>
                 <View style={styles.itemDescription}>
-                  <Text style={styles.body2}>{item.description}</Text>
+                  <Text style={styles.body2}>{item.label}</Text>
                 </View>
                 <View style={styles.itemQty}>
-                  <Text style={styles.body2}>{item.quantity}</Text>
+                  <Text style={styles.body2}>1</Text>
                 </View>
                 <View style={styles.itemUnitAmount}>
                   <Text style={[styles.body2, styles.alignRight]}>{unitAmount}</Text>
