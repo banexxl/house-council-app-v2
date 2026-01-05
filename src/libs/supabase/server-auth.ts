@@ -8,7 +8,7 @@ import { Admin } from 'src/types/admin'
 import { Feature } from 'src/types/base-entity'
 import { cache } from 'react';
 import { TABLES } from 'src/libs/supabase/tables';
-import { updateTenantActivityStatus } from 'src/app/actions/tenant/tenant-actions';
+import { updateTenantActivityStatus, getClientIdFromTenantBuilding } from 'src/app/actions/tenant/tenant-actions';
 
 export type UserDataCombined = {
      client: Client | null
@@ -111,11 +111,23 @@ export const getViewer = cache(async (): Promise<UserDataCombined> => {
 
      // Resolve client id for feature access (client, member, or tenant via building)
      let featureClientId: string | null = client?.id ?? clientMember?.client_id ?? null;
-     if (!featureClientId && tenant?.apartment?.building?.id) {
-          const building = await maybeSingle<{ client_id: string | null }>(
-               db.from(TABLES.BUILDINGS).select('client_id').eq('id', tenant.apartment.building.id),
-          );
-          featureClientId = building?.client_id ?? null;
+     if (!featureClientId && tenant) {
+          // First, try to resolve via joined apartment/building (if relation is configured)
+          if (tenant.apartment?.building?.id) {
+               const building = await maybeSingle<{ client_id: string | null }>(
+                    db.from(TABLES.BUILDINGS).select('client_id').eq('id', tenant.apartment.building.id),
+               );
+               featureClientId = building?.client_id ?? null;
+          }
+
+          // Fallback: use robust helper that walks TENANTS -> APARTMENTS -> BUILDINGS
+          if (!featureClientId) {
+               const { success, data } = await getClientIdFromTenantBuilding(tenant.id);
+               if (success && data) {
+                    featureClientId = data;
+               }
+               console.log('featureClientId via getClientIdFromTenantBuilding', featureClientId);
+          }
      }
 
      let allowedFeatures: Feature[] = [];
@@ -129,7 +141,6 @@ export const getViewer = cache(async (): Promise<UserDataCombined> => {
                     .eq('client_id', featureClientId),
           );
           subscriptionPlanId = clientSubscription?.subscription_id ?? null;
-
           if (subscriptionPlanId) {
                const { data: featureLinks, error: featureLinksError } = await db
                     .from(TABLES.SUBSCRIPTION_PLANS_FEATURES)
@@ -149,6 +160,7 @@ export const getViewer = cache(async (): Promise<UserDataCombined> => {
 
                          if (!featuresError && Array.isArray(featuresData)) {
                               allowedFeatures = featuresData as Feature[];
+
                               allowedFeatureSlugs = allowedFeatures
                                    .map((f) => f.slug)
                                    .filter(Boolean) as string[];
@@ -160,7 +172,7 @@ export const getViewer = cache(async (): Promise<UserDataCombined> => {
 
      // Tenants inherit client features except location/tenant management
      if (tenant && !client && !clientMember && allowedFeatures.length > 0) {
-          const tenantBlocked = new Set(['locations', 'tenants', 'geo-location-management']);
+          const tenantBlocked = new Set(['geo-location-management']);
           allowedFeatures = allowedFeatures.filter((f) => !tenantBlocked.has((f.slug || '').toLowerCase()));
           allowedFeatureSlugs = allowedFeatures
                .map((f) => f.slug)
