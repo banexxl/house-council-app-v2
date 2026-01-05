@@ -224,8 +224,19 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
       {
         title: t(tokens.nav.announcements),
         featureKey: 'announcements',
-        roles: ["admin", "client", "clientMember", "tenant"],
+        roles: ["admin", "client", "clientMember"],
         path: paths.dashboard.announcements.index,
+        icon: (
+          <SvgIcon fontSize="small">
+            <AnnouncementIcon />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: t(tokens.nav.announcements),
+        featureKey: 'announcements',
+        roles: ["tenant"],
+        path: paths.dashboard.announcements.tenant,
         icon: (
           <SvgIcon fontSize="small">
             <AnnouncementIcon />
