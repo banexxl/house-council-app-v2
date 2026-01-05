@@ -93,7 +93,7 @@ export const tenantInitialValues: Tenant = {
      notes: '',
      created_at: new Date().toISOString(),
      updated_at: new Date().toISOString(),
-     email_opt_in: false,
+     email_opt_in: true,
      sms_opt_in: false,
      viber_opt_in: false,
      whatsapp_opt_in: false,

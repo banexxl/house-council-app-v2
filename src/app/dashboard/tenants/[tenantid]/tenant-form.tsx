@@ -203,14 +203,14 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                               : t('tenants.tenantCreate')}
                          breadcrumbs={[
                               { title: t('nav.adminDashboard'), href: paths.dashboard.index },
-                         { title: t('tenants.tenantsList'), href: paths.dashboard.tenants.index },
-                           {
-                                    title: tenantData
-                                         ? `${t('tenants.tenantEdit')}: ${tenantData.first_name} ${tenantData.last_name}`
-                                         : t('tenants.tenantCreate')
-                           }
-                          ]}
-                          actionComponent={
+                              { title: t('tenants.tenantsList'), href: paths.dashboard.tenants.index },
+                              {
+                                   title: tenantData
+                                        ? `${t('tenants.tenantEdit')}: ${tenantData.first_name} ${tenantData.last_name}`
+                                        : t('tenants.tenantCreate')
+                              }
+                         ]}
+                         actionComponent={
                               tenantData?.id ? (
                                    <Stack
                                         direction={{ xs: 'column', sm: 'row' }}
@@ -250,8 +250,8 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                         {t('tenants.tenantsList')}
                                    </Button>
                               )
-                          }
-                     />
+                         }
+                    />
                     <Card>
                          <CardHeader title={t('common.formBasicInfo')} sx={{ pb: 0 }} />
                          <CardContent>
@@ -500,7 +500,7 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                                                       name="sms_opt_in"
                                                                       checked={formik.values.sms_opt_in}
                                                                       onChange={(e) => formik.setFieldValue('sms_opt_in', e.target.checked)}
-                                                                      disabled={!apartmentSelected || !formik.values.phone_number}
+                                                                      disabled//={!apartmentSelected || !formik.values.phone_number}
                                                                  />
                                                                  <Typography variant="body2">{t('tenants.tenantOptInSms')}</Typography>
                                                             </Box>
@@ -509,7 +509,7 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                                                       name="viber_opt_in"
                                                                       checked={formik.values.viber_opt_in}
                                                                       onChange={(e) => formik.setFieldValue('viber_opt_in', e.target.checked)}
-                                                                      disabled={!apartmentSelected || !formik.values.phone_number}
+                                                                      disabled//={!apartmentSelected || !formik.values.phone_number}
                                                                  />
                                                                  <Typography variant="body2">{t('tenants.tenantOptInViber')}</Typography>
                                                             </Box>
@@ -679,7 +679,7 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                               >
                                    {t('common.btnCancel')}
                               </Button>
-                        </Stack>
+                         </Stack>
 
                     </Card>
                </Stack>
