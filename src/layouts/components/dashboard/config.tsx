@@ -321,7 +321,7 @@ const filterItemsByFeature = (items: NavItem[], role: Role, features?: Set<strin
   items
     .map((item) => {
       const children = item.items ? filterItemsByFeature(item.items, role, features) : undefined;
-      const featureAllowed = role === 'admin' || !features || !item.featureKey || isFeatureAllowed(item.featureKey, features);
+      const featureAllowed = role === 'admin' || role === 'tenant' || !features || !item.featureKey || isFeatureAllowed(item.featureKey, features);
       const anyChild = !!(children && children.length);
 
       if (!featureAllowed && !anyChild) return null;
@@ -340,10 +340,7 @@ const filterByRole = (sections: NavSection[], role: Role, features?: Set<string>
     .map((section) => {
       if (!section.roles.includes(role)) return null;
       const itemsByRole = filterItemsByRole(section.items, role);
-      console.log('itemsbyrole', itemsByRole);
-
       const items = filterItemsByFeature(itemsByRole, role, features);
-      console.log('itemsbyfeature', items);
       if (!items.length) return null;
       return { ...section, items };
     })

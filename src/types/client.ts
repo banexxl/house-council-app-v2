@@ -54,6 +54,8 @@ export interface Client {
   email_opt_in?: boolean;
   viber_opt_in?: boolean;
   whatsapp_opt_in?: boolean;
+  // Derived field: name of active subscription plan (via tblClient_Subscription -> tblSubscriptionPlans)
+  subscription_plan_name?: string | null;
 }
 
 export interface ClientLog {

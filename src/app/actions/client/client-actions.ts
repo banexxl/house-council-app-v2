@@ -292,18 +292,79 @@ export const createOrUpdateClientAction = async (
 
 export const readAllClientsAction = async (): Promise<{
      getAllClientsActionSuccess: boolean;
-     getAllClientsActionData?: Client[];
+     getAllClientsActionData?: (Client & { subscription_plan_name?: string | null })[];
      getAllClientsActionError?: string;
 }> => {
      const supabase = await useServerSideSupabaseAnonClient();
 
      try {
-          const { data, error } = await supabase.from(TABLES.CLIENTS).select('*');
+          const { data: clients, error } = await supabase
+               .from(TABLES.CLIENTS)
+               .select('*');
           if (error) throw error;
+
+          const baseClients = (clients ?? []) as Client[];
+
+          if (!baseClients.length) {
+               return {
+                    getAllClientsActionSuccess: true,
+                    getAllClientsActionData: [],
+               };
+          }
+
+          const clientIds = baseClients.map((c) => c.id).filter(Boolean);
+
+          // Fetch mapping client_id -> subscription_plan_id from tblClient_Subscription
+          const { data: clientSubs, error: clientSubsError } = await supabase
+               .from(TABLES.CLIENT_SUBSCRIPTION)
+               .select('client_id, subscription_id')
+               .in('client_id', clientIds);
+
+          if (clientSubsError) throw clientSubsError;
+
+          const planIds = Array.from(
+               new Set(
+                    (clientSubs ?? [])
+                         .map((row: any) => row?.subscription_id)
+                         .filter(Boolean)
+               )
+          );
+
+          let planNameById: Record<string, string> = {};
+
+          if (planIds.length > 0) {
+               const { data: plans, error: plansError } = await supabase
+                    .from(TABLES.SUBSCRIPTION_PLANS)
+                    .select('id, name')
+                    .in('id', planIds);
+
+               if (plansError) throw plansError;
+
+               planNameById = (plans ?? []).reduce((acc: Record<string, string>, row: any) => {
+                    if (row && row.id) {
+                         acc[row.id] = row.name;
+                    }
+                    return acc;
+               }, {});
+          }
+
+          const planIdByClientId: Record<string, string | null> = {};
+          for (const row of clientSubs ?? []) {
+               const r: any = row;
+               if (r.client_id) {
+                    planIdByClientId[r.client_id] = r.subscription_id ?? null;
+               }
+          }
+
+          const enriched = baseClients.map((c) => {
+               const planId = planIdByClientId[c.id] ?? null;
+               const subscription_plan_name = planId ? planNameById[planId] ?? null : null;
+               return { ...c, subscription_plan_name };
+          });
 
           return {
                getAllClientsActionSuccess: true,
-               getAllClientsActionData: data as Client[],
+               getAllClientsActionData: enriched,
           };
      } catch (error) {
           const message = error instanceof Error ? error.message : 'Unknown error';
@@ -640,7 +701,6 @@ export const readAllTenantsFromClientIdAction = async (client_id: string): Promi
                     )
                `)
                .in('apartment_id', apartmentIds);
-          console.log('tenants', tenants);
 
           if (tenantsError) {
                log(`readAllTenantsFromClientIdAction tenants error for client_id ${client_id}: ${tenantsError.message}`, 'error');

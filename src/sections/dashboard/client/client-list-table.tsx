@@ -19,6 +19,7 @@ import { toast } from 'react-hot-toast';
 interface ClientListTableProps { items?: Client[]; }
 
 export const ClientListTable: FC<ClientListTableProps> = ({ items = [] }) => {
+
   const { t } = useTranslation();
   const router = useRouter();
   const [filters, setFilters] = useState<{ search?: string; client_type?: string; client_status?: string; is_verified?: string }>({});
@@ -46,7 +47,7 @@ export const ClientListTable: FC<ClientListTableProps> = ({ items = [] }) => {
           c.address_2,
           c.mobile_phone,
           c.phone,
-          c.id
+          c.id,
         ].filter(Boolean).map(v => String(v).toLowerCase()).join(' ');
         if (!haystack.includes(search)) return false;
       }
@@ -122,6 +123,14 @@ export const ClientListTable: FC<ClientListTableProps> = ({ items = [] }) => {
             key: 'client_status',
             label: t('clients.clientStatus'),
             render: (value) => t(clientStatusMapping[value as keyof typeof clientStatusMapping])
+          },
+          {
+            key: 'subscription_plan_name',
+            label: t('subscriptionPlans.subscriptionPlanName'),
+            render: (value) => {
+              const text = value == null ? '' : String(value);
+              return text.trim().length > 0 ? text : 'N/A';
+            },
           },
           {
             key: 'is_verified',
