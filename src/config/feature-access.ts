@@ -1,9 +1,9 @@
 export const FEATURE_ACCESS_MAP: Record<string, string[]> = {
      // canonical -> accepted subscription slugs
-     locations: ['locations', 'geo-location-management'],
-     buildings: ['buildings', 'geo-location-management'],
-     apartments: ['apartments', 'geo-location-management'],
-     tenants: ['tenants', 'geo-location-management'],
+     locations: ['geo-location-management'],
+     buildings: ['geo-location-management'],
+     apartments: ['geo-location-management'],
+     tenants: ['geo-location-management'],
      announcements: ['announcements', 'announcements-notifications'],
      calendar: ['calendar', 'event-calendar'],
      polls: ['polls', 'voting-polls'],
