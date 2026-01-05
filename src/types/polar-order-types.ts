@@ -31,6 +31,7 @@ export interface PolarOrder {
   id: string;
   created_at: string;
   modified_at: string;
+  client_id: string;
   status: PolarOrderStatus;
   paid: boolean;
   subtotal_amount: number;

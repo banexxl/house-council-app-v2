@@ -1,5 +1,6 @@
 import type { ChangeEvent, FC, FormEvent } from 'react';
 import { useCallback, useRef } from 'react';
+import dayjs from 'dayjs';
 import PropTypes from 'prop-types';
 import SearchIcon from '@mui/icons-material/Search';
 import XIcon from '@untitled-ui/icons-react/build/esm/X';
@@ -23,15 +24,6 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { Scrollbar } from 'src/components/scrollbar';
 import type { InvoiceStatus } from 'src/types/polar-order-types';
 
-const clients: string[] = [
-  'Blind Spots Inc.',
-  'Dispatcher Inc.',
-  'ACME SRL',
-  'Novelty I.S',
-  'Beauty Clinic SRL',
-  'Division Inc.',
-];
-
 export interface Filters {
   query?: string;
   startDate?: Date;
@@ -42,6 +34,7 @@ export interface Filters {
 
 interface InvoiceListSidebarProps {
   container?: HTMLDivElement | null;
+  clients?: { id: string; name: string }[];
   filters?: Filters;
   group?: boolean;
   onClose?: () => void;
@@ -53,6 +46,7 @@ interface InvoiceListSidebarProps {
 export const InvoiceListSidebar: FC<InvoiceListSidebarProps> = (props) => {
   const {
     container,
+    clients = [],
     filters = {},
     group,
     onClose,
@@ -76,7 +70,15 @@ export const InvoiceListSidebar: FC<InvoiceListSidebarProps> = (props) => {
   );
 
   const handleStartDateChange = useCallback(
-    (date: Date | null): void => {
+    (value: any): void => {
+      const date: Date | null = value
+        ? value instanceof Date
+          ? value
+          : typeof value?.toDate === 'function'
+            ? value.toDate()
+            : null
+        : null;
+
       const newFilters: Filters = {
         ...filters,
         startDate: date || undefined,
@@ -93,7 +95,15 @@ export const InvoiceListSidebar: FC<InvoiceListSidebarProps> = (props) => {
   );
 
   const handleEndDateChange = useCallback(
-    (date: Date | null): void => {
+    (value: any): void => {
+      const date: Date | null = value
+        ? value instanceof Date
+          ? value
+          : typeof value?.toDate === 'function'
+            ? value.toDate()
+            : null
+        : null;
+
       const newFilters: Filters = {
         ...filters,
         endDate: date || undefined,
@@ -183,18 +193,18 @@ export const InvoiceListSidebar: FC<InvoiceListSidebarProps> = (props) => {
             Issue date
           </FormLabel>
           <Stack spacing={2}>
-            {/* <DatePicker
+            <DatePicker
               format="dd/MM/yyyy"
               label="From"
               onChange={handleStartDateChange}
-              value={filters.startDate || null}
+              value={filters.startDate ? dayjs(filters.startDate) : null}
             />
             <DatePicker
               format="dd/MM/yyyy"
               label="To"
               onChange={handleEndDateChange}
-              value={filters.endDate || null}
-            /> */}
+              value={filters.endDate ? dayjs(filters.endDate) : null}
+            />
           </Stack>
         </div>
         <div>
@@ -224,7 +234,7 @@ export const InvoiceListSidebar: FC<InvoiceListSidebarProps> = (props) => {
                 }}
               >
                 {clients.map((client) => {
-                  const isChecked = filters.clients?.includes(client);
+                  const isChecked = filters.clients?.includes(client.id);
 
                   return (
                     <FormControlLabel
@@ -234,9 +244,9 @@ export const InvoiceListSidebar: FC<InvoiceListSidebarProps> = (props) => {
                           onChange={handleClientToggle}
                         />
                       }
-                      key={client}
-                      label={client}
-                      value={client}
+                      key={client.id}
+                      label={client.name}
+                      value={client.id}
                     />
                   );
                 })}
@@ -323,6 +333,7 @@ export const InvoiceListSidebar: FC<InvoiceListSidebarProps> = (props) => {
 
 InvoiceListSidebar.propTypes = {
   container: PropTypes.any,
+  clients: PropTypes.array,
   // @ts-ignore
   filters: PropTypes.object,
   group: PropTypes.bool,

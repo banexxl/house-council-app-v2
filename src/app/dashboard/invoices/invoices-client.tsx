@@ -1,7 +1,7 @@
 "use client";
 
 import type { ChangeEvent, MouseEvent } from 'react';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import FilterFunnel01Icon from '@untitled-ui/icons-react/build/esm/FilterFunnel01';
 import PlusIcon from '@untitled-ui/icons-react/build/esm/Plus';
 import Box from '@mui/material/Box';
@@ -19,6 +19,8 @@ import { InvoiceListSidebar } from 'src/sections/dashboard/invoice/invoice-list-
 import { InvoiceListSummary } from 'src/sections/dashboard/invoice/invoice-list-summary';
 import { InvoiceListTable } from 'src/sections/dashboard/invoice/invoice-list-table';
 import type { InvoiceStatus, PolarOrder } from 'src/types/polar-order-types';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 
 interface Filters {
      clients?: string[];
@@ -82,8 +84,12 @@ const useInvoicesSearch = () => {
 interface InvoicesClientProps {
      invoices: PolarOrder[];
 }
+interface InvoiceClientOption {
+     id: string;
+     name: string;
+}
 
-export const InvoicesClient = ({ invoices }: InvoicesClientProps) => {
+export const InvoicesClient = ({ invoices, invoiceClients }: InvoicesClientProps & { invoiceClients: InvoiceClientOption[] }) => {
      const rootRef = useRef<HTMLDivElement | null>(null);
      const lgUp = useMediaQuery((theme: Theme) => theme.breakpoints.up('lg'));
      const invoicesSearch = useInvoicesSearch();
@@ -102,94 +108,140 @@ export const InvoicesClient = ({ invoices }: InvoicesClientProps) => {
           setOpenSidebar(false);
      }, []);
 
-     // TODO: Wire `invoices` into InvoiceListSummary and InvoiceListTable when ready.
+     const { paginatedInvoices, totalInvoicesCount } = useMemo(() => {
+          const { filters, page, rowsPerPage } = invoicesSearch.state;
+
+          let filtered = invoices;
+
+          if (filters.query) {
+               const query = filters.query.toLowerCase();
+               filtered = filtered.filter((invoice) =>
+                    invoice.invoice_number?.toLowerCase().includes(query)
+               );
+          }
+
+          if (filters.startDate) {
+               filtered = filtered.filter((invoice) => {
+                    const createdAt = new Date(invoice.created_at);
+                    return createdAt >= filters.startDate!;
+               });
+          }
+
+          if (filters.endDate) {
+               filtered = filtered.filter((invoice) => {
+                    const createdAt = new Date(invoice.created_at);
+                    return createdAt <= filters.endDate!;
+               });
+          }
+
+          if (filters.clients && filters.clients.length > 0) {
+               const selectedClientIds = new Set(filters.clients);
+               filtered = filtered.filter((invoice) => selectedClientIds.has(invoice.client_id));
+          }
+
+          if (filters.status) {
+               filtered = filtered.filter((invoice) => invoice.status === filters.status);
+          }
+
+          const total = filtered.length;
+          const start = page * rowsPerPage;
+          const end = start + rowsPerPage;
+
+          return {
+               paginatedInvoices: filtered.slice(start, end),
+               totalInvoicesCount: total,
+          };
+     }, [invoices, invoicesSearch.state]);
 
      return (
           <>
                <Seo title="Dashboard: Invoice List" />
                <Divider />
-               <Box
-                    component="main"
-                    sx={{
-                         display: 'flex',
-                         flex: '1 1 auto',
-                         overflow: 'hidden',
-                         position: 'relative',
-                    }}
-               >
+               <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <Box
-                         ref={rootRef}
+                         component="main"
                          sx={{
-                              bottom: 0,
                               display: 'flex',
-                              left: 0,
-                              position: 'absolute',
-                              right: 0,
-                              top: 0,
+                              flex: '1 1 auto',
+                              overflow: 'hidden',
+                              position: 'relative',
                          }}
                     >
-                         <InvoiceListSidebar
-                              container={rootRef.current}
-                              filters={invoicesSearch.state.filters}
-                              group={group}
-                              onFiltersChange={invoicesSearch.handleFiltersChange}
-                              onClose={handleFiltersClose}
-                              onGroupChange={handleGroupChange}
-                              open={openSidebar}
-                         />
-                         <InvoiceListContainer open={openSidebar}>
-                              <Stack spacing={4}>
-                                   <Stack
-                                        alignItems="flex-start"
-                                        direction="row"
-                                        justifyContent="space-between"
-                                        spacing={3}
-                                   >
-                                        <div>
-                                             <Typography variant="h4">Invoices</Typography>
-                                        </div>
+                         <Box
+                              ref={rootRef}
+                              sx={{
+                                   bottom: 0,
+                                   display: 'flex',
+                                   left: 0,
+                                   position: 'absolute',
+                                   right: 0,
+                                   top: 0,
+                              }}
+                         >
+                              <InvoiceListSidebar
+                                   container={rootRef.current}
+                                   filters={invoicesSearch.state.filters}
+                                   clients={invoiceClients}
+                                   group={group}
+                                   onFiltersChange={invoicesSearch.handleFiltersChange}
+                                   onClose={handleFiltersClose}
+                                   onGroupChange={handleGroupChange}
+                                   open={openSidebar}
+                              />
+                              <InvoiceListContainer open={openSidebar}>
+                                   <Stack spacing={4}>
                                         <Stack
-                                             alignItems="center"
+                                             alignItems="flex-start"
                                              direction="row"
-                                             spacing={1}
+                                             justifyContent="space-between"
+                                             spacing={3}
                                         >
-                                             <Button
-                                                  color="inherit"
-                                                  startIcon={
-                                                       <SvgIcon>
-                                                            <FilterFunnel01Icon />
-                                                       </SvgIcon>
-                                                  }
-                                                  onClick={handleFiltersToggle}
+                                             <div>
+                                                  <Typography variant="h4">Invoices</Typography>
+                                             </div>
+                                             <Stack
+                                                  alignItems="center"
+                                                  direction="row"
+                                                  spacing={1}
                                              >
-                                                  Filters
-                                             </Button>
-                                             <Button
-                                                  startIcon={
-                                                       <SvgIcon>
-                                                            <PlusIcon />
-                                                       </SvgIcon>
-                                                  }
-                                                  variant="contained"
-                                             >
-                                                  New
-                                             </Button>
+                                                  <Button
+                                                       color="inherit"
+                                                       startIcon={
+                                                            <SvgIcon>
+                                                                 <FilterFunnel01Icon />
+                                                            </SvgIcon>
+                                                       }
+                                                       onClick={handleFiltersToggle}
+                                                  >
+                                                       Filters
+                                                  </Button>
+                                                  <Button
+                                                       startIcon={
+                                                            <SvgIcon>
+                                                                 <PlusIcon />
+                                                            </SvgIcon>
+                                                       }
+                                                       variant="contained"
+                                                  >
+                                                       New
+                                                  </Button>
+                                             </Stack>
                                         </Stack>
+                                        <InvoiceListSummary invoices={invoices} />
+                                        <InvoiceListTable
+                                             count={totalInvoicesCount}
+                                             group={group}
+                                             items={paginatedInvoices}
+                                             onPageChange={invoicesSearch.handlePageChange}
+                                             onRowsPerPageChange={invoicesSearch.handleRowsPerPageChange}
+                                             page={invoicesSearch.state.page}
+                                             rowsPerPage={invoicesSearch.state.rowsPerPage}
+                                        />
                                    </Stack>
-                                   <InvoiceListSummary />
-                                   <InvoiceListTable
-                                        count={invoices.length}
-                                        group={group}
-                                        items={invoices}
-                                        onPageChange={invoicesSearch.handlePageChange}
-                                        onRowsPerPageChange={invoicesSearch.handleRowsPerPageChange}
-                                        page={invoicesSearch.state.page}
-                                        rowsPerPage={invoicesSearch.state.rowsPerPage}
-                                   />
-                              </Stack>
-                         </InvoiceListContainer>
+                              </InvoiceListContainer>
+                         </Box>
                     </Box>
-               </Box>
+               </LocalizationProvider>
           </>
      );
 };

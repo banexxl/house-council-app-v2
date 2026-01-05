@@ -85,19 +85,6 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
               </SvgIcon>
             ),
           },
-          {
-            title: t(tokens.nav.billingInformation),
-            roles: ["admin"],
-            icon: (
-              <SvgIcon fontSize="small">
-                <Users03Icon />
-              </SvgIcon>
-            ),
-            items: [
-              { title: t(tokens.nav.list), path: paths.dashboard.clients.billingInformation.index, roles: ["admin"] },
-              { title: t(tokens.nav.create), path: paths.dashboard.clients.billingInformation.new, roles: ["admin"] },
-            ],
-          },
         ],
       },
       {
@@ -122,6 +109,20 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
             <SettingsIcon />
           </SvgIcon>
         ),
+      },
+      //Invoices
+      {
+        title: t(tokens.nav.invoiceList),
+        roles: ["admin"],
+        icon: (
+          <SvgIcon fontSize="small">
+            <ReceiptCheckIcon />
+          </SvgIcon>
+        ),
+        items: [
+          { title: t(tokens.nav.list), path: paths.dashboard.invoices.index, roles: ["admin"] },
+          { title: t(tokens.nav.create), path: paths.dashboard.invoices.details, roles: ["admin"] },
+        ],
       }
     ],
   },
