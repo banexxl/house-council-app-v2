@@ -51,7 +51,7 @@ export const InvoicePreview: FC<InvoicePreviewProps> = (props) => {
           >
             <Logo url='/assets/logo-icons/1-01.png' alt='/assets/no-image.png' />
           </Box>
-          <Typography variant="subtitle2">www.devias.io</Typography>
+          <Typography variant="subtitle2">nest-link.app</Typography>
         </div>
         <div>
           <Typography
@@ -102,9 +102,9 @@ export const InvoicePreview: FC<InvoicePreviewProps> = (props) => {
               align="right"
               variant="body2"
             >
-              accounts@devias.io
+              support@nest-link.app
               <br />
-              (+40) 652 3456 23
+              (+381) 66 415651
             </Typography>
           </Grid>
         </Grid>

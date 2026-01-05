@@ -2,6 +2,7 @@
 
 import type { ChangeEvent, MouseEvent } from 'react';
 import { useCallback, useMemo, useRef, useState } from 'react';
+import dayjs from 'dayjs';
 import FilterFunnel01Icon from '@untitled-ui/icons-react/build/esm/FilterFunnel01';
 import PlusIcon from '@untitled-ui/icons-react/build/esm/Plus';
 import Box from '@mui/material/Box';
@@ -113,6 +114,9 @@ export const InvoicesClient = ({ invoices, invoiceClients }: InvoicesClientProps
 
           let filtered = invoices;
 
+          const startDay = filters.startDate ? dayjs(filters.startDate).startOf('day') : null;
+          const endDay = filters.endDate ? dayjs(filters.endDate).endOf('day') : null;
+
           if (filters.query) {
                const query = filters.query.toLowerCase();
                filtered = filtered.filter((invoice) =>
@@ -120,17 +124,17 @@ export const InvoicesClient = ({ invoices, invoiceClients }: InvoicesClientProps
                );
           }
 
-          if (filters.startDate) {
+          if (startDay) {
                filtered = filtered.filter((invoice) => {
-                    const createdAt = new Date(invoice.created_at);
-                    return createdAt >= filters.startDate!;
+                    const createdAt = dayjs(invoice.created_at);
+                    return !createdAt.isBefore(startDay);
                });
           }
 
-          if (filters.endDate) {
+          if (endDay) {
                filtered = filtered.filter((invoice) => {
-                    const createdAt = new Date(invoice.created_at);
-                    return createdAt <= filters.endDate!;
+                    const createdAt = dayjs(invoice.created_at);
+                    return !createdAt.isAfter(endDay);
                });
           }
 

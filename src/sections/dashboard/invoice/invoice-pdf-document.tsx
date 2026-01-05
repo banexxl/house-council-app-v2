@@ -148,7 +148,7 @@ export const InvoicePdfDocument: FC<InvoicePdfDocumentProps> = (props) => {
               source="/assets/logo.jpg"
               style={styles.brand}
             />
-            <Text style={styles.h6}>www.devias.io</Text>
+            <Text style={styles.h6}>nest-link.app</Text>
           </View>
           <View>
             <Text style={[styles.h4, styles.uppercase, styles.colorSuccess]}>{invoice.status}</Text>

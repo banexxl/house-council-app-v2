@@ -59,10 +59,12 @@ interface InvoiceRowProps {
 
 const InvoiceRow: FC<InvoiceRowProps> = (props) => {
   const { invoice, ...other } = props;
+  console.log('invoice', invoice);
 
   const statusColor = statusColorsMap[invoice.status];
   const totalAmount = numeral(invoice.total_amount).format('0,0.00');
   const issueDate = invoice.created_at ? format(new Date(invoice.created_at), 'dd/MM/yyyy') : '';
+  const issueTime = invoice.created_at ? format(new Date(invoice.created_at), 'HH:mm') : '';
   const dueDate = ''; // PolarOrder does not currently expose a due date field
 
   return (
@@ -119,7 +121,7 @@ const InvoiceRow: FC<InvoiceRowProps> = (props) => {
           color="text.secondary"
           variant="body2"
         >
-          {issueDate}
+          {issueDate}{issueTime ? ` • ${issueTime}` : ''}
         </Typography>
       </TableCell>
       <TableCell>
