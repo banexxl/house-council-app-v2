@@ -15,11 +15,10 @@ import Typography from '@mui/material/Typography';
 import { RouterLink } from 'src/components/router-link';
 import { Seo } from 'src/components/seo';
 import { paths } from 'src/paths';
-// import { InvoicePdfDialog } from 'src/sections/dashboard/invoice/invoice-pdf-dialog';
-// import { InvoicePdfDocument } from 'src/sections/dashboard/invoice/invoice-pdf-document';
-// import { InvoicePreview } from 'src/sections/dashboard/invoice/invoice-preview';
+import { InvoicePdfDialog } from 'src/sections/dashboard/invoice/invoice-pdf-dialog';
+import { InvoicePreview } from 'src/sections/dashboard/invoice/invoice-preview';
 import type { PolarOrder } from 'src/types/polar-order-types';
-// import { getInitials } from 'src/utils/get-initials';
+import { getInitials } from 'src/utils/get-initials';
 
 interface InvoiceDetailClientProps {
      invoice?: PolarOrder | null;
@@ -27,8 +26,6 @@ interface InvoiceDetailClientProps {
 
 export const InvoiceDetailClient = ({ invoice }: InvoiceDetailClientProps) => {
      const dialog = useDialog();
-
-     // TODO: When invoice fetching is implemented, render invoice data here.
 
      return (
           <>
@@ -80,15 +77,24 @@ export const InvoiceDetailClient = ({ invoice }: InvoiceDetailClientProps) => {
                                                        width: 42,
                                                   }}
                                              >
-                                                  {/* {invoice && getInitials(invoice.customer.name)} */}
+                                                  {invoice
+                                                       ? getInitials(
+                                                            invoice.billing_name ||
+                                                            invoice.customer?.name ||
+                                                            invoice.customer?.email ||
+                                                            ''
+                                                       )
+                                                       : ''}
                                              </Avatar>
                                              <div>
-                                                  {/* <Typography variant="h4">{invoice?.invoice_number}</Typography> */}
+                                                  <Typography variant="h4">
+                                                       {invoice?.invoice_number || 'Invoice not found'}
+                                                  </Typography>
                                                   <Typography
                                                        color="text.secondary"
                                                        variant="body2"
                                                   >
-                                                       {/* {invoice?.customer.name} */}
+                                                       {invoice?.customer?.name || invoice?.customer?.email || ''}
                                                   </Typography>
                                              </div>
                                         </Stack>
@@ -100,33 +106,24 @@ export const InvoiceDetailClient = ({ invoice }: InvoiceDetailClientProps) => {
                                              <Button
                                                   color="inherit"
                                                   onClick={dialog.handleOpen}
+                                                  disabled={!invoice}
                                              >
                                                   Preview
                                              </Button>
-                                             {/* <PDFDownloadLink
-                    document={<InvoicePdfDocument invoice={invoice} />}
-                    fileName="invoice"
-                    style={{ textDecoration: 'none' }}
-                  >
-                    <Button
-                      color="primary"
-                      variant="contained"
-                    >
-                      Download
-                    </Button>
-                  </PDFDownloadLink> */}
                                         </Stack>
                                    </Stack>
                               </Stack>
-                              {/* <InvoicePreview invoice={invoice} /> */}
+                              {invoice && <InvoicePreview invoice={invoice} />}
                          </Stack>
                     </Container>
                </Box>
-               {/* <InvoicePdfDialog
-        invoice={invoice}
-        onClose={dialog.handleClose}
-        open={dialog.open}
-      /> */}
+               {invoice && (
+                    <InvoicePdfDialog
+                         invoice={invoice}
+                         onClose={dialog.handleClose}
+                         open={dialog.open}
+                    />
+               )}
           </>
      );
 };

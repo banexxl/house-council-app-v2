@@ -137,7 +137,7 @@ const InvoiceRow: FC<InvoiceRowProps> = (props) => {
       <TableCell align="right">
         <IconButton
           component={RouterLink}
-          href={paths.dashboard.invoices.details}
+          href={paths.dashboard.invoices.details + invoice.id}
         >
           <SvgIcon>
             <ArrowRightIcon />

@@ -1,10 +1,12 @@
 import { redirect } from 'next/navigation';
 
 import { getViewer } from 'src/libs/supabase/server-auth';
+import { readInvoiceById } from 'src/app/actions/client/client-payment-actions';
+import type { PolarOrder } from 'src/types/polar-order-types';
 import { InvoiceDetailClient } from './invoice-detail-client';
 
 interface InvoicePageProps {
-  params: { invoiceId: string };
+  params: Promise<{ invoiceId: string }>;
 }
 
 const Page = async ({ params }: InvoicePageProps) => {
@@ -14,11 +16,16 @@ const Page = async ({ params }: InvoicePageProps) => {
     redirect('/auth/login');
   }
 
-  const { invoiceId } = params;
+  const { invoiceId } = await params;
+  let invoice: PolarOrder | null = null;
 
-  // TODO: Implement fetching a single PolarOrder by invoiceId and pass it to the client component.
+  const { readInvoiceByIdSuccess, readInvoiceByIdData } = await readInvoiceById(invoiceId);
 
-  return <InvoiceDetailClient invoice={null} />;
+  if (readInvoiceByIdSuccess) {
+    invoice = readInvoiceByIdData ?? null;
+  }
+
+  return <InvoiceDetailClient invoice={invoice} />;
 };
 
 export default Page;

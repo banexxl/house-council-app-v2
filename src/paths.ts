@@ -51,7 +51,7 @@ export const paths = {
     fileManager: '/dashboard/file-manager',
     invoices: {
       index: '/dashboard/invoices',
-      details: '/dashboard/invoices/:orderId',
+      details: '/dashboard/invoices/',
     },
     jobs: {
       index: '/dashboard/jobs',

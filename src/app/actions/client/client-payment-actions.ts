@@ -87,3 +87,51 @@ export const readAllInvoices = async (): Promise<{
 
      return { readAllInvoicesSuccess: true, readAllInvoicesData: orders };
 };
+
+export const readInvoiceById = async (invoiceId: string): Promise<{
+     readInvoiceByIdSuccess: boolean;
+     readInvoiceByIdData?: PolarOrder | null;
+     readInvoiceByIdError?: string;
+}> => {
+     const start = Date.now();
+     const supabase = await useServerSideSupabaseAnonClient();
+
+     const { data, error } = await supabase
+          .from(TABLES.INVOICES)
+          .select(`*`)
+          .eq('id', invoiceId)
+          .maybeSingle();
+
+     if (error) {
+          await logServerAction({
+               ...{
+                    user_id: 'system',
+                    action: 'Read Invoice By Id - Error',
+                    payload: { invoiceId },
+                    status: 'fail',
+                    error: error.message,
+                    duration_ms: Date.now() - start,
+                    type: 'db',
+               }
+          });
+
+          return { readInvoiceByIdSuccess: false, readInvoiceByIdError: error.message };
+     }
+
+     await logServerAction({
+          ...{
+               user_id: 'system',
+               action: 'Read Invoice By Id - Success',
+               payload: { invoiceId },
+               status: 'success',
+               error: '',
+               duration_ms: Date.now() - start,
+               type: 'db',
+          }
+     });
+
+     return {
+          readInvoiceByIdSuccess: true,
+          readInvoiceByIdData: (data as PolarOrder) ?? null,
+     };
+};
