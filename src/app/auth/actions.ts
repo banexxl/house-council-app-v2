@@ -624,7 +624,6 @@ export const logout = async (): Promise<{ success: boolean; error?: string }> =>
      });
 
      if (error) {
-          console.log('Error during logout:', error.message);
           // Log the error, but from UI perspective, user is still logged out
           await logServerAction({
                user_id: null,

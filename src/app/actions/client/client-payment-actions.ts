@@ -16,7 +16,6 @@ export const readAllClientPayments = async (
           .select(`*`)
           .order('created_at', { ascending: false })
           .eq('client_id', clientId);
-     console.log('error', error);
 
      if (error) {
           await logServerAction({
