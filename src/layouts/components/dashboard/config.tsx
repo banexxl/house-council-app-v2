@@ -110,7 +110,6 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
           </SvgIcon>
         ),
       },
-      //Invoices
       {
         title: t(tokens.nav.invoiceList),
         roles: ["admin"],
@@ -247,7 +246,7 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
       {
         title: t(tokens.nav.polls),
         featureKey: 'polls',
-        roles: ["admin", "client", "clientMember", "tenant"],
+        roles: ["admin", "client", "clientMember"],
         icon: (
           <SvgIcon fontSize="small">
             <HowToVoteIcon />
@@ -257,16 +256,27 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
           {
             title: t(tokens.nav.list),
             path: paths.dashboard.polls.index,
-            roles: ["admin", "client", "clientMember", "tenant"],
+            roles: ["admin", "client", "clientMember"],
             featureKey: 'polls',
           },
           {
             title: t(tokens.nav.create),
             path: paths.dashboard.polls.create,
-            roles: ["admin", "client", "clientMember", "tenant"],
+            roles: ["admin", "client", "clientMember"],
             featureKey: 'polls',
           },
         ],
+      },
+      {
+        title: t(tokens.nav.polls),
+        featureKey: 'polls',
+        path: paths.dashboard.polls.voting,
+        roles: ["tenant"],
+        icon: (
+          <SvgIcon fontSize="small">
+            <HowToVoteIcon />
+          </SvgIcon>
+        ),
       },
       {
         title: t(tokens.nav.fileManager),
@@ -321,7 +331,7 @@ const filterItemsByFeature = (items: NavItem[], role: Role, features?: Set<strin
   items
     .map((item) => {
       const children = item.items ? filterItemsByFeature(item.items, role, features) : undefined;
-      const featureAllowed = role === 'admin' || !features || !item.featureKey || isFeatureAllowed(item.featureKey, features);
+      const featureAllowed = role === 'admin' || role === 'tenant' || !features || !item.featureKey || isFeatureAllowed(item.featureKey, features);
       const anyChild = !!(children && children.length);
 
       if (!featureAllowed && !anyChild) return null;
