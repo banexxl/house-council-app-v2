@@ -7,18 +7,20 @@ import { TABLES } from "src/libs/supabase/tables";
 type SyncSeatsArgs = { clientId: string };
 
 export async function syncPolarSeatsForClient({ clientId }: SyncSeatsArgs) {
+
      const t0 = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
 
      // 1) Load active subscription + Polar customer id
      const { data: sub, error: subErr } = await supabase
           .from(TABLES.CLIENT_SUBSCRIPTION)
-          .select("id, status, polar_subscription_id, polar_customer_id")
+          .select("id, status, polar_subscription_id, customer_id")
           .eq("client_id", clientId)
           .in("status", ["trialing", "active"])
           .maybeSingle();
+     console.log('suberror', subErr);
 
-     if (subErr || !sub?.polar_subscription_id || !sub.polar_customer_id) {
+     if (subErr || !sub?.polar_subscription_id || !sub.customer_id) {
           return { success: false as const, error: "No active Polar subscription found." };
      }
 
@@ -43,7 +45,7 @@ export async function syncPolarSeatsForClient({ clientId }: SyncSeatsArgs) {
                          name: "apartments_usage",
 
                          // Identify the customer
-                         customerId: sub.polar_customer_id,
+                         customerId: sub.customer_id,
 
                          // Provide the property your meter sums
                          metadata: {
@@ -60,7 +62,7 @@ export async function syncPolarSeatsForClient({ clientId }: SyncSeatsArgs) {
                payload: {
                     clientId,
                     apartmentsCount,
-                    polar_customer_id: sub.polar_customer_id,
+                    polar_customer_id: sub.customer_id,
                },
                status: "success",
                type: "api",

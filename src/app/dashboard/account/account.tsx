@@ -41,7 +41,6 @@ const Account = ({ client, userData, clientSubscriptionPlan, clientInvoices, sub
 
      const tabs = [
           { label: t('account.lblGeneral'), value: 'general' },
-          { label: t('account.lblBilling'), value: 'billing' },
           { label: t('account.lblTeam'), value: 'team' },
           { label: t('account.lblNotifications'), value: 'notifications' },
           { label: t('account.lblSecurity'), value: 'security' },

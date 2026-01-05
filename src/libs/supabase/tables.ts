@@ -32,8 +32,7 @@ export const TABLES = {
      BUILDING_IMAGES: process.env.NEXT_PUBLIC_SUPABASE_TBL_BUILDING_IMAGES!,
      APARTMENT_IMAGES: process.env.NEXT_PUBLIC_SUPABASE_TBL_APARTMENT_IMAGES!,
 
-     // Billing and payments
-     BILLING_INFORMATION: process.env.NEXT_PUBLIC_SUPABASE_TBL_BILLING_INFORMATION!,
+     // Invoices
      INVOICES: process.env.NEXT_PUBLIC_SUPABASE_TBL_INVOICES!,
 
      // Announcements

@@ -93,7 +93,6 @@ export const clientValidationSchema = (t: (key: string) => string): Yup.ObjectSc
     is_verified: Yup.bool(),
     client_status: Yup.string().max(255).required(t('clients.clientStatusRequired')),
     subscription_plan: Yup.string().max(255).nullable(),
-    billing_information: Yup.string().max(255).nullable(),
     notes: Yup.string().max(255),
     has_accepted_marketing: Yup.bool(),
     has_accepted_terms_and_conditions: Yup.bool(),
