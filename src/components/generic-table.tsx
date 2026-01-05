@@ -220,11 +220,11 @@ export const GenericTable = <T extends { id: string }>(
                                                                            : String(value);
 
                                                             // If a custom render is provided, we don't wrap with Link to avoid nested anchors.
-                                                            const shouldWrapWithLink = !!baseUrl && !col.render;
+                                                            // const shouldWrapWithLink = !!baseUrl && !col.render;
 
                                                             return (
                                                                  <TableCell key={String(col.key)}>
-                                                                      {shouldWrapWithLink ? (
+                                                                      {!!baseUrl ? (
                                                                            <Box
                                                                                 component={Link}
                                                                                 href={`${baseUrl}/${item.id}`}
