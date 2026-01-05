@@ -97,7 +97,7 @@ export const updateSubscriptionPlan = async (
           await logServerAction({
                user_id: null,
                action: 'Updating tblSubscriptionPlans failed - ' + subscriptionPlan.id,
-               payload: subscriptionPlan,
+               payload: { subscriptionPlan, error },
                status: 'fail',
                error: error.message,
                duration_ms: Date.now() - start,
@@ -130,7 +130,7 @@ export const updateSubscriptionPlan = async (
                await logServerAction({
                     user_id: null,
                     action: 'Updating tblSubscriptionPlans_Features failed - ' + subscriptionPlan.id,
-                    payload: subscriptionPlan,
+                    payload: { subscriptionPlan, error },
                     status: 'fail',
                     error: featureDeleteError.message,
                     duration_ms: Date.now() - start,
@@ -148,7 +148,7 @@ export const updateSubscriptionPlan = async (
                await logServerAction({
                     user_id: null,
                     action: 'Inserting into tblSubscriptionPlans_Features failed - ' + subscriptionPlan.id,
-                    payload: subscriptionPlan,
+                    payload: { subscriptionPlan, error },
                     status: 'fail',
                     error: featureInsertError.message,
                     duration_ms: Date.now() - start,
@@ -167,7 +167,7 @@ export const updateSubscriptionPlan = async (
                await logServerAction({
                     user_id: null,
                     action: 'Deleting from tblSubscriptionPlans_Features failed - ' + subscriptionPlan.id,
-                    payload: subscriptionPlan,
+                    payload: { subscriptionPlan, error: featureDeleteError },
                     status: 'fail',
                     error: featureDeleteError.message,
                     duration_ms: Date.now() - start,
@@ -413,7 +413,7 @@ export const readSubscriptionPlanFeatures = async (
           await logServerAction({
                user_id: userId || '',
                action: 'Read Subscription Plan by ID',
-               payload: { id },
+               payload: { id, error },
                status: 'fail',
                error: error?.message || 'Not found',
                duration_ms: 0,
@@ -478,7 +478,7 @@ export const subscribeClientAction = async (
           await logServerAction({
                user_id: userId ?? '',
                action: "Subscribe Action Error",
-               payload: { clientId, subscriptionPlanId },
+               payload: { clientId, subscriptionPlanId, error },
                status: "fail",
                error: error.message,
                duration_ms: 0,
@@ -519,7 +519,7 @@ export const unsubscribeClientAction = async (
           await logServerAction({
                user_id: userId ?? '',
                action: "Unsubscribe Action",
-               payload: { clientId },
+               payload: { clientId, error },
                status: "fail",
                error: error.message,
                duration_ms: 0,
@@ -574,25 +574,13 @@ export const readFeaturesFromSubscriptionPlanId = async (subscriptionPlanId: str
           await logServerAction({
                user_id: userId ? userId : '',
                action: 'Read Features from Subscription Plan ID',
-               payload: { subscriptionPlanId },
+               payload: { subscriptionPlanId, planError },
                status: 'fail',
                error: planError.message,
                duration_ms: 0,
                type: 'db'
           })
           return { success: false, error: planError.message };
-     }
-     if (!subscriptionPlan) {
-          await logServerAction({
-               user_id: userId ? userId : '',
-               action: 'Read Features from Subscription Plan ID',
-               payload: { subscriptionPlanId },
-               status: 'fail',
-               error: "Subscription plan not found",
-               duration_ms: 0,
-               type: 'db'
-          })
-          return { success: false, error: "Subscription plan not found" };
      }
      // Extract features from the subscription plan and exclude tblSubscriptionPlans_Features
      const features = subscriptionPlan.tblSubscriptionPlans_Features.map((relation: any) => relation.tblFeatures);
@@ -654,7 +642,7 @@ export const readClientSubscriptionPlanFromClientId = async (clientId: string): 
           await logServerAction({
                user_id: null,
                action: 'Read Client Subscription Plan',
-               payload: { clientId },
+               payload: { clientId, clientSubscriptionDataError },
                status: 'fail',
                error: "Client subscription data not found",
                duration_ms: 0,
@@ -700,7 +688,7 @@ export const updateClientSubscriptionForClient = async (
           await logServerAction({
                user_id: userId ?? '',
                action: 'Read Client Subscription (for update)',
-               payload: { clientId },
+               payload: { clientId, readErr },
                status: 'fail',
                error: readErr.message,
                duration_ms: 0,
@@ -736,7 +724,7 @@ export const updateClientSubscriptionForClient = async (
                await logServerAction({
                     user_id: userId ?? '',
                     action: 'Update Client Subscription',
-                    payload: { clientId, subscriptionPlanId, nextPaymentDate },
+                    payload: { clientId, subscriptionPlanId, nextPaymentDate, error: updErr.message },
                     status: 'fail',
                     error: updErr.message,
                     duration_ms: 0,
@@ -776,7 +764,7 @@ export const updateClientSubscriptionForClient = async (
           await logServerAction({
                user_id: userId ?? '',
                action: 'Insert Client Subscription',
-               payload: { clientId, subscriptionPlanId, nextPaymentDate },
+               payload: { clientId, subscriptionPlanId, nextPaymentDate, error: insErr.message },
                status: 'fail',
                error: insErr.message,
                duration_ms: 0,
@@ -812,7 +800,7 @@ export const checkClientSubscriptionStatus = async (
           await logServerAction({
                user_id: clientId ?? '',
                action: 'Check Client Subscription Status',
-               payload: { clientId },
+               payload: { clientId, error },
                status: 'fail',
                error: error.message,
                duration_ms: 0,
@@ -835,7 +823,7 @@ export const deleteClientSubscription = async (
           await logServerAction({
                user_id: clientId ?? '',
                action: 'Delete Client Subscription',
-               payload: { clientId },
+               payload: { clientId, error },
                status: 'fail',
                error: error.message,
                duration_ms: 0,
