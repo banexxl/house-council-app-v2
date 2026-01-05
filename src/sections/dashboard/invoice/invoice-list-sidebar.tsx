@@ -194,13 +194,13 @@ export const InvoiceListSidebar: FC<InvoiceListSidebarProps> = (props) => {
           </FormLabel>
           <Stack spacing={2}>
             <DatePicker
-              format="dd/MM/yyyy"
+              format="DD/MM/YYYY"
               label="From"
               onChange={handleStartDateChange}
               value={filters.startDate ? dayjs(filters.startDate) : null}
             />
             <DatePicker
-              format="dd/MM/yyyy"
+              format="DD/MM/YYYY"
               label="To"
               onChange={handleEndDateChange}
               value={filters.endDate ? dayjs(filters.endDate) : null}
