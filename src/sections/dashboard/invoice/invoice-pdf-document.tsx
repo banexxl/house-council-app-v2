@@ -157,17 +157,17 @@ export const InvoicePdfDocument: FC<InvoicePdfDocumentProps> = (props) => {
         </View>
         <View style={styles.company}>
           <View>
-            <Text style={styles.body2}>Street King William, 123</Text>
-            <Text style={styles.body2}>Level 2, C, 442456</Text>
-            <Text style={styles.body2}>San Francisco, CA, USA</Text>
+            <Text style={styles.body2}>Banovic Strahinje 10</Text>
+            <Text style={styles.body2}>Novi Sad</Text>
+            <Text style={styles.body2}>Serbia</Text>
           </View>
           <View>
-            <Text style={styles.body2}>Company No. 4675933</Text>
-            <Text style={styles.body2}>EU VAT No. 949 67545 45</Text>
+            <Text style={styles.body2}>PIB: 123200239</Text>
+            <Text style={styles.body2}>MB: 66597733</Text>
           </View>
           <View>
-            <Text style={styles.body2}>accounts@devias.io</Text>
-            <Text style={styles.body2}>(+40) 652 3456 23</Text>
+            <Text style={styles.body2}>support@nest-link.app</Text>
+            <Text style={styles.body2}>(+381) 66 415651</Text>
           </View>
         </View>
         <View style={styles.references}>
