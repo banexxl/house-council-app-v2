@@ -32,20 +32,17 @@ import { supabaseBrowserClient } from 'src/libs/supabase/sb-client'
 import { BuildingLocation } from 'src/types/location'
 import { ClientSubscription, SubscriptionPlan, clientSubscriptionStatusOptions } from 'src/types/subscription-plan'
 import { TABLES } from 'src/libs/supabase/tables';
-import dayjs from 'dayjs'
 import { updateClientSubscriptionForClient, deleteClientSubscription } from 'src/app/actions/subscription-plan/subscription-plan-actions'
 import type { Theme } from '@mui/material/styles'
-import { polar } from 'src/libs/polar/polar'
 
 interface ClientNewFormProps {
   clientData?: Client
-  clientSubscription?: ClientSubscription & { subscription_plan: SubscriptionPlan } | null
   availableSubscriptions?: SubscriptionPlan[]
   showAdvancedSettings?: boolean;
   showClientActions?: boolean;
 }
 
-export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscription, availableSubscriptions, showAdvancedSettings, showClientActions }) => {
+export const ClientForm: FC<ClientNewFormProps> = ({ clientData, availableSubscriptions, showAdvancedSettings, showClientActions }) => {
 
   // Modal state for admin actions
   const [modal, setModal] = useState<{ open: boolean; type?: string }>({ open: false, type: undefined });
@@ -78,85 +75,103 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
       ...initialValues,
       client_type: initialValues?.client_type || clientInitialValues.client_type || '',
       client_status: initialValues?.client_status || clientInitialValues.client_status || '',
-      subscription_plan_id: clientSubscription?.subscription_id || '',
-      subscription_status: clientSubscription?.status || '',
-      is_monthly: clientSubscription?.recurring_interval == 'month' || false,
     };
     return base;
-  }, [clientInitialValues, initialValues, clientSubscription]);
-
+  }, [clientInitialValues, initialValues]);
   const formik = useFormik({
     initialValues: initialFormikValues,
     enableReinitialize: true,
     validationSchema: clientValidationSchema(t),
     validateOnMount: true,
     onSubmit: async (values, { setSubmitting, resetForm }) => {
+      setSubmitting(true);
 
-      const { subscription_plan_id, is_monthly, subscription_status, ...clientOnly } = values as any;
+      // Keep subscription fields for later, but don't send them to client save action
+      const {
+        subscription_plan_id,
+        is_monthly,
+        subscription_status,
+        ...clientOnly
+      } = values as any;
 
       try {
-        const saveClientResponse = await createOrUpdateClientAction(clientOnly as Client)
-        // After save, update subscription plan and expiration if changed or provided
-        if (saveClientResponse.saveClientActionSuccess) {
-          const newPlanId = subscription_plan_id as string;
-          const savedClientId = saveClientResponse.saveClientActionData?.id || clientData?.id;
-          const hasPlanChanged = newPlanId && newPlanId !== (clientSubscription?.subscription_id || '');
-          const hasStatusChanged = (clientSubscription?.status || 'active') !== (subscription_status || 'active');
-          if (savedClientId && newPlanId && (hasPlanChanged || hasStatusChanged)) {
+        const res = await createOrUpdateClientAction(clientOnly as Client);
+        const {
+          saveClientActionSuccess,
+          saveClientActionError,
+          saveClientActionData,
+        } = res;
 
-            const selectedSubscriptionPlan = availableSubscriptions?.find(plan => plan.id === newPlanId);
+        // ❌ Save failed
+        if (!saveClientActionSuccess || !saveClientActionData) {
+          const code = saveClientActionError?.code;
 
-            const polarResult = await polar.subscriptions.update({
-              id: clientSubscription?.id || '',
-              subscriptionUpdate: {
-                productId: selectedSubscriptionPlan?.polar_product_id_annually || selectedSubscriptionPlan?.polar_product_id_monthly || '',
-              }
-            })
-            const { success, error } = await updateClientSubscriptionForClient(
-              savedClientId,
-              newPlanId,
+          if (code === "23505") {
+            toast.error(
+              `${t("clients.clientNotSaved")}:\n${t("errors.client.uniqueEmailViolation")}`
             );
-            if (!success) {
-              toast.error(t('common.error') + ': ' + (error || 'Failed to update subscription'))
-            }
+          } else if (code === "23503") {
+            toast.error(
+              `${t("clients.clientNotSaved")}:\n${t("errors.client.foreignKeyViolation")}`
+            );
+          } else if (code === "23502") {
+            toast.error(
+              `${t("clients.clientNotSaved")}:\n${t("errors.client.notNullViolation")}`
+            );
+          } else if (code === "22P02") {
+            toast.error(
+              `${t("clients.clientNotSaved")}:\n${t("errors.client.dataTypeMismatch")}`
+            );
+          } else if (code === "23514") {
+            toast.error(
+              `${t("clients.clientNotSaved")}:\n${t("errors.client.checkViolation")}`
+            );
+          } else {
+            toast.error(
+              `${t("clients.clientNotSaved")}:\n${saveClientActionError?.message || t("errors.client.unexpectedError")
+              }`
+            );
           }
-        }
-        if (saveClientResponse.saveClientActionSuccess) {
-          setInitialValues((prev) => ({ ...prev, ...saveClientResponse.saveClientActionData }))
-          const clientId = saveClientResponse.saveClientActionData?.id;
-          if (!currentRoute.includes(clientId!)) {
-            setInitialValues((prev) => ({ ...prev, ...saveClientResponse.saveClientActionData }))
-            if (showClientActions) {
-              router.push(paths.dashboard.clients.details + '/' + clientId);
-            } else (
-              router.push(paths.dashboard.account)
-            )
-          }
-          toast.success(t('clients.clientSaved'))
 
-          // After a successful save ensure form is no longer dirty so submit button disables
-          const refreshedValues = {
-            ...values,
-            ...saveClientResponse.saveClientActionData,
-            subscription_plan_id: subscription_plan_id,
-            subscription_status: subscription_status,
-          };
-          resetForm({ values: refreshedValues });
-        } else if (saveClientResponse.saveClientActionError) {
-          saveClientResponse.saveClientActionError.code === '23505' ? toast.error(t('clients.clientNotSaved') + ': \n' + t('errors.client.uniqueEmailViolation'))
-            : saveClientResponse.saveClientActionError.code === '23503' ? toast.error(t('clients.clientNotSaved') + ': \n' + t('errors.client.foreignKeyViolation'))
-              : saveClientResponse.saveClientActionError.code === '23502' ? toast.error(t('clients.clientNotSaved') + ': \n' + t('errors.client.notNullViolation'))
-                : saveClientResponse.saveClientActionError.code === '22P02' ? toast.error(t('clients.clientNotSaved') + ': \n' + t('errors.client.dataTypeMismatch'))
-                  : saveClientResponse.saveClientActionError.code === '23514' ? toast.error(t('clients.clientNotSaved') + ': \n' + t('errors.client.checkViolation'))
-                    : toast.error(t('clients.clientNotSaved') + ': \n' + t('errors.client.unexpectedError'))
+          return;
         }
-      } catch (error) {
-        toast.error(t('clients.clientNotSaved'), error.message)
+
+        // ✅ Save succeeded
+        const clientId = saveClientActionData.id;
+
+        // update local initial values state (if you keep it separately)
+        setInitialValues((prev) => ({ ...prev, ...saveClientActionData }));
+
+        // navigate if we're not already on that client's route
+        if (clientId && !currentRoute.includes(clientId)) {
+          if (showClientActions) {
+            router.push(`${paths.dashboard.clients.details}/${clientId}`);
+          } else {
+            router.push(paths.dashboard.account);
+          }
+        }
+
+        toast.success(t("clients.clientSaved"));
+
+        // Reset form so it's not dirty, but keep subscription fields from original values
+        const refreshedValues = {
+          ...values,
+          ...saveClientActionData,
+          subscription_plan_id,
+          subscription_status,
+          is_monthly,
+        };
+
+        resetForm({ values: refreshedValues });
+      } catch (error: any) {
+        toast.error(
+          `${t("clients.clientNotSaved")}${error?.message ? `: ${error.message}` : ""}`
+        );
       } finally {
-        setSubmitting(false)
+        setSubmitting(false);
       }
     },
-  })
+  });
 
   const handleSendPasswordRecovery = async () => {
     setModalLoading(true);
@@ -229,8 +244,6 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
       if (success) {
         formik.setValues({
           ...formik.values,
-          subscription_plan_id: '',
-          subscription_status: '',
         });
         toast.success(t('common.actionDeleteSuccess'));
       } else {
@@ -506,94 +519,6 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
               )
             }
           </Grid>
-          {clientSubscription && (
-            <>
-              <Divider sx={{ my: 3 }}>{t('clients.clientSubscriptionPlan')}</Divider>
-              <Grid container spacing={3} sx={{ minWidth: 0 }}>
-                <Grid size={{ xs: 12, md: 3 }} sx={{ minWidth: 0 }}>
-                  <TextField
-                    select
-                    fullWidth
-                    label={t('clients.clientSubscriptionPlan')}
-                    name="subscription_plan_id"
-                    disabled={formik.isSubmitting}
-                    value={formik.values.subscription_plan_id || ''}
-                    onChange={formik.handleChange}
-                    defaultValue={formik.values.subscription_plan_id || ''}
-                  >
-                    {(availableSubscriptions || []).map((plan) => (
-                      <MenuItem key={plan.id} value={plan.id!}>
-                        {plan.name}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Grid>
-                <Grid size={{ xs: 12, md: 3 }} sx={{ minWidth: 0 }}>
-                  <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: { xs: 2, md: 0 } }}>
-                    <FormControlLabel
-                      label={t('subscriptionPlans.subscriptionPlanMonthly')}
-                      control={
-                        <Switch
-                          checked={formik.values.is_monthly}
-                          name="is_monthly"
-                          color="primary"
-                          disabled={formik.isSubmitting}
-                          onChange={(_, checked) => formik.setFieldValue('is_monthly', checked)}
-                        />
-                      }
-                    />
-                  </Stack>
-                </Grid>
-                <Grid size={{ xs: 12, md: 3 }} sx={{ minWidth: 0 }}>
-                  <TextField
-                    select
-                    fullWidth
-                    label={t('subscriptionPlans.status')}
-                    name="subscription_status"
-                    disabled={formik.isSubmitting}
-                    value={formik.values.subscription_status}
-                    onChange={formik.handleChange}
-                    defaultValue={formik.values.subscription_status}
-                  >
-                    {clientSubscriptionStatusOptions.map((opt) => (
-                      <MenuItem key={opt.value} value={opt.value}>{t(opt.label)}</MenuItem>
-                    ))}
-                  </TextField>
-                </Grid>
-                <Grid size={{ xs: 12, md: 3 }} sx={{ minWidth: 0 }}>
-                  <Button
-                    variant="outlined"
-                    color="error"
-                    disabled={formik.isSubmitting || !clientData?.id || deleteSubscriptionLoading}
-                    onClick={() => setDeleteSubscriptionDialog({ open: true })}
-                    sx={{ mt: 1 }}
-                  >
-                    {deleteSubscriptionLoading ? t('common.lblWorking') : t('common.btnDelete')}
-                  </Button>
-                </Grid>
-
-              </Grid>
-              {clientSubscription && (
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="body2" color="text.secondary">
-                    {t('subscriptionPlans.currentPlan')}: {clientSubscription.subscription_plan?.name} / {t('subscriptionPlans.expirationDate')}: {dayjs(clientSubscription.current_period_end).format('DD MMM YYYY')}
-                  </Typography>
-                </Box>
-              )}
-              <PopupModal
-                isOpen={deleteSubscriptionDialog.open}
-                onClose={() => !deleteSubscriptionLoading && setDeleteSubscriptionDialog({ open: false })}
-                onConfirm={handleDeleteSubscription}
-                title={t('warning.deleteWarningTitle')}
-                type="confirmation"
-                confirmText={t('common.btnDelete')}
-                cancelText={t('common.btnClose')}
-                loading={deleteSubscriptionLoading}
-              >
-                {t('warning.deleteWarningMessage')}
-              </PopupModal>
-            </>
-          )}
           {
             showAdvancedSettings && (
               <>
