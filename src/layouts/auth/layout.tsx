@@ -117,7 +117,7 @@ export const Layout: FC<LayoutProps> = (props) => {
             sx={{ mb: 1, color: 'primary.darkest' }}
             variant="h4"
           >
-            Welcome to Nest Link App
+            Welcome to Nest Link
           </Typography>
           <Typography
             sx={{ mt: 4, width: '80%', color: 'primary.darkest' }}
