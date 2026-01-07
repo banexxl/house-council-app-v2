@@ -281,17 +281,23 @@ export const InvoiceListSidebar: FC<InvoiceListSidebarProps> = (props) => {
       <Drawer
         anchor="left"
         open={open}
-        PaperProps={{
-          elevation: 16,
-          sx: {
-            border: 'none',
-            borderRadius: 2.5,
-            overflow: 'hidden',
-            position: 'relative',
-            width: 380,
+        slotProps={{
+          transition: {
+            container
+          },
+          paper: {
+            elevation: 16,
+            sx: {
+              border: 'none',
+              borderRadius: 2.5,
+              overflow: 'hidden',
+              position: 'relative',
+              width: 380,
+              height: 'calc(100% + 20px)',
+              mb: 8,
+            },
           },
         }}
-        SlideProps={{ container }}
         variant="persistent"
         sx={{ p: 3 }}
         {...other}
@@ -314,15 +320,19 @@ export const InvoiceListSidebar: FC<InvoiceListSidebarProps> = (props) => {
       }}
       onClose={onClose}
       open={open}
-      PaperProps={{
-        sx: {
-          maxWidth: '100%',
-          width: 380,
-          pointerEvents: 'auto',
-          position: 'absolute',
+      slotProps={{
+        paper: {
+          sx: {
+            maxWidth: '100%',
+            width: 380,
+            pointerEvents: 'auto',
+            position: 'absolute',
+          },
         },
+        transition: {
+          container
+        }
       }}
-      SlideProps={{ container }}
       variant="temporary"
       {...other}
     >
