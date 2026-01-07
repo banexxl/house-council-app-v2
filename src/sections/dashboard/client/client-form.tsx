@@ -233,30 +233,6 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, availableSubscr
     setModalLoading(false);
   };
 
-  const handleDeleteSubscription = async () => {
-    if (!clientData?.id) {
-      toast.error(t('common.actionDeleteError'));
-      return;
-    }
-    setDeleteSubscriptionLoading(true);
-    try {
-      const { success, error } = await deleteClientSubscription(clientData.id);
-      if (success) {
-        formik.setValues({
-          ...formik.values,
-        });
-        toast.success(t('common.actionDeleteSuccess'));
-      } else {
-        toast.error(error || t('common.actionDeleteError'));
-      }
-    } catch (error) {
-      toast.error(t('common.actionDeleteError'));
-    } finally {
-      setDeleteSubscriptionLoading(false);
-      setDeleteSubscriptionDialog({ open: false });
-    }
-  };
-
   const removeStoredImage = async (storedRef?: string | null) => {
     const userId = clientData?.user_id || formik.values.user_id;
     const storagePath = storedRef && storedRef.includes('::') ? storedRef.split('::')[1] : storedRef || '';
