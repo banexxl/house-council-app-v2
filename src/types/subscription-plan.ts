@@ -21,8 +21,6 @@ export const clientSubscriptionStatusOptions: { value: ClientSubscriptionStatus;
      { value: 'canceled', label: 'subscriptionPlans.statusCanceled' }
 ];
 
-export type RenewalPeriod = 'monthly' | 'annually'; // extend if needed
-
 export type SubscriptionPlan = {
      id: string;
      created_at: Date;
@@ -98,14 +96,40 @@ export const subscriptionPlanValidationSchema = (t: (key: string) => string) => 
      polar_product_id_annually: polarProductIdSchema(t),
 });
 
+export type PolarRecurringInterval = "day" | "week" | "month" | "year";
+
 export interface ClientSubscription {
      id: string;
-     client_id: string;
+     client_id: string | null;
      subscription_id: string;
+     polar_subscription_id: string;
+     order_id?: string | null;
+     created_at: string;
+     updated_at: string;
+     apartment_count: number;
+     metadata: Record<string, unknown>;
+     amount: number;
+     currency: string;
+     recurring_interval: PolarRecurringInterval;
+     recurring_interval_count: number;
      status: SubscriptionStatus;
-     created_at: string; // ISO date string
-     updated_at: string; // ISO date string
-     is_auto_renew: boolean;
-     next_payment_date: string | null; // nullable
-     renewal_period: RenewalPeriod
+     current_period_start: string;
+     current_period_end: string;
+     trial_start: string | null;
+     trial_end: string | null;
+     cancel_at_period_end: boolean;
+     canceled_at: string | null;
+     started_at: string;
+     ends_at: string | null;
+     ended_at: string | null;
+     customer_id: string;
+     product_id: string;
+     discount_id: string | null;
+     checkout_id: string | null;
+     customer_cancellation_reason: string | null;
+     customer_cancellation_comment: string | null;
+     prices: string[];
+     meters: string[];
+     seats: number;
+     custom_field_data: Record<string, unknown>;
 }

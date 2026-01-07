@@ -7,7 +7,7 @@ import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import CardHeader from '@mui/material/CardHeader'
 import Divider from '@mui/material/Divider'
-import { Box, Grid } from '@mui/material';
+import { Box, FormControlLabel, Grid } from '@mui/material';
 import Stack from '@mui/material/Stack'
 import Switch from '@mui/material/Switch'
 import TextField from '@mui/material/TextField'
@@ -32,12 +32,10 @@ import { supabaseBrowserClient } from 'src/libs/supabase/sb-client'
 import { BuildingLocation } from 'src/types/location'
 import { ClientSubscription, SubscriptionPlan, clientSubscriptionStatusOptions } from 'src/types/subscription-plan'
 import { TABLES } from 'src/libs/supabase/tables';
-import dayjs, { Dayjs } from 'dayjs'
-import { DatePicker } from '@mui/x-date-pickers/DatePicker'
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
+import dayjs from 'dayjs'
 import { updateClientSubscriptionForClient, deleteClientSubscription } from 'src/app/actions/subscription-plan/subscription-plan-actions'
 import type { Theme } from '@mui/material/styles'
+import { polar } from 'src/libs/polar/polar'
 
 interface ClientNewFormProps {
   clientData?: Client
@@ -73,7 +71,6 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
     };
     fetchBuildingLocations();
   }, [clientData?.id]);
-  console.log('clientInitialValues', initialValues);
 
   const initialFormikValues = useMemo(() => {
     const base = {
@@ -82,40 +79,42 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
       client_type: initialValues?.client_type || clientInitialValues.client_type || '',
       client_status: initialValues?.client_status || clientInitialValues.client_status || '',
       subscription_plan_id: clientSubscription?.subscription_id || '',
-      next_payment_date: clientSubscription?.next_payment_date
-        ? dayjs(clientSubscription.next_payment_date)
-        : null,
       subscription_status: clientSubscription?.status || '',
+      is_monthly: clientSubscription?.recurring_interval == 'month' || false,
     };
     return base;
   }, [clientInitialValues, initialValues, clientSubscription]);
-  console.log('formikvalues', initialFormikValues);
 
   const formik = useFormik({
     initialValues: initialFormikValues,
     enableReinitialize: true,
     validationSchema: clientValidationSchema(t),
     validateOnMount: true,
-
     onSubmit: async (values, { setSubmitting, resetForm }) => {
 
-      const { subscription_plan_id, next_payment_date, subscription_status, ...clientOnly } = values as any;
+      const { subscription_plan_id, is_monthly, subscription_status, ...clientOnly } = values as any;
 
       try {
         const saveClientResponse = await createOrUpdateClientAction(clientOnly as Client)
         // After save, update subscription plan and expiration if changed or provided
         if (saveClientResponse.saveClientActionSuccess) {
           const newPlanId = subscription_plan_id as string;
-          const newExpiry = next_payment_date as Dayjs | null;
           const savedClientId = saveClientResponse.saveClientActionData?.id || clientData?.id;
           const hasPlanChanged = newPlanId && newPlanId !== (clientSubscription?.subscription_id || '');
-          const hasExpiryChanged = (clientSubscription?.next_payment_date || null) !== (newExpiry ? newExpiry.toISOString() : null);
           const hasStatusChanged = (clientSubscription?.status || 'active') !== (subscription_status || 'active');
-          if (savedClientId && newPlanId && (hasPlanChanged || hasExpiryChanged || hasStatusChanged)) {
+          if (savedClientId && newPlanId && (hasPlanChanged || hasStatusChanged)) {
+
+            const selectedSubscriptionPlan = availableSubscriptions?.find(plan => plan.id === newPlanId);
+
+            const polarResult = await polar.subscriptions.update({
+              id: clientSubscription?.id || '',
+              subscriptionUpdate: {
+                productId: selectedSubscriptionPlan?.polar_product_id_annually || selectedSubscriptionPlan?.polar_product_id_monthly || '',
+              }
+            })
             const { success, error } = await updateClientSubscriptionForClient(
               savedClientId,
               newPlanId,
-              { nextPaymentDate: newExpiry ? newExpiry.toISOString() : null, status: subscription_status }
             );
             if (!success) {
               toast.error(t('common.error') + ': ' + (error || 'Failed to update subscription'))
@@ -140,7 +139,6 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
             ...values,
             ...saveClientResponse.saveClientActionData,
             subscription_plan_id: subscription_plan_id,
-            next_payment_date: next_payment_date,
             subscription_status: subscription_status,
           };
           resetForm({ values: refreshedValues });
@@ -232,7 +230,6 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
         formik.setValues({
           ...formik.values,
           subscription_plan_id: '',
-          next_payment_date: null,
           subscription_status: '',
         });
         toast.success(t('common.actionDeleteSuccess'));
@@ -532,15 +529,20 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
                   </TextField>
                 </Grid>
                 <Grid size={{ xs: 12, md: 3 }} sx={{ minWidth: 0 }}>
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker
-                      label={t('clients.clientCardExpirationDate')}
-                      name='next_payment_date'
-                      value={formik.values.next_payment_date as Dayjs | null}
-                      onChange={(val) => formik.setFieldValue('next_payment_date', val)}
-                      slotProps={{ textField: { fullWidth: true, disabled: formik.isSubmitting } }}
+                  <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: { xs: 2, md: 0 } }}>
+                    <FormControlLabel
+                      label={t('subscriptionPlans.subscriptionPlanMonthly')}
+                      control={
+                        <Switch
+                          checked={formik.values.is_monthly}
+                          name="is_monthly"
+                          color="primary"
+                          disabled={formik.isSubmitting}
+                          onChange={(_, checked) => formik.setFieldValue('is_monthly', checked)}
+                        />
+                      }
                     />
-                  </LocalizationProvider>
+                  </Stack>
                 </Grid>
                 <Grid size={{ xs: 12, md: 3 }} sx={{ minWidth: 0 }}>
                   <TextField
@@ -574,7 +576,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
               {clientSubscription && (
                 <Box sx={{ mt: 2 }}>
                   <Typography variant="body2" color="text.secondary">
-                    {t('subscriptionPlans.currentPlan')}: {clientSubscription.subscription_plan?.name} {clientSubscription.next_payment_date ? `— ${t('subscriptionPlans.expirationDate')}: ${dayjs(clientSubscription.next_payment_date).format('YYYY-MM-DD')}` : ''}
+                    {t('subscriptionPlans.currentPlan')}: {clientSubscription.subscription_plan?.name} / {t('subscriptionPlans.expirationDate')}: {dayjs(clientSubscription.current_period_end).format('DD MMM YYYY')}
                   </Typography>
                 </Box>
               )}

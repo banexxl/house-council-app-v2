@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { logServerAction } from "src/libs/supabase/server-logging";
 import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
-import { ClientSubscription, RenewalPeriod, SubscriptionPlan } from "src/types/subscription-plan";
+import { ClientSubscription, PolarRecurringInterval, SubscriptionPlan } from "src/types/subscription-plan";
 import { Feature } from "src/types/base-entity";
 import { TABLES } from "src/libs/supabase/tables";
 
@@ -455,7 +455,7 @@ export const readSubscriptionPlanFeatures = async (
 export const subscribeClientAction = async (
      clientId: string,
      subscriptionPlanId: string,
-     renewal_period: RenewalPeriod
+     renewal_period: PolarRecurringInterval
 ): Promise<{ success: boolean; error?: string }> => {
      const supabase = await useServerSideSupabaseAnonClient();
      const userId = (await supabase.auth.getUser()).data.user?.id;
