@@ -78,10 +78,10 @@ export const addClientMember = async (email: string, name: string, client_id: st
      const adminSupabase = await useServerSideSupabaseServiceRoleClient();
      const supabase = await useServerSideSupabaseAnonClient();
      try {
-          // 1. Fetch client's subscription_plan_id
+          // 1. Fetch client's subscription_id
           const { data: clientSubscription, error: clientSubError } = await adminSupabase
                .from(TABLES.CLIENT_SUBSCRIPTION)
-               .select('subscription_plan_id')
+               .select('subscription_id')
                .eq('client_id', client_id)
                .single();
 
@@ -89,7 +89,7 @@ export const addClientMember = async (email: string, name: string, client_id: st
                return { inviteClientMemberSuccess: false, inviteClientMemberError: clientSubError.message };
           }
 
-          if (!clientSubscription?.subscription_plan_id) {
+          if (!clientSubscription?.subscription_id) {
                return { inviteClientMemberSuccess: false, inviteClientMemberError: 'Client subscription not found' };
           }
 
@@ -97,7 +97,7 @@ export const addClientMember = async (email: string, name: string, client_id: st
           const { data: subscriptionPlan, error: planError } = await adminSupabase
                .from(TABLES.SUBSCRIPTION_PLANS)
                .select('id, max_number_of_team_members')
-               .eq('id', clientSubscription.subscription_plan_id)
+               .eq('id', clientSubscription.subscription_id)
                .single();
 
           if (planError) {

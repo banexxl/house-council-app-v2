@@ -68,7 +68,8 @@ export const AccountTeamSettings: FC<AccountTeamSettingsProps> = (props) => {
           validationSchema={clientMemberValidationSchema(t)}
           onSubmit={async (values, { setSubmitting, resetForm }) => {
             setSubmitting(true);
-            const { inviteClientMemberSuccess } = await addClientMember(values.email!, values.name, client!.id!);
+            const { inviteClientMemberSuccess, inviteClientMemberError } = await addClientMember(values.email!, values.name, client!.id!);
+
             if (inviteClientMemberSuccess) {
               toast.success(t(tokens.account.team.inviteSuccess));
               setSubmitting(false);

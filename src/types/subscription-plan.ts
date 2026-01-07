@@ -101,7 +101,7 @@ export const subscriptionPlanValidationSchema = (t: (key: string) => string) => 
 export interface ClientSubscription {
      id: string;
      client_id: string;
-     subscription_plan_id: string;
+     subscription_id: string;
      status: SubscriptionStatus;
      created_at: string; // ISO date string
      updated_at: string; // ISO date string

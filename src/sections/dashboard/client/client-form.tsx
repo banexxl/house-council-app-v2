@@ -73,6 +73,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
     };
     fetchBuildingLocations();
   }, [clientData?.id]);
+  console.log('clientInitialValues', initialValues);
 
   const initialFormikValues = useMemo(() => {
     const base = {
@@ -80,7 +81,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
       ...initialValues,
       client_type: initialValues?.client_type || clientInitialValues.client_type || '',
       client_status: initialValues?.client_status || clientInitialValues.client_status || '',
-      subscription_plan_id: clientSubscription?.subscription_plan_id || '',
+      subscription_plan_id: clientSubscription?.subscription_id || '',
       next_payment_date: clientSubscription?.next_payment_date
         ? dayjs(clientSubscription.next_payment_date)
         : null,
@@ -88,6 +89,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
     };
     return base;
   }, [clientInitialValues, initialValues, clientSubscription]);
+  console.log('formikvalues', initialFormikValues);
 
   const formik = useFormik({
     initialValues: initialFormikValues,
@@ -106,7 +108,7 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, clientSubscript
           const newPlanId = subscription_plan_id as string;
           const newExpiry = next_payment_date as Dayjs | null;
           const savedClientId = saveClientResponse.saveClientActionData?.id || clientData?.id;
-          const hasPlanChanged = newPlanId && newPlanId !== (clientSubscription?.subscription_plan_id || '');
+          const hasPlanChanged = newPlanId && newPlanId !== (clientSubscription?.subscription_id || '');
           const hasExpiryChanged = (clientSubscription?.next_payment_date || null) !== (newExpiry ? newExpiry.toISOString() : null);
           const hasStatusChanged = (clientSubscription?.status || 'active') !== (subscription_status || 'active');
           if (savedClientId && newPlanId && (hasPlanChanged || hasExpiryChanged || hasStatusChanged)) {

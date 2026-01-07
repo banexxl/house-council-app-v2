@@ -314,7 +314,7 @@ export const readAllClientsAction = async (): Promise<{
 
           const clientIds = baseClients.map((c) => c.id).filter(Boolean);
 
-          // Fetch mapping client_id -> subscription_plan_id from tblClient_Subscription
+          // Fetch mapping client_id -> subscription_id from tblClient_Subscription
           const { data: clientSubs, error: clientSubsError } = await supabase
                .from(TABLES.CLIENT_SUBSCRIPTION)
                .select('client_id, subscription_id')
