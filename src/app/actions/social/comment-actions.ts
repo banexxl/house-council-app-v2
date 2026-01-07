@@ -13,7 +13,6 @@ import type {
 import type { EmojiReaction } from 'src/types/social';
 import { emitNotifications } from 'src/app/actions/notification/emit-notification';
 import { NOTIFICATION_TYPES_MAP, type Notification, NOTIFICATION_ACTION_TOKENS } from 'src/types/notification';
-import { url } from 'inspector';
 
 type ActionResponse<T> = {
      success: boolean;

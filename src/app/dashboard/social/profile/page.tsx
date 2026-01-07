@@ -30,6 +30,7 @@ export async function ProfilePageContent({ profileId }: { profileId?: string }) 
 
      let profile: TenantProfile | null = null;
      if (profileId) {
+          log(`Loading profile for profileId: ${profileId}`);
           const profileResult = await getTenantProfile(profileId);
           if (profileResult.success) {
                profile = profileResult.data!;
