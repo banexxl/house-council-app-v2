@@ -251,14 +251,14 @@ export const InvoicePreview: FC<InvoicePreviewProps> = (props) => {
           gutterBottom
           variant="h6"
         >
-          Notes
+          Notes:
         </Typography>
         <Typography
           color="text.secondary"
           variant="body2"
         >
-          Please make sure you have the right bank registration number as I had issues before and
-          make sure you guys cover transfer expenses.
+          Payment is due within 14 days of the invoice date. Please reference the invoice number on
+          all transfers and contact support@nest-link.app with any questions.
         </Typography>
       </Box>
     </Card>
