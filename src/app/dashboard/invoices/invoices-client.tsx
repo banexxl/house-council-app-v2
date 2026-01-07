@@ -219,16 +219,6 @@ export const InvoicesClient = ({ invoices, invoiceClients }: InvoicesClientProps
                                                   >
                                                        Filters
                                                   </Button>
-                                                  <Button
-                                                       startIcon={
-                                                            <SvgIcon>
-                                                                 <PlusIcon />
-                                                            </SvgIcon>
-                                                       }
-                                                       variant="contained"
-                                                  >
-                                                       New
-                                                  </Button>
                                              </Stack>
                                         </Stack>
                                         <InvoiceListSummary invoices={invoices} />

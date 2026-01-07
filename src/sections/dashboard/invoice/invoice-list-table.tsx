@@ -182,7 +182,10 @@ export const InvoiceListTable: FC<InvoiceListTableProps> = (props) => {
     content = (
       <Stack spacing={6}>
         {statuses.map((status) => {
-          const groupTitle = status.charAt(0).toUpperCase() + status.slice(1);
+          const groupTitle = status
+            .split('_')
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
           const count = groupedInvoices[status].length;
           const invoices = groupedInvoices[status];
           const hasInvoices = invoices.length > 0;
