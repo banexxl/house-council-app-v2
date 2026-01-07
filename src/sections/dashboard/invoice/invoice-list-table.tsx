@@ -59,8 +59,6 @@ interface InvoiceRowProps {
 
 const InvoiceRow: FC<InvoiceRowProps> = (props) => {
   const { invoice, ...other } = props;
-  console.log('invoice', invoice);
-
   const statusColor = statusColorsMap[invoice.status];
   const totalAmount = numeral(invoice.total_amount).format('0,0.00');
   const issueDate = invoice.created_at ? format(new Date(invoice.created_at), 'dd/MM/yyyy') : '';
@@ -111,8 +109,7 @@ const InvoiceRow: FC<InvoiceRowProps> = (props) => {
       </TableCell>
       <TableCell>
         <Typography variant="subtitle2">
-          {invoice.currency}
-          {totalAmount}
+          {invoice.currency.toUpperCase()} {totalAmount}
         </Typography>
       </TableCell>
       <TableCell>
