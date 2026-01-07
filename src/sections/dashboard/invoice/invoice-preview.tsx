@@ -45,11 +45,11 @@ export const InvoicePreview: FC<InvoicePreviewProps> = (props) => {
           <Box
             sx={{
               display: 'inline-flex',
-              height: 24,
-              width: 24,
+              height: 130,
+              width: 130,
             }}
           >
-            <Logo url='/assets/logo-icons/1-01.png' alt='/assets/no-image.png' />
+            <Logo url='/assets/logo-icons/1-01.png' alt='/assets/no-image.png' height={130} />
           </Box>
           <Typography variant="subtitle2">nest-link.app</Typography>
         </div>
@@ -161,9 +161,17 @@ export const InvoicePreview: FC<InvoicePreviewProps> = (props) => {
           <br />
           {invoice.customer?.email}
           <br />
-          {invoice.customer?.tax_id?.join(', ')}
+          {invoice.customer?.tax_id?.length ? invoice.customer.tax_id.join(', ') : 'Tax ID not provided'}
           <br />
-          {`${invoice.billing_address.line1}, ${invoice.billing_address.postal_code} ${invoice.billing_address.city}, ${invoice.billing_address.country}`}
+          {(() => {
+            const address = invoice.billing_address;
+            if (!address) {
+              return 'Billing address not provided';
+            }
+            const postalCity = [address.postal_code, address.city].filter(Boolean).join(' ').trim();
+            const parts = [address.line1, postalCity, address.country].filter((part) => Boolean(part && part.trim()));
+            return parts.length ? parts.join(', ') : 'Billing address not provided';
+          })()}
         </Typography>
       </Box>
       <Table sx={{ mt: 4 }}>
