@@ -4,14 +4,14 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
 // SUPABASE_ANON_KEY - Used for public / authenticated users.Respects user session, can refresh tokens, limited to Row Level Security(RLS).
-// SUPABASE_SERVICE_ROLE_KEY - Admin - level access.Ignores sessions, bypasses RLS.Not for user - facing logic.Use only in trusted backends like cron jobs or admin tools.
+// SB_SERVICE_KEY - Admin - level access.Ignores sessions, bypasses RLS.Not for user - facing logic.Use only in trusted backends like cron jobs or admin tools.
 
 export const useServerSideSupabaseAnonClient = async () => {
      // Use the server-side Supabase client
      const cookieStore = await cookies();
      const supabase = createServerClient(
           process.env.SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          process.env.NEXT_PUBLIC_SB_CLIENT_KEY!,
           {
                cookies: {
                     getAll: () => cookieStore.getAll(),
@@ -36,7 +36,7 @@ export const useServerSideSupabaseServiceRoleClient = async () => {
      const cookieStore = await cookies();
      const supabase = createServerClient(
           process.env.SUPABASE_URL!,
-          process.env.SUPABASE_SERVICE_ROLE_KEY!,
+          process.env.SB_SERVICE_KEY!,
           {
                cookies: {
                     getAll: () => cookieStore.getAll(),

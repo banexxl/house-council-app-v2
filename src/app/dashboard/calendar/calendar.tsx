@@ -187,7 +187,7 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, bui
                     end_date_time: end,
                     start_date_time: start,
                     title: values.title,
-                    client_id: effectiveClientId,
+                    customerId: effectiveClientId,
                     calendar_event_type: values.calendar_event_type,
                     building_id: values.building_id || null,
                     created_at: new Date().toISOString(),

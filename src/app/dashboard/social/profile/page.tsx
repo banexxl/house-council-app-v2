@@ -13,10 +13,10 @@ const PROFILE_FEED_PAGE_SIZE = 5;
 
 export async function ProfilePageContent({ profileId }: { profileId?: string }) {
      // Fetch viewer (needed for ownership checks)
-     const { client, clientMember, tenant, admin } = await getViewer();
-     // const client_id = client ? client.id : clientMember ? clientMember.client_id : null;
+     const { customer, tenant, admin } = await getViewer();
+     // const customerId = client ? client.id : clientMember ? clientMember.customerId : null;
      const viewerTenantId = tenant?.id ?? null;
-     const viewerClientId = client?.id ?? clientMember?.client_id ?? null;
+     const viewerClientId = client?.id ?? clientMember?.customerId ?? null;
 
      if (!client && !clientMember && !tenant && !admin) {
           return null;
@@ -70,7 +70,7 @@ export async function ProfilePageContent({ profileId }: { profileId?: string }) 
                quote: '',
                created_at: now,
                updated_at: now,
-               client_id: viewerClientId,
+               customerId: viewerClientId,
           } as unknown as TenantProfile;
      }
 

@@ -6,7 +6,7 @@ import { getBuildingIDsFromUserId } from 'src/app/actions/building/building-acti
 
 const Page = async () => {
 
-  const { client, clientMember, tenant, admin, userData } = await getViewer();
+  const { customer, tenant, admin, userData } = await getViewer();
 
   if (!client && !clientMember && !tenant && !admin) {
     redirect('/auth/login');
@@ -15,8 +15,8 @@ const Page = async () => {
   let incidents: any[] = [];
 
   if (client || clientMember) {
-    const client_id = client?.id || clientMember?.client_id;
-    const result = await listIncidentReportsForClient(client_id!);
+    const customerId = client?.id || clientMember?.customerId;
+    const result = await listIncidentReportsForClient(customerId!);
     incidents = result.success && Array.isArray(result.data) ? result.data : [];
   } else if (tenant) {
     let buildingIds: string[] = [];

@@ -14,13 +14,13 @@ import { createIncidentNotification } from 'src/utils/notification';
 import type { BaseNotification } from 'src/types/notification';
 import { buildIncidentCreatedEmail } from 'src/libs/email/messages/incident-created';
 
-export const listIncidentReportsForClient = async (client_id: string | null): Promise<{ success: boolean; data?: IncidentReport[]; error?: string }> => {
+export const listIncidentReportsForClient = async (customerId: string | null): Promise<{ success: boolean; data?: IncidentReport[]; error?: string }> => {
 
-  if (!client_id) {
+  if (!customerId) {
     return { success: true, data: [] };
   }
 
-  const buildingListRes = await getAllBuildingsFromClient(client_id);
+  const buildingListRes = await getAllBuildingsFromClient(customerId);
   const buildingIds = Array.isArray(buildingListRes.data) ? buildingListRes.data.map(b => b.id) : [];
   if (buildingListRes.success && buildingListRes.data?.length) {
     return listIncidentReports({ buildingIds });
@@ -72,7 +72,7 @@ export const createIncidentReport = async (
 
     const incidentBuildingId = (data as any)?.building_id as string | null;
     const incidentApartmentId = (data as any)?.apartment_id as string | null;
-    const incidentClientId = (data as any)?.client_id as string | null;
+    const incidentClientId = (data as any)?.customerId as string | null;
     const reporterId = (data as any)?.reported_by as string | null;
 
     let fullAddress = '';
@@ -128,15 +128,9 @@ export const createIncidentReport = async (
         .eq('id', reporterId)
         .maybeSingle();
 
-      const { data: reporterClientMember } = await supabase
-        .from(TABLES.CLIENT_MEMBERS!)
-        .select('user_id')
-        .eq('id', reporterId)
-        .maybeSingle();
-
       const { data: reporterClient } = await supabase
-        .from(TABLES.CLIENTS!)
-        .select('user_id')
+        .from(TABLES.POLAR_CUSTOMERS!)
+        .select('externalId')
         .eq('id', reporterId)
         .maybeSingle();
 
@@ -144,8 +138,7 @@ export const createIncidentReport = async (
       const building_id = incidentBuildingId || '';
       const user_id =
         (reporterTenant as any)?.user_id ||
-        (reporterClientMember as any)?.user_id ||
-        (reporterClient as any)?.user_id ||
+        (reporterClient as any)?.externalId ||
         reporterId;
 
       if (building_id && user_id) {
@@ -287,7 +280,7 @@ export const listIncidentReports = async (filters?: {
     .order('created_at', { ascending: false });
 
   if (filters?.clientId) {
-    query = query.eq('client_id', filters.clientId);
+    query = query.eq('customerId', filters.clientId);
   }
   if (filters?.buildingId) {
     query = query.eq('building_id', filters.buildingId);

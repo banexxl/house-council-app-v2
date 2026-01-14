@@ -151,7 +151,7 @@ export const initClientSubscriptionRealtime = (clientId: string, onEvent: InitLi
      }
 
      // Correct Postgres filter syntax requires operator (eq.)
-     const filter = `client_id=eq.${clientId}`;
+     const filter = `customerId=eq.${clientId}`;
 
      log(`[Realtime] Subscribing to tblClient_Subscription ${filter}`, 'info');
 

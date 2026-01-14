@@ -1,18 +1,12 @@
 import * as Yup from 'yup';
+import { PolarProduct, PolarProductPrice, PolarProductInterval } from './polar-product-types';
 
-export type SubscriptionStatus = 'promo' | 'inactive' | 'archived' | 'scheduled' | 'trial' | 'active';
-
-export const subscriptionPlanStatusOptions: { value: SubscriptionStatus, label: string }[] = [
-     { value: 'promo', label: 'subscriptionPlans.statusPromo' },
-     { value: 'inactive', label: 'subscriptionPlans.statusInactive' },
-     { value: 'archived', label: 'subscriptionPlans.statusArchived' },
-     { value: 'scheduled', label: 'subscriptionPlans.statusScheduled' },
-     { value: 'trial', label: 'subscriptionPlans.statusTrial' },
-     { value: 'active', label: 'subscriptionPlans.statusActive' }
-]
+// Re-export Polar types for convenience
+export type PolarRecurringInterval = PolarProductInterval;
 
 // Client-specific subscription status options (DB values for client subscriptions)
 export type ClientSubscriptionStatus = 'trialing' | 'active' | 'past_due' | 'canceled';
+export type SubscriptionStatus = ClientSubscriptionStatus; // Alias for compatibility
 
 export const clientSubscriptionStatusOptions: { value: ClientSubscriptionStatus; label: string }[] = [
      { value: 'trialing', label: 'subscriptionPlans.statusTrial' },
@@ -21,86 +15,44 @@ export const clientSubscriptionStatusOptions: { value: ClientSubscriptionStatus;
      { value: 'canceled', label: 'subscriptionPlans.statusCanceled' }
 ];
 
-export type SubscriptionPlan = {
-     id: string;
-     created_at: Date;
-     updated_at: Date;
-     name: string;
-     description: string;
-     status: string;
-     is_billed_annually: boolean;
-     annual_discount_percentage: number;
-     is_discounted: boolean;
-     discount_percentage: number;
-     features?: string[];
-     base_price: number;
-     monthly_total_price_per_apartment: number;
-     total_price_per_apartment_with_discounts: number;
-     max_number_of_apartments: number;
-     max_number_of_team_members: number;
-     polar_product_id_monthly?: string | null;
-     polar_product_id_annually?: string | null;
+// Use PolarProduct as the main type for subscription plans
+export type SubscriptionPlan = PolarProduct;
+
+export const subscriptionPlanInitialValues: PolarProduct = {
+     id: '',
+     created_at: new Date().toISOString(),
+     modified_at: new Date().toISOString(),
+     trial_interval: 'day',
+     trial_interval_count: 0,
+     name: '',
+     description: '',
+     recurring_interval: 'month',
+     recurring_interval_count: 1,
+     is_recurring: true,
+     is_archived: false,
+     organization_id: '',
+     metadata: {},
+     prices: [],
+     benefits: [],
+     medias: [],
+     attached_custom_fields: []
 };
 
 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export const subscriptionPlanInitialValues: SubscriptionPlan = {
-     id: '',
-     created_at: new Date(),
-     updated_at: new Date(),
-     name: '',
-     description: '',
-     status: '',
-     is_billed_annually: false,
-     annual_discount_percentage: 0,
-     is_discounted: false,
-     discount_percentage: 0,
-     features: [],
-     base_price: 0,
-     monthly_total_price_per_apartment: 0,
-     total_price_per_apartment_with_discounts: 0,
-     max_number_of_apartments: 1,
-     max_number_of_team_members: 0,
-     polar_product_id_monthly: null,
-     polar_product_id_annually: null
-};
-
-export const polarProductIdSchema = (t: (key: string) => string) =>
-     Yup.string()
-          .nullable()
-          .transform((value) => (value === '' ? null : value))
-          .matches(uuidRegex, { message: t('subscriptionPlans.validation.uuidInvalid'), excludeEmptyString: true })
-          .test(
-               "at-least-one-polar-product-id",
-               t('subscriptionPlans.validation.atLeastOnePolarProductId'),
-               function () {
-                    const { polar_product_id_monthly, polar_product_id_annually } = this.parent as SubscriptionPlan;
-                    return Boolean(polar_product_id_monthly || polar_product_id_annually);
-               }
-          );
-
 export const subscriptionPlanValidationSchema = (t: (key: string) => string) => Yup.object({
      name: Yup.string().required(t('subscriptionPlans.validation.required')),
      description: Yup.string(),
-     status: Yup.string().required(t('subscriptionPlans.validation.required')),
-     is_billed_annually: Yup.boolean(),
-     annual_discount_percentage: Yup.number().min(0, t('subscriptionPlans.validation.mustBePositive')).max(100, t('subscriptionPlans.validation.maxHundred')),
-     is_discounted: Yup.boolean(),
-     discount_percentage: Yup.number().min(0, t('subscriptionPlans.validation.mustBePositive')).max(100, t('subscriptionPlans.validation.maxHundred')),
-     base_price: Yup.number().min(0, t('subscriptionPlans.validation.mustBePositive')).max(1000000, t('subscriptionPlans.validation.maxMillion')),
-     monthly_total_price_per_apartment: Yup.number().min(0, t('subscriptionPlans.validation.mustBePositive')).max(1000000, t('subscriptionPlans.validation.maxMillion')),
-     total_price_per_apartment_with_discounts: Yup.number().min(0, t('subscriptionPlans.validation.mustBePositive')).max(1000000, t('subscriptionPlans.validation.maxMillion')),
-     max_number_of_apartments: Yup.number().min(0, t('subscriptionPlans.validation.mustBePositive')).required(t('subscriptionPlans.validation.required')),
-     max_number_of_team_members: Yup.number().min(0, t('subscriptionPlans.validation.mustBePositive')).required(t('subscriptionPlans.validation.required')),
-     polar_product_id_monthly: polarProductIdSchema(t),
-     polar_product_id_annually: polarProductIdSchema(t),
+     recurring_interval: Yup.string().oneOf(['day', 'week', 'month', 'year']).required(t('subscriptionPlans.validation.required')),
+     recurring_interval_count: Yup.number().min(1, t('subscriptionPlans.validation.mustBePositive')).required(t('subscriptionPlans.validation.required')),
+     is_recurring: Yup.boolean(),
+     is_archived: Yup.boolean(),
+     organization_id: Yup.string().matches(uuidRegex, { message: t('subscriptionPlans.validation.uuidInvalid'), excludeEmptyString: true }),
 });
-
-export type PolarRecurringInterval = "day" | "week" | "month" | "year";
 
 export interface ClientSubscription {
      id: string;
-     client_id: string | null;
+     customerId: string | null;
      subscription_id: string;
      polar_subscription_id: string;
      order_id?: string | null;

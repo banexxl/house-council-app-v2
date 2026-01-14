@@ -5,35 +5,35 @@ import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { PolarOrder } from 'src/types/polar-order-types';
 
-export const readAllClientPayments = async (
-     clientId: string
-): Promise<{ readClientPaymentsSuccess: boolean; readClientPaymentsData?: PolarOrder[]; readClientPaymentsError?: string }> => {
+export const readAllCustomerPayments = async (
+     customerId: string
+): Promise<{ readCustomerPaymentsSuccess: boolean; readCustomerPaymentsData?: PolarOrder[]; readCustomerPaymentsError?: string }> => {
      const start = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
 
      const { data, error } = await supabase
-          .from(TABLES.INVOICES)
+          .from(TABLES.POLAR_INVOICES)
           .select(`*`)
-          .order('created_at', { ascending: false })
-          .eq('client_id', clientId);
+          .order('createdAt', { ascending: false })
+          .eq('customerId', customerId);
 
      if (error) {
           await logServerAction({
-               user_id: clientId,
-               action: 'Read All Client Payments - Error',
-               payload: { clientId },
+               user_id: customerId,
+               action: 'Read All Customer Payments - Error',
+               payload: { customerId },
                status: 'fail',
                error: error.message,
                duration_ms: Date.now() - start,
                type: 'db',
           });
-          return { readClientPaymentsSuccess: false, readClientPaymentsError: error.message };
+          return { readCustomerPaymentsSuccess: false, readCustomerPaymentsError: error.message };
      }
 
      await logServerAction({
-          user_id: clientId,
-          action: 'Read All Client Payments - Success',
-          payload: { clientId },
+          user_id: customerId,
+          action: 'Read All Customer Payments - Success',
+          payload: { customerId },
           status: 'success',
           error: '',
           duration_ms: Date.now() - start,
@@ -43,7 +43,7 @@ export const readAllClientPayments = async (
      // Cast Supabase response to PolarOrder[]
      const orders = (data ?? []) as PolarOrder[];
 
-     return { readClientPaymentsSuccess: true, readClientPaymentsData: orders };
+     return { readCustomerPaymentsSuccess: true, readCustomerPaymentsData: orders };
 };
 
 export const readAllInvoices = async (): Promise<{
@@ -55,9 +55,9 @@ export const readAllInvoices = async (): Promise<{
      const supabase = await useServerSideSupabaseAnonClient();
 
      const { data, error } = await supabase
-          .from(TABLES.INVOICES)
+          .from(TABLES.POLAR_INVOICES)
           .select(`*`)
-          .order('created_at', { ascending: false });
+          .order('createdAt', { ascending: false });
 
      if (error) {
           await logServerAction({
@@ -96,7 +96,7 @@ export const readInvoiceById = async (invoiceId: string): Promise<{
      const supabase = await useServerSideSupabaseAnonClient();
 
      const { data, error } = await supabase
-          .from(TABLES.INVOICES)
+          .from(TABLES.POLAR_INVOICES)
           .select(`*`)
           .eq('id', invoiceId)
           .maybeSingle();

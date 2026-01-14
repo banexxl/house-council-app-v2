@@ -26,7 +26,7 @@ export const changePassword = async ({
 
      try {
           // Verify current password using a standalone client to avoid mutating the session cookies.
-          const verifyClient = createClient(process.env.SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+          const verifyClient = createClient(process.env.SUPABASE_URL!, process.env.NEXT_PUBLIC_SB_CLIENT_KEY!);
           const { error: verifyError } = await verifyClient.auth.signInWithPassword({
                email,
                password: currentPassword,

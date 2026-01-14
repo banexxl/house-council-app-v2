@@ -1,51 +1,63 @@
 "use client";
 
 import { useMemo, useState, type FC, useCallback } from 'react';
-import { Box, Button, SvgIcon } from '@mui/material';
+import { Box, Button, SvgIcon, Chip } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import { useTranslation } from 'react-i18next';
-import { SubscriptionPlan, subscriptionPlanStatusOptions } from 'src/types/subscription-plan';
+import { PolarProduct } from 'src/types/polar-product-types';
 import { GenericTable } from 'src/components/generic-table';
 import { SearchAndBooleanFilters } from 'src/components/filter-list-search';
 import { deleteSubscriptionPlansByIds } from 'src/app/actions/subscription-plan/subscription-plan-actions';
 import { toast } from 'react-hot-toast';
 
-interface SubscriptionListTableProps { subscriptionPlans?: SubscriptionPlan[]; }
+interface SubscriptionListTableProps { subscriptionPlans?: PolarProduct[]; }
 
 export const SubscriptionTable: FC<SubscriptionListTableProps> = ({ subscriptionPlans = [] }) => {
      const { t } = useTranslation();
-     const [filters, setFilters] = useState<{ search?: string; status?: string; billed_annually?: string; discounted?: string }>({});
-     // Control table page so we can reset to first page on new search/filter
+     const [filters, setFilters] = useState<{ search?: string; archived?: string; recurring?: string }>({});
      const [page, setPage] = useState(0);
      const [deletingIds, setDeletingIds] = useState<string[]>([]);
 
      const handleFiltersChange = useCallback((newFilters: typeof filters) => {
           setFilters(newFilters);
-          setPage(0); // reset to first page when any filter (including search) changes
+          setPage(0);
      }, []);
 
      const filtered = useMemo(() => {
           const search = filters.search?.toLowerCase().trim();
           return subscriptionPlans.filter(p => {
-               if (filters.status && p.status !== filters.status) return false;
-               if (filters.billed_annually) {
-                    const want = filters.billed_annually === 'true';
-                    if (p.is_billed_annually !== want) return false;
+               if (filters.archived) {
+                    const want = filters.archived === 'true';
+                    if (p.is_archived !== want) return false;
                }
-               if (filters.discounted) {
-                    const want = filters.discounted === 'true';
-                    if (p.is_discounted !== want) return false;
+               if (filters.recurring) {
+                    const want = filters.recurring === 'true';
+                    if (p.is_recurring !== want) return false;
                }
                if (search) {
-                    // Search ONLY by subscription name (case-insensitive, diacritic-insensitive)
                     const normName = p.name?.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '') || '';
+                    const normDesc = p.description?.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '') || '';
                     const normSearch = search.normalize('NFD').replace(/\p{Diacritic}/gu, '');
-                    if (!normName.includes(normSearch)) return false;
+                    if (!normName.includes(normSearch) && !normDesc.includes(normSearch)) return false;
                }
                return true;
           });
      }, [subscriptionPlans, filters]);
+
+     const formatPrice = (product: PolarProduct) => {
+          if (!product.prices || product.prices.length === 0) return 'N/A';
+          const price = product.prices[0];
+          const amount = (price.price_amount / 100).toFixed(2);
+          return `${price.price_currency} ${amount}`;
+     };
+
+     const formatInterval = (product: PolarProduct) => {
+          if (!product.is_recurring) return t('subscriptionPlans.oneTime');
+          const count = product.recurring_interval_count;
+          const interval = product.recurring_interval;
+          return count === 1 ? t(`subscriptionPlans.interval.${interval}`) : `${count} ${t(`subscriptionPlans.interval.${interval}s`)}`;
+     };
 
      return (
           <Box sx={{ position: 'relative' }}>
@@ -54,21 +66,16 @@ export const SubscriptionTable: FC<SubscriptionListTableProps> = ({ subscription
                     onChange={handleFiltersChange}
                     selects={[
                          {
-                              field: 'status',
-                              label: 'subscriptionPlans.subscriptionPlanStatus',
-                              options: subscriptionPlanStatusOptions.map(o => ({ value: o.value, label: o.label }))
-                         },
-                         {
-                              field: 'billed_annually',
-                              label: 'subscriptionPlans.subscriptionPlanYearlyBilling',
+                              field: 'archived',
+                              label: 'subscriptionPlans.archived',
                               options: [
                                    { value: 'true', label: 'common.lblYes' },
                                    { value: 'false', label: 'common.lblNo' }
                               ]
                          },
                          {
-                              field: 'discounted',
-                              label: 'subscriptionPlans.subscriptionPlanIsDiscounted',
+                              field: 'recurring',
+                              label: 'subscriptionPlans.recurring',
                               options: [
                                    { value: 'true', label: 'common.lblYes' },
                                    { value: 'false', label: 'common.lblNo' }
@@ -76,37 +83,39 @@ export const SubscriptionTable: FC<SubscriptionListTableProps> = ({ subscription
                          }
                     ]}
                />
-               <GenericTable<SubscriptionPlan>
+               <GenericTable<PolarProduct>
                     items={filtered}
                     baseUrl="/dashboard/subscriptions"
                     page={page}
                     onPageChange={(_, newPage) => setPage(newPage)}
                     count={filtered.length}
                     columns={[
-                         { key: 'name', label: t('subscriptionPlans.subscriptionPlanName') },
+                         { key: 'name', label: t('subscriptionPlans.productName') },
+                         { key: 'description', label: t('subscriptionPlans.description') },
                          {
-                              key: 'status',
-                              label: t('subscriptionPlans.subscriptionPlanStatus'),
-                              render: (v) => t(subscriptionPlanStatusOptions.find(s => s.value === v)?.label || '')
+                              key: 'prices',
+                              label: t('subscriptionPlans.price'),
+                              render: (_, product) => formatPrice(product)
                          },
-                         { key: 'base_price', label: t('subscriptionPlans.subscriptionPlanBasePrice') },
                          {
-                              key: 'is_billed_annually',
-                              label: t('subscriptionPlans.subscriptionPlanYearlyBilling'),
+                              key: 'recurring_interval',
+                              label: t('subscriptionPlans.billingInterval'),
+                              render: (_, product) => formatInterval(product)
+                         },
+                         {
+                              key: 'is_recurring',
+                              label: t('subscriptionPlans.recurring'),
                               render: (value: any) => (
                                    <SvgIcon>{value ? <CheckCircleIcon color="success" /> : <CancelIcon color="error" />}</SvgIcon>
                               )
                          },
-                         { key: 'annual_discount_percentage', label: t('subscriptionPlans.subscriptionPlanYearlyDiscount') },
                          {
-                              key: 'is_discounted',
-                              label: t('subscriptionPlans.subscriptionPlanIsDiscounted'),
+                              key: 'is_archived',
+                              label: t('subscriptionPlans.archived'),
                               render: (value: any) => (
-                                   <SvgIcon>{value ? <CheckCircleIcon color="success" /> : <CancelIcon color="error" />}</SvgIcon>
+                                   value ? <Chip label={t('common.archived')} color="default" size="small" /> : <Chip label={t('common.active')} color="success" size="small" />
                               )
-                         },
-                         { key: 'discount_percentage', label: t('subscriptionPlans.subscriptionPlanDiscountPercentage') },
-                         { key: 'monthly_total_price_per_apartment', label: t('subscriptionPlans.subscriptionPlanTotalPrice') }
+                         }
                     ]}
                     rowActions={[
                          (plan, openDialog) => (

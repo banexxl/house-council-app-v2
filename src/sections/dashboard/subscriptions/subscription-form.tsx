@@ -1,43 +1,25 @@
 "use client"
 
 import { useFormik } from "formik"
-import { Card, CardContent, TextField, Typography, Grid, Select, MenuItem, InputLabel, FormControl, Switch, FormControlLabel, Checkbox, Stack, Button, Box } from "@mui/material"
+import { Card, CardContent, TextField, Typography, Grid, Select, MenuItem, InputLabel, FormControl, Switch, FormControlLabel, Stack, Button, Box, Alert, IconButton } from "@mui/material"
 import SaveIcon from "@mui/icons-material/Save"
-import { type SubscriptionPlan, subscriptionPlanInitialValues, subscriptionPlanStatusOptions, subscriptionPlanValidationSchema } from "src/types/subscription-plan"
+import DeleteIcon from "@mui/icons-material/Delete"
+import AddIcon from "@mui/icons-material/Add"
+import { subscriptionPlanInitialValues, subscriptionPlanValidationSchema } from "src/types/subscription-plan"
+import { PolarProduct, PolarProductPrice, PolarProductInterval } from "src/types/polar-product-types"
 import { createSubscriptionPlan, updateSubscriptionPlan } from "src/app/actions/subscription-plan/subscription-plan-actions"
 import toast from "react-hot-toast"
 import { useTranslation } from "react-i18next"
 import { notFound, useRouter } from "next/navigation"
 import { SubscriptionFormHeader } from "./subscription-form-header"
 import { isUUIDv4 } from "src/utils/uuid"
-import { BaseEntity, FeatureExtension } from "src/types/base-entity"
-import { updateFeaturePrice } from "src/app/actions/feature/feature-actions"
-import { useState, useCallback, useEffect, useMemo } from "react"
+import { useState } from "react"
 
 interface SubscriptionEditorProps {
-     features: (BaseEntity & FeatureExtension)[]
-     subscriptionPlansData?: SubscriptionPlan
+     subscriptionPlansData?: PolarProduct
 }
 
-// Helper to compute pricing based on current form values & feature prices
-const getCalculatedPrices = (values: SubscriptionPlan, prices: Record<string, number>) => {
-     let baseTotal = Number(values.base_price) || 0;
-     values.features?.forEach((featureId: any) => {
-          const featurePrice = prices[featureId];
-          if (!isNaN(featurePrice)) baseTotal += featurePrice;
-     });
-     const monthly_total_price_per_apartment = parseFloat(baseTotal.toFixed(2));
-     let discountedPrice = monthly_total_price_per_apartment;
-     if (values.is_discounted) discountedPrice *= 1 - (values.discount_percentage || 0) / 100;
-     if (values.is_billed_annually) {
-          discountedPrice *= 12;
-          discountedPrice *= 1 - (values.annual_discount_percentage || 0) / 100;
-     }
-     const total_price_per_apartment_with_discounts = parseFloat(discountedPrice.toFixed(2));
-     return { monthly_total_price_per_apartment, total_price_per_apartment_with_discounts };
-};
-
-export default function SubscriptionEditor({ features, subscriptionPlansData }: SubscriptionEditorProps) {
+export default function SubscriptionEditor({ subscriptionPlansData }: SubscriptionEditorProps) {
      const { t } = useTranslation()
      const router = useRouter()
 
@@ -45,98 +27,76 @@ export default function SubscriptionEditor({ features, subscriptionPlansData }: 
           notFound()
      }
 
-     const [featurePrices, setFeaturePrices] = useState<Record<string, number>>(
-          Object.fromEntries(features.map((f) => [f.id!, f.price_per_month]))
+     const [prices, setPrices] = useState<PolarProductPrice[]>(
+          subscriptionPlansData?.prices || []
      );
 
      const formik = useFormik({
           initialValues: {
                ...subscriptionPlanInitialValues,
                ...subscriptionPlansData,
-               base_price: subscriptionPlansData?.base_price || 0,
-               features: subscriptionPlansData?.features?.map((f: any) => f.id) || [],
           },
           validationSchema: subscriptionPlanValidationSchema(t),
-          onSubmit: async (values: SubscriptionPlan) => {
-               const { monthly_total_price_per_apartment, total_price_per_apartment_with_discounts } = getCalculatedPrices(values, featurePrices);
-               const payload = { ...values, id: subscriptionPlansData?.id, monthly_total_price_per_apartment, total_price_per_apartment_with_discounts } as SubscriptionPlan;
+          onSubmit: async (values: PolarProduct) => {
+               const payload = { 
+                    ...values, 
+                    id: subscriptionPlansData?.id,
+                    prices: prices
+               } as PolarProduct;
 
                try {
                     let response;
                     if (values.id && values.id !== '') {
-                         response = await updateSubscriptionPlan({ ...payload, id: subscriptionPlansData!.id });
+                         response = await updateSubscriptionPlan(payload);
                          if (response.updateSubscriptionPlanSuccess) {
-                              toast.success("Subscription plan updated successfully!");
+                              toast.success("Product updated successfully!");
                               formik.resetForm({ values: { ...formik.values } });
                          } else {
-                              toast.error("Failed to update subscription plan.");
+                              toast.error("Failed to update product.");
                          }
                     } else {
                          response = await createSubscriptionPlan(payload);
                          if (response.createSubscriptionPlanSuccess) {
-                              toast.success("Subscription plan created successfully!");
+                              toast.success("Product created successfully!");
                               router.push(`/dashboard/subscriptions/${response.createdSubscriptionPlan?.id}`);
                          } else {
-                              toast.error("Failed to create subscription plan.");
+                              toast.error("Failed to create product.");
                          }
                     }
                } catch (error) {
-                    toast.error("An error occurred while saving the subscription plan.");
+                    toast.error("An error occurred while saving the product.");
                } finally {
                     formik.setSubmitting(false);
                }
           }
      });
-     const handleFeaturePriceChange = useCallback((featureId: string, price: number) => {
-          setFeaturePrices((prev) => ({ ...prev, [featureId]: price }));
-     }, []);
 
-     const handleFeaturePriceSave = useCallback(async (featureId: string) => {
-          const price = featurePrices[featureId];
-          const { success } = await updateFeaturePrice(featureId, { price_per_month: price });
-          if (success) {
-               toast.success("Feature price updated successfully!");
-               const { monthly_total_price_per_apartment, total_price_per_apartment_with_discounts } = getCalculatedPrices(formik.values, featurePrices);
-               if (subscriptionPlansData?.id) {
-                    await updateSubscriptionPlan({
-                         ...formik.values,
-                         id: subscriptionPlansData.id,
-                         monthly_total_price_per_apartment,
-                         total_price_per_apartment_with_discounts,
-                    });
-               }
-          } else {
-               toast.error("Failed to update feature price.");
-          }
-     }, [featurePrices, formik.values, subscriptionPlansData]);
+     const handleAddPrice = () => {
+          setPrices([...prices, {
+               id: crypto.randomUUID(),
+               created_at: new Date().toISOString(),
+               modified_at: new Date().toISOString(),
+               source: 'manual',
+               amount_type: 'fixed',
+               is_archived: false,
+               product_id: subscriptionPlansData?.id || '',
+               type: 'recurring',
+               recurring_interval: 'month',
+               price_currency: 'USD',
+               price_amount: 0,
+               legacy: false
+          }]);
+     };
 
-     // Memoized calculated prices for display
-     const memoPrices = useMemo(() => {
-          return getCalculatedPrices(formik.values, featurePrices);
-          // eslint-disable-next-line react-hooks/exhaustive-deps
-     }, [
-          formik.values.base_price,
-          formik.values.is_discounted,
-          formik.values.discount_percentage,
-          formik.values.is_billed_annually,
-          formik.values.annual_discount_percentage,
-          formik.values.features,
-          featurePrices
-     ]);
+     const handleRemovePrice = (index: number) => {
+          setPrices(prices.filter((_, i) => i !== index));
+     };
 
-     // Debounce updating form fields for monthly_total_price_per_apartment & total_price_per_apartment_with_discounts
-     useEffect(() => {
-          const timer = setTimeout(() => {
-               const { monthly_total_price_per_apartment, total_price_per_apartment_with_discounts } = memoPrices;
-               if (formik.values.monthly_total_price_per_apartment !== monthly_total_price_per_apartment) {
-                    formik.setFieldValue('monthly_total_price_per_apartment', monthly_total_price_per_apartment, false);
-               }
-               if (formik.values.total_price_per_apartment_with_discounts !== total_price_per_apartment_with_discounts) {
-                    formik.setFieldValue('total_price_per_apartment_with_discounts', total_price_per_apartment_with_discounts, false);
-               }
-          }, 250);
-          return () => clearTimeout(timer);
-     }, [memoPrices, formik.values.monthly_total_price_per_apartment, formik.values.total_price_per_apartment_with_discounts, formik.setFieldValue]);
+     const handlePriceChange = (index: number, field: keyof PolarProductPrice, value: any) => {
+          const updated = [...prices];
+          updated[index] = { ...updated[index], [field]: value };
+          setPrices(updated);
+     };
 
      return (
           <form onSubmit={formik.handleSubmit}>
@@ -146,11 +106,14 @@ export default function SubscriptionEditor({ features, subscriptionPlansData }: 
                          <Stack spacing={3}>
                               <Card>
                                    <CardContent>
+                                        <Typography variant="h6" gutterBottom>
+                                             {t("subscriptionPlans.basicInfo")}
+                                        </Typography>
                                         <TextField
                                              fullWidth
                                              id="name"
                                              name="name"
-                                             label={t("subscriptionPlans.subscriptionPlanName")}
+                                             label={t("subscriptionPlans.productName")}
                                              value={formik.values.name}
                                              onChange={formik.handleChange}
                                              error={formik.touched.name && Boolean(formik.errors.name)}
@@ -162,7 +125,7 @@ export default function SubscriptionEditor({ features, subscriptionPlansData }: 
                                              fullWidth
                                              id="description"
                                              name="description"
-                                             label={t("subscriptionPlans.subscriptionPlanDescription")}
+                                             label={t("subscriptionPlans.description")}
                                              value={formik.values.description}
                                              onChange={formik.handleChange}
                                              error={formik.touched.description && Boolean(formik.errors.description)}
@@ -172,399 +135,240 @@ export default function SubscriptionEditor({ features, subscriptionPlansData }: 
                                              multiline
                                              rows={4}
                                         />
+                                        <TextField
+                                             fullWidth
+                                             id="organization_id"
+                                             name="organization_id"
+                                             label={t("subscriptionPlans.organizationId")}
+                                             value={formik.values.organization_id}
+                                             onChange={formik.handleChange}
+                                             error={formik.touched.organization_id && Boolean(formik.errors.organization_id)}
+                                             helperText={formik.touched.organization_id && formik.errors.organization_id}
+                                             margin="normal"
+                                             onBlur={formik.handleBlur}
+                                             placeholder="your-polar-organization-id"
+                                        />
+                                        <FormControlLabel
+                                             control={
+                                                  <Switch
+                                                       id="is_archived"
+                                                       name="is_archived"
+                                                       checked={formik.values.is_archived}
+                                                       onChange={formik.handleChange}
+                                                  />
+                                             }
+                                             label={t("subscriptionPlans.archived")}
+                                             sx={{ mt: 2 }}
+                                        />
+                                   </CardContent>
+                              </Card>
+
+                              <Card>
+                                   <CardContent>
+                                        <Typography variant="h6" gutterBottom>
+                                             {t("subscriptionPlans.recurringSettings")}
+                                        </Typography>
+                                        <FormControlLabel
+                                             control={
+                                                  <Switch
+                                                       id="is_recurring"
+                                                       name="is_recurring"
+                                                       checked={formik.values.is_recurring}
+                                                       onChange={formik.handleChange}
+                                                  />
+                                             }
+                                             label={t("subscriptionPlans.recurring")}
+                                        />
+                                        {formik.values.is_recurring && (
+                                             <>
+                                                  <FormControl fullWidth margin="normal">
+                                                       <InputLabel id="recurring-interval-label">
+                                                            {t("subscriptionPlans.recurringInterval")}
+                                                       </InputLabel>
+                                                       <Select
+                                                            labelId="recurring-interval-label"
+                                                            id="recurring_interval"
+                                                            name="recurring_interval"
+                                                            value={formik.values.recurring_interval}
+                                                            onChange={formik.handleChange}
+                                                            label={t("subscriptionPlans.recurringInterval")}
+                                                       >
+                                                            <MenuItem value="day">{t("subscriptionPlans.interval.day")}</MenuItem>
+                                                            <MenuItem value="week">{t("subscriptionPlans.interval.week")}</MenuItem>
+                                                            <MenuItem value="month">{t("subscriptionPlans.interval.month")}</MenuItem>
+                                                            <MenuItem value="year">{t("subscriptionPlans.interval.year")}</MenuItem>
+                                                       </Select>
+                                                  </FormControl>
+                                                  <TextField
+                                                       fullWidth
+                                                       id="recurring_interval_count"
+                                                       name="recurring_interval_count"
+                                                       label={t("subscriptionPlans.recurringIntervalCount")}
+                                                       type="number"
+                                                       value={formik.values.recurring_interval_count}
+                                                       onChange={formik.handleChange}
+                                                       error={formik.touched.recurring_interval_count && Boolean(formik.errors.recurring_interval_count)}
+                                                       helperText={formik.touched.recurring_interval_count && formik.errors.recurring_interval_count}
+                                                       margin="normal"
+                                                       slotProps={{ htmlInput: { min: 1, step: "1" } }}
+                                                       onBlur={formik.handleBlur}
+                                                  />
+                                             </>
+                                        )}
+                                   </CardContent>
+                              </Card>
+
+                              <Card>
+                                   <CardContent>
+                                        <Typography variant="h6" gutterBottom>
+                                             {t("subscriptionPlans.trialSettings")}
+                                        </Typography>
                                         <FormControl fullWidth margin="normal">
-                                             <InputLabel id="status-label">{t("subscriptionPlans.subscriptionPlanStatus")}</InputLabel>
+                                             <InputLabel id="trial-interval-label">
+                                                  {t("subscriptionPlans.trialInterval")}
+                                             </InputLabel>
                                              <Select
-                                                  labelId="status-label"
-                                                  id="status"
-                                                  name="status"
-                                                  value={formik.values.status}
+                                                  labelId="trial-interval-label"
+                                                  id="trial_interval"
+                                                  name="trial_interval"
+                                                  value={formik.values.trial_interval}
                                                   onChange={formik.handleChange}
-                                                  label={t("subscriptionPlans.subscriptionPlanStatus")}
+                                                  label={t("subscriptionPlans.trialInterval")}
                                              >
-                                                  {subscriptionPlanStatusOptions.map((status) => (
-                                                       <MenuItem key={status.value} value={status.value}>
-                                                            {t(status.label)}
-                                                       </MenuItem>
-                                                  ))}
+                                                  <MenuItem value="day">{t("subscriptionPlans.interval.day")}</MenuItem>
+                                                  <MenuItem value="week">{t("subscriptionPlans.interval.week")}</MenuItem>
+                                                  <MenuItem value="month">{t("subscriptionPlans.interval.month")}</MenuItem>
+                                                  <MenuItem value="year">{t("subscriptionPlans.interval.year")}</MenuItem>
                                              </Select>
                                         </FormControl>
                                         <TextField
                                              fullWidth
-                                             id="max_number_of_apartments"
-                                             name="max_number_of_apartments"
-                                             label={t("subscriptionPlans.susbcriptionPlanMaxNumberOfAppartments")}
+                                             id="trial_interval_count"
+                                             name="trial_interval_count"
+                                             label={t("subscriptionPlans.trialIntervalCount")}
                                              type="number"
-                                             value={formik.values.max_number_of_apartments}
+                                             value={formik.values.trial_interval_count}
                                              onChange={formik.handleChange}
-                                             error={formik.touched.max_number_of_apartments && Boolean(formik.errors.max_number_of_apartments)}
-                                             helperText={formik.touched.max_number_of_apartments && formik.errors.max_number_of_apartments}
                                              margin="normal"
-                                             slotProps={{ htmlInput: { min: 0, max: 1000000, step: "1" } }}
+                                             slotProps={{ htmlInput: { min: 0, step: "1" } }}
                                              onBlur={formik.handleBlur}
-                                        />
-                                        <TextField
-                                             fullWidth
-                                             id="max_number_of_team_members"
-                                             name="max_number_of_team_members"
-                                             label={t("subscriptionPlans.susbcriptionPlanMaxNumberOfTeamMembers")}
-                                             type="number"
-                                             value={formik.values.max_number_of_team_members}
-                                             onChange={formik.handleChange}
-                                             error={formik.touched.max_number_of_team_members && Boolean(formik.errors.max_number_of_team_members)}
-                                             helperText={formik.touched.max_number_of_team_members && formik.errors.max_number_of_team_members}
-                                             margin="normal"
-                                             slotProps={{ htmlInput: { min: 0, max: 1000000, step: "1" } }}
-                                             onBlur={formik.handleBlur}
-                                        />
-                                        <TextField
-                                             fullWidth
-                                             id="base_price"
-                                             name="base_price"
-                                             label={t("subscriptionPlans.subscriptionPlanBasePrice")}
-                                             type="number"
-                                             value={formik.values.base_price}
-                                             onChange={(event) => {
-                                                  const value = event.target.value;
-                                                  if (value === "") { // allow clearing
-                                                       formik.setFieldValue("base_price", "");
-                                                  } else if (!isNaN(Number(value))) {
-                                                       formik.setFieldValue("base_price", value);
-                                                  }
-                                             }}
-                                             error={formik.touched.base_price && Boolean(formik.errors.base_price)}
-                                             helperText={formik.touched.base_price && formik.errors.base_price}
-                                             margin="normal"
-                                             slotProps={{ htmlInput: { min: 0, max: 1000000, step: "0.01" } }}
-                                             onBlur={() => {
-                                                  let value = formik.values.base_price;
-                                                  if (value === parseFloat("") || value === null || value === undefined || value === ('' as any)) {
-                                                       value = 0;
-                                                  } else {
-                                                       value = Math.max(0, Math.min(1000000, Number(value)));
-                                                       value = parseFloat((value as number).toFixed(2));
-                                                  }
-                                                  formik.setFieldValue("base_price", value);
-                                             }}
+                                             helperText={t("subscriptionPlans.trialIntervalCountHelper")}
                                         />
                                    </CardContent>
                               </Card>
-                              <Card>
-                                   <CardContent>
-                                        <Typography variant="h6" gutterBottom>
-                                             {t("subscriptionPlans.subscriptionPlanPricingOptions")}
-                                        </Typography>
-                                        <FormControlLabel
-                                             control={
-                                                  <Switch
-                                                       id="is_billed_annually"
-                                                       name="is_billed_annually"
-                                                       checked={formik.values.is_billed_annually}
-                                                       onChange={(event) => {
-                                                            formik.handleChange(event);
-                                                            if (!event.target.checked) {
-                                                                 formik.setFieldValue("annual_discount_percentage", 0);
-                                                            }
-                                                       }}
-                                                  />
-                                             }
-                                             label={t("subscriptionPlans.subscriptionPlanYearlyBilling")}
-                                        />
-                                        {formik.values.is_billed_annually && (
-                                             <TextField
-                                                  fullWidth
-                                                  id="annual_discount_percentage"
-                                                  name="annual_discount_percentage"
-                                                  label={t("subscriptionPlans.subscriptionPlanYearlyDiscount")}
-                                                  type="number"
-                                                  value={formik.values.annual_discount_percentage}
-                                                  onChange={(event) => {
-                                                       let value = event.target.value;
-
-                                                       // Allow empty input temporarily so users can delete and retype
-                                                       if (value === "") {
-                                                            formik.setFieldValue("annual_discount_percentage", "")
-                                                            return;
-                                                       }
-
-                                                       // Convert to a number and ensure it's within the range 0-100
-                                                       let numberValue = Number(value);
-
-                                                       if (isNaN(numberValue) || numberValue < 0 || numberValue > 100) {
-                                                            numberValue = 0; // Set to 0 if it's invalid
-                                                       }
-
-                                                       formik.setFieldValue("annual_discount_percentage", numberValue)
-                                                  }}
-                                                  error={formik.touched.annual_discount_percentage && Boolean(formik.errors.annual_discount_percentage)}
-                                                  helperText={formik.touched.annual_discount_percentage && formik.errors.annual_discount_percentage}
-                                                  margin="normal"
-                                                  slotProps={{ htmlInput: { min: 0, max: 100 } }}
-                                                  onBlur={() => {
-                                                       let value = formik.values.annual_discount_percentage;
-
-                                                       // If input is empty, set it to 0
-                                                       if (value === null || value === undefined) {
-                                                            value = 0;
-                                                       } else {
-                                                            value = Math.max(0, Math.min(100, Number(value))); // Ensure within range
-                                                       }
-
-                                                       formik.setFieldValue("annual_discount_percentage", value)
-                                                  }}
-                                             />
-                                        )}
-                                        <FormControlLabel
-                                             control={
-                                                  <Switch
-                                                       id="is_discounted"
-                                                       name="is_discounted"
-                                                       checked={formik.values.is_discounted}
-                                                       onChange={(event) => {
-                                                            formik.handleChange(event);
-                                                            if (!event.target.checked) {
-                                                                 formik.setFieldValue("discount_percentage", 0);
-                                                            }
-                                                       }}
-                                                  />
-                                             }
-                                             label={t("subscriptionPlans.subscriptionPlanIsDiscounted")}
-                                        />
-                                        {formik.values.is_discounted && (
-                                             <TextField
-                                                  fullWidth
-                                                  id="discount_percentage"
-                                                  name="discount_percentage"
-                                                  label={t("subscriptionPlans.subscriptionPlanDiscountPercentage")}
-                                                  type="number"
-                                                  value={formik.values.discount_percentage}
-                                                  onChange={(event) => {
-                                                       let value = event.target.value;
-
-                                                       // Allow empty input temporarily so users can delete and retype
-                                                       if (value === "") {
-                                                            formik.setFieldValue("discount_percentage", "");
-                                                            return;
-                                                       }
-
-                                                       // Convert to a number and ensure it's within the range 0-100
-                                                       let numberValue = Number(value);
-
-                                                       if (isNaN(numberValue) || numberValue < 0 || numberValue > 100) {
-                                                            numberValue = 0; // Set to 0 if it's invalid
-                                                       }
-
-                                                       formik.setFieldValue("discount_percentage", numberValue)
-                                                  }}
-                                                  error={formik.touched.discount_percentage && Boolean(formik.errors.discount_percentage)}
-                                                  helperText={formik.touched.discount_percentage && formik.errors.discount_percentage}
-                                                  margin="normal"
-                                                  slotProps={{ htmlInput: { min: 0, max: 100 } }}
-                                                  onBlur={() => {
-                                                       let value = formik.values.discount_percentage;
-
-                                                       // If input is empty, set it to 0
-                                                       if (value === null || value === undefined) {
-                                                            value = 0;
-                                                       } else {
-                                                            value = Math.max(0, Math.min(100, Number(value))); // Ensure within range
-                                                       }
-
-                                                       formik.setFieldValue("discount_percentage", value)
-                                                  }}
-                                             />
-
-                                        )}
-                                        <Typography variant="h5" className="mt-4">
-                                             Monthly price per apartment: ${memoPrices.monthly_total_price_per_apartment.toFixed(2)}<br />
-                                             Total per apartment with discounts: ${memoPrices.total_price_per_apartment_with_discounts.toFixed(2)}{" "}
-                                             {formik.values.is_billed_annually ? t("subscriptionPlans.subscriptionPlanYearly") : t("subscriptionPlans.subscriptionPlanMonthly")}
-                                        </Typography>
-                                   </CardContent>
-                              </Card>
-                         </Stack >
+                         </Stack>
                     </Grid>
+
                     <Grid size={{ xs: 12, md: 6 }}>
                          <Card>
                               <CardContent>
-                                   <Stack direction="row" spacing={5} alignItems="center">
-                                        <Typography variant="h6" gutterBottom>
-                                             Features
+                                   <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+                                        <Typography variant="h6">
+                                             {t("subscriptionPlans.prices")}
                                         </Typography>
                                         <Button
-                                             onClick={() => {
-                                                  if (formik.values.features?.length === features.length) {
-                                                       formik.setFieldValue("features", []);
-                                                  } else {
-                                                       formik.setFieldValue("features", features.map((feature: any) => feature.id));
-                                                  }
-                                             }}
+                                             variant="outlined"
+                                             size="small"
+                                             startIcon={<AddIcon />}
+                                             onClick={handleAddPrice}
                                         >
-                                             {formik.values.features?.length === features.length ? t("common.deselectAll") : t("common.selectAll")}
+                                             {t("subscriptionPlans.addPrice")}
                                         </Button>
                                    </Stack>
-                                   {features?.length > 0 &&
-                                        features.map((feature: BaseEntity & FeatureExtension) => {
-                                             const featureId = feature.id!;
-                                             const isChecked = formik.values.features?.includes(featureId);
-                                             const price = featurePrices[featureId] ?? 0;
 
-                                             return (
-                                                  <Box
-                                                       key={featureId}
-                                                       sx={{
-                                                            display: 'grid',
-                                                            gridTemplateColumns: {
-                                                                 xs: '1fr 1fr',
-                                                                 sm: '1fr 90px 80px'
-                                                            },
-                                                            alignItems: 'center',
-                                                            gap: 1,
-                                                            mb: 2,
-                                                       }}
+                                   {prices.length === 0 && (
+                                        <Alert severity="info">
+                                             {t("subscriptionPlans.noPricesYet")}
+                                        </Alert>
+                                   )}
+
+                                   {prices.map((price, index) => (
+                                        <Card key={index} sx={{ mb: 2, p: 2, bgcolor: 'background.default' }}>
+                                             <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
+                                                  <Typography variant="subtitle2">
+                                                       {t("subscriptionPlans.price")} #{index + 1}
+                                                  </Typography>
+                                                  <IconButton
+                                                       size="small"
+                                                       color="error"
+                                                       onClick={() => handleRemovePrice(index)}
                                                   >
-                                                       <FormControlLabel
-                                                            sx={{
-                                                                 m: 0,
-                                                                 pr: 1,
-                                                                 alignItems: 'center',
-                                                                 gridColumn: { xs: '1 / -1', sm: '1 / 2' },
-                                                                 '.MuiFormControlLabel-label': {
-                                                                      display: 'inline-block',
-                                                                      lineHeight: 1.2,
-                                                                      paddingTop: '2px'
-                                                                 }
-                                                            }}
-                                                            control={
-                                                                 <Checkbox
-                                                                      id={`feature-${featureId}`}
-                                                                      name="features"
-                                                                      checked={isChecked}
-                                                                      onChange={(e) => {
-                                                                           const updatedFeatures = e.target.checked
-                                                                                ? [...formik.values.features!, featureId]
-                                                                                : formik.values.features!.filter((f) => f !== featureId);
-                                                                           formik.setFieldValue("features", updatedFeatures);
-                                                                      }}
-                                                                 />
-                                                            }
-                                                            label={
-                                                                 <Typography
-                                                                      variant="body2"
-                                                                      sx={{
-                                                                           pr: 2,
-                                                                           whiteSpace: { xs: 'normal', sm: 'nowrap' },
-                                                                           overflow: 'hidden',
-                                                                           textOverflow: 'ellipsis',
-                                                                      }}
-                                                                 >
-                                                                      {feature.name}
-                                                                 </Typography>
-                                                            }
-                                                       />
-                                                       <TextField
-                                                            type="number"
-                                                            value={price}
-                                                            onChange={(e) => {
-                                                                 const val = parseFloat(e.target.value);
-                                                                 if (!isNaN(val)) {
-                                                                      handleFeaturePriceChange(featureId, val);
-                                                                 }
-                                                            }}
-                                                            slotProps={{ htmlInput: { step: '0.01', min: 0 } }}
-                                                            size="small"
-                                                            sx={{
-                                                                 width: { xs: '100%', sm: '90px' },
-                                                                 gridColumn: { xs: '1 / 2', sm: '2 / 3' },
-                                                                 // Match MUI small button height (~32px)
-                                                                 '& .MuiInputBase-root': {
-                                                                      height: 35,
-                                                                      width: 80,
-                                                                      fontSize: 13,
-                                                                 },
-                                                                 '& input': { textAlign: 'right', fontSize: 13, p: 0, height: '32px !important' },
-                                                            }}
-                                                            disabled={!isChecked}
-                                                       />
-                                                       <Button
-                                                            variant="contained"
-                                                            size="small"
-                                                            startIcon={<SaveIcon />}
-                                                            onClick={() => handleFeaturePriceSave(featureId)}
-                                                            disabled={!isChecked || price === feature.price_per_month}
-                                                            sx={{
-                                                                 minWidth: { xs: 'auto', sm: 80 },
-                                                                 px: 1.5,
-                                                                 fontSize: 12,
-                                                                 justifySelf: { xs: 'start', sm: 'stretch' },
-                                                                 gridColumn: { xs: '2 / 3', sm: '3 / 4' }
-                                                            }}
+                                                       <DeleteIcon />
+                                                  </IconButton>
+                                             </Stack>
+
+                                             <TextField
+                                                  fullWidth
+                                                  label={t("subscriptionPlans.priceAmount")}
+                                                  type="number"
+                                                  value={price.price_amount / 100}
+                                                  onChange={(e) => handlePriceChange(index, 'price_amount', Math.round(parseFloat(e.target.value) * 100))}
+                                                  slotProps={{ htmlInput: { min: 0, step: "0.01" } }}
+                                                  margin="dense"
+                                                  helperText={t("subscriptionPlans.priceAmountHelper")}
+                                             />
+
+                                             <FormControl fullWidth margin="dense">
+                                                  <InputLabel>{t("subscriptionPlans.currency")}</InputLabel>
+                                                  <Select
+                                                       value={price.price_currency}
+                                                       onChange={(e) => handlePriceChange(index, 'price_currency', e.target.value)}
+                                                       label={t("subscriptionPlans.currency")}
+                                                  >
+                                                       <MenuItem value="USD">USD</MenuItem>
+                                                       <MenuItem value="EUR">EUR</MenuItem>
+                                                       <MenuItem value="GBP">GBP</MenuItem>
+                                                       <MenuItem value="JPY">JPY</MenuItem>
+                                                  </Select>
+                                             </FormControl>
+
+                                             <FormControl fullWidth margin="dense">
+                                                  <InputLabel>{t("subscriptionPlans.priceType")}</InputLabel>
+                                                  <Select
+                                                       value={price.type}
+                                                       onChange={(e) => handlePriceChange(index, 'type', e.target.value)}
+                                                       label={t("subscriptionPlans.priceType")}
+                                                  >
+                                                       <MenuItem value="recurring">{t("subscriptionPlans.recurring")}</MenuItem>
+                                                       <MenuItem value="one_time">{t("subscriptionPlans.oneTime")}</MenuItem>
+                                                  </Select>
+                                             </FormControl>
+
+                                             {price.type === 'recurring' && (
+                                                  <FormControl fullWidth margin="dense">
+                                                       <InputLabel>{t("subscriptionPlans.recurringInterval")}</InputLabel>
+                                                       <Select
+                                                            value={price.recurring_interval}
+                                                            onChange={(e) => handlePriceChange(index, 'recurring_interval', e.target.value)}
+                                                            label={t("subscriptionPlans.recurringInterval")}
                                                        >
-                                                            {t('common.btnSave')}
-                                                       </Button>
-                                                  </Box>
-                                             );
-                                        })}
-
-
+                                                            <MenuItem value="day">{t("subscriptionPlans.interval.day")}</MenuItem>
+                                                            <MenuItem value="week">{t("subscriptionPlans.interval.week")}</MenuItem>
+                                                            <MenuItem value="month">{t("subscriptionPlans.interval.month")}</MenuItem>
+                                                            <MenuItem value="year">{t("subscriptionPlans.interval.year")}</MenuItem>
+                                                       </Select>
+                                                  </FormControl>
+                                             )}
+                                        </Card>
+                                   ))}
                               </CardContent>
                          </Card>
-                         <Card sx={{ mt: 3 }}>
-                              <CardContent>
-                                   <Typography variant="h6" gutterBottom>
-                                        {t("subscriptionPlans.externalUUIDs")}
-                                   </Typography>
-                                   <TextField
-                                        fullWidth
-                                        id="polar_product_id_monthly"
-                                        name="polar_product_id_monthly"
-                                        label={t("subscriptionPlans.polarProductIdMonthly")}
-                                        value={formik.values.polar_product_id_monthly || ""}
-                                        onChange={(event) => formik.setFieldValue("polar_product_id_monthly", event.target.value)}
-                                        onBlur={() => formik.setFieldTouched("polar_product_id_monthly", true)}
-                                        placeholder="be9ce4b1-164e-4f38-933d-fc451744820a"
-                                        error={formik.touched.polar_product_id_monthly && Boolean(formik.errors.polar_product_id_monthly)}
-                                        helperText={
-                                             formik.touched.polar_product_id_monthly && formik.errors.polar_product_id_monthly
-                                                  ? formik.errors.polar_product_id_monthly
-                                                  : t("subscriptionPlans.polarProductIdHelper")
-                                        }
-                                        sx={{ mb: 2 }}
-                                   />
-                                   <TextField
-                                        fullWidth
-                                        id="polar_product_id_annually"
-                                        name="polar_product_id_annually"
-                                        label={t("subscriptionPlans.polarProductIdAnnually")}
-                                        value={formik.values.polar_product_id_annually || ""}
-                                        onChange={(event) => formik.setFieldValue("polar_product_id_annually", event.target.value)}
-                                        onBlur={() => formik.setFieldTouched("polar_product_id_annually", true)}
-                                        placeholder="be9ce4b1-164e-4f38-933d-fc451744820a"
-                                        error={formik.touched.polar_product_id_annually && Boolean(formik.errors.polar_product_id_annually)}
-                                        helperText={
-                                             formik.touched.polar_product_id_annually && formik.errors.polar_product_id_annually
-                                                  ? formik.errors.polar_product_id_annually
-                                                  : t("subscriptionPlans.polarProductIdHelper")
-                                        }
-                                   />
-
-                              </CardContent>
-                         </Card>
-
                     </Grid>
-                    <Grid size={{ xs: 12, md: 6 }}>
+
+                    <Grid size={{ xs: 12 }}>
                          <Button
                               loading={formik.isSubmitting}
                               type="submit"
                               variant="contained"
                               color="primary"
                               disabled={!formik.isValid || formik.isSubmitting || !formik.dirty}
+                              startIcon={<SaveIcon />}
                          >
                               {t("common.btnSave")}
                          </Button>
                     </Grid>
-               </Grid >
-          </form >
+               </Grid>
+          </form>
      )
 }
 

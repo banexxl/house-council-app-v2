@@ -12,7 +12,7 @@ export default async function Page({ params }: {
   const { buildingid } = await params
 
   const { admin, client, tenant, clientMember, userData, error } = await getViewer();
-  const client_id = client ? client.id : clientMember ? clientMember.client_id : null;
+  const customerId = client ? client.id : clientMember ? clientMember.customerId : null;
   if (!admin && !client && !clientMember && !tenant) {
     redirect('/auth/login');
   }
@@ -23,7 +23,7 @@ export default async function Page({ params }: {
 
   const [buildingData, locationData] = await Promise.all([
     getBuildingById(buildingid as string),
-    getAllNotOcupiedLocationsAddedByClient(client_id!)
+    getAllNotOcupiedLocationsAddedByClient(customerId!)
   ]);
 
   return (

@@ -9,8 +9,8 @@ import { paths } from 'src/paths';
 
 export default async function TenantsPage() {
 
-  const { client, clientMember, tenant, admin, userData } = await getViewer();
-  const client_id = client ? client.id : clientMember ? clientMember.client_id : null;
+  const { customer, tenant, admin, userData } = await getViewer();
+  const customerId = client ? client.id : clientMember ? clientMember.customerId : null;
   if (!client && !clientMember && !tenant && !admin) {
     redirect(paths.auth.login);
   }
@@ -19,7 +19,7 @@ export default async function TenantsPage() {
     const { success, data } = await getAllTenants();
     tenants = Array.isArray(data) ? data : [];
   } else if (client || clientMember) {
-    const { data } = await getAllTenantsFromClientsBuildings(client_id!);
+    const { data } = await getAllTenantsFromClientsBuildings(customerId!);
     tenants = Array.isArray(data) ? data : [];
   } else if (tenant) {
     // Redirect tenant to products page

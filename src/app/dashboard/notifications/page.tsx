@@ -6,7 +6,7 @@ import { logout } from 'src/app/auth/actions';
 import { redirect } from 'next/navigation';
 
 export default async function NotificationsPage() {
-     const { client, clientMember, tenant, admin } = await getViewer();
+     const { customer, tenant, admin } = await getViewer();
      if (!client && !clientMember && !tenant && !admin) {
           redirect('/auth/login');
      }

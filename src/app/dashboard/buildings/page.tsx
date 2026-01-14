@@ -12,7 +12,7 @@ import { resolveClientFromClientOrMember } from "src/app/actions/client/client-m
 export default async function Page() {
 
   let buildings: Building[] = [];
-  const { client, clientMember, tenant, admin } = await getViewer();
+  const { customer, tenant, admin } = await getViewer();
   if (!client && !clientMember && !tenant && !admin) {
     redirect('/auth/login');
   }

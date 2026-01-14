@@ -260,7 +260,7 @@ export default function PollCreate({
           // Prevent large lists like attachments/votes from being part of the form state
           initialValues: poll
                ? { ...poll }
-               : { ...pollInitialValues, client_id: clientId, starts_at: defaultStartAt },
+               : { ...pollInitialValues, customerId: clientId, starts_at: defaultStartAt },
           validationSchema: buildPollValidationSchema(t),
           validateOnBlur: true,
           validateOnChange: true,

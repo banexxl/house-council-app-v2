@@ -385,9 +385,9 @@ export const deleteTenantByIDAction = async (
      }
 };
 
-// GET all tenants from client's buildings
-export const getAllTenantsFromClientsBuildings = async (
-     clientId: string
+// GET all tenants from customer's buildings
+export const getAllTenantsFromCustomersBuildings = async (
+     customerId: string
 ): Promise<{
      success: boolean; data?: Tenant[] & {
           apartment?: {
@@ -402,11 +402,11 @@ export const getAllTenantsFromClientsBuildings = async (
      const start = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
 
-     // 1. Get buildings owned by the client
+     // 1. Get buildings owned by the customer
      const { data: buildings, error: buildingsError } = await supabase
           .from(TABLES.BUILDINGS)
           .select('id')
-          .eq('client_id', clientId);
+          .eq('customerId', customerId);
 
      if (buildingsError) {
           return { success: false, error: buildingsError.message };
@@ -453,13 +453,13 @@ export const getAllTenantsFromClientsBuildings = async (
 
      if (tenantsError) {
           await logServerAction({
-               action: 'getAllTenantsFromClientsBuildings',
+               action: 'getAllTenantsFromCustomersBuildings',
                duration_ms: Date.now() - start,
                error: tenantsError.message,
-               payload: { clientId },
+               payload: { customerId },
                status: 'fail',
                type: 'db',
-               user_id: clientId,
+               user_id: customerId,
 
           });
           return { success: false, error: tenantsError.message };
@@ -469,10 +469,10 @@ export const getAllTenantsFromClientsBuildings = async (
 };
 
 /**
- * Get all tenants from client's buildings with their last sign-in data
+ * Get all tenants from customer's buildings with their last sign-in data
  */
-export const getAllTenantsFromClientsBuildingsWithAuthData = async (
-     clientId: string
+export const getAllTenantsFromCustomersBuildingsWithAuthData = async (
+     customerId: string
 ): Promise<{
      success: boolean;
      data?: (Tenant & { last_sign_in_at?: string })[];
@@ -482,11 +482,11 @@ export const getAllTenantsFromClientsBuildingsWithAuthData = async (
      const adminSupabase = await useServerSideSupabaseServiceRoleClient();
 
      try {
-          // 1. Get buildings owned by the client
+          // 1. Get buildings owned by the customer
           const { data: buildings, error: buildingsError } = await anonSupabase
                .from(TABLES.BUILDINGS)
                .select('id')
-               .eq('client_id', clientId);
+               .eq('customerId', customerId);
 
           if (buildingsError) {
                return { success: false, error: buildingsError.message };
@@ -539,7 +539,7 @@ export const getAllTenantsFromClientsBuildingsWithAuthData = async (
                return { success: true, data: [] };
           }
 
-          // 4. Get auth data for all tenants using service role client
+          // 4. Get auth data for all tenants using service role customer
           const userIds = tenants.map(tenant => tenant.user_id).filter(Boolean);
 
           if (userIds.length === 0) {
@@ -565,14 +565,14 @@ export const getAllTenantsFromClientsBuildingsWithAuthData = async (
 
           return { success: true, data: tenantsWithAuthData };
      } catch (e: any) {
-          log(`Error in getAllTenantsFromClientsBuildingsWithAuthData: ${e?.message}`);
+          log(`Error in getAllTenantsFromCustomersBuildingsWithAuthData: ${e?.message}`);
           return { success: false, error: e?.message || 'Unexpected error' };
      }
 };
 
-// GET all buildings with apartments for a client
+// GET all buildings with apartments for a customer
 export const getAllBuildingsWithApartmentsForClient = async (
-     clientId: string
+     customerId: string
 ): Promise<{
      success: boolean;
      data?: {
@@ -601,7 +601,7 @@ export const getAllBuildingsWithApartmentsForClient = async (
       apartment_number
     )
   `)
-          .eq('client_id', clientId);
+          .eq('customerId', customerId);
 
      if (error) {
           return { success: false, error: error.message };
@@ -795,7 +795,7 @@ export const getTenantsFromSameBuildingWithAuthData = async (
                return { success: true, data: [] };
           }
 
-          // 4. Get auth data for all tenants using service role client
+          // 4. Get auth data for all tenants using service role customer
           const userIds = tenants.map(tenant => tenant.user_id).filter(Boolean);
 
           if (userIds.length === 0) {
@@ -935,18 +935,18 @@ export const getBuildingTenants = async (): Promise<{
                     .filter(Boolean);
 
           } else {
-               // Check if user is a client
-               const { data: clientData } = await supabase
-                    .from(TABLES.CLIENTS)
-                    .select('id')
-                    .eq('user_id', user.id);
+               // Check if user is a customer
+               const { data: customerData } = await supabase
+                    .from(TABLES.POLAR_CUSTOMERS)
+                    .select('customerId')
+                    .eq('externalId', user.id);
 
-               if (clientData && clientData.length > 0) {
-                    // User is a client - get their buildings
+               if (customerData && customerData.length > 0) {
+                    // User is a customer - get their buildings
                     const { data: buildings } = await supabase
                          .from(TABLES.BUILDINGS)
                          .select('id')
-                         .eq('client_id', clientData[0].id);
+                         .eq('customerId', customerData[0].customerId);
 
                     buildingIds = buildings?.map(b => b.id) || [];
                }
@@ -1034,30 +1034,29 @@ export const getUsersFromBuildings = async (buildingIds: string[]): Promise<{
                }
           }
 
-          // Get clients who own these buildings
-          const { data: clientsFromBuildings, error } = await supabase
+          // Get customers who own these buildings
+          const { data: customersFromBuildings, error } = await supabase
                .from(TABLES.BUILDINGS)
                .select(`
-        client_id,
-        ${TABLES.CLIENTS}!inner(
+        customerId,
+        ${TABLES.POLAR_CUSTOMERS}!inner(
           id,
-          user_id,
+          customerId,
           email,
           name,
-          contact_person
         )
       `)
                .in('id', buildingIds);
-          if (clientsFromBuildings) {
-               const uniqueClients = new Map();
-               clientsFromBuildings.forEach((building: any) => {
-                    const client = building[TABLES.CLIENTS];
-                    if (client) {
-                         uniqueClients.set(client.user_id, {
-                              id: client.user_id || '',
-                              first_name: client.first_name || '',
-                              last_name: client.last_name || '',
-                              email: client.email,
+          if (customersFromBuildings) {
+               const uniqueCustomers = new Map();
+               customersFromBuildings.forEach((building: any) => {
+                    const customer = building[TABLES.POLAR_CUSTOMERS];
+                    if (customer) {
+                         uniqueCustomers.set(customer.customerId, {
+                              id: customer.customerId || '',
+                              first_name: customer.name || '',
+                              last_name: '',
+                              email: customer.email,
                               phone_number: '',
                               date_of_birth: '',
                               apartment_id: '',
@@ -1075,7 +1074,7 @@ export const getUsersFromBuildings = async (buildingIds: string[]): Promise<{
                               notes: '',
                               created_at: '',
                               updated_at: '',
-                              user_id: client.user_id,
+                              user_id: customer.user_id,
                               email_opt_in: false,
                               sms_opt_in: false,
                               viber_opt_in: false,
@@ -1090,7 +1089,7 @@ export const getUsersFromBuildings = async (buildingIds: string[]): Promise<{
                          } as Tenant);
                     }
                });
-               users.push(...Array.from(uniqueClients.values()));
+               users.push(...Array.from(uniqueCustomers.values()));
           }
           return { success: true, data: users };
      } catch (error: any) {
@@ -1179,9 +1178,9 @@ export const updateTenantActivityStatus = async (tenant_id: string, is_online: b
 }
 
 /**
- * Get the client ID from the building that a tenant is part of
+ * Get the customer ID from the building that a tenant is part of
  */
-export const getClientIdFromTenantBuilding = async (tenantId: string): Promise<{
+export const getCustomerIdFromTenantBuilding = async (tenantId: string): Promise<{
      success: boolean;
      data?: string;
      error?: string;
@@ -1225,10 +1224,10 @@ export const getClientIdFromTenantBuilding = async (tenantId: string): Promise<{
                return { success: false, error: 'Apartment has no building assigned' };
           }
 
-          // Get building's client_id
+          // Get building's customerId
           const { data: building, error: buildingError } = await supabase
                .from(TABLES.BUILDINGS)
-               .select('client_id')
+               .select('customerId')
                .eq('id', apartment.building_id)
                .single();
 
@@ -1237,13 +1236,13 @@ export const getClientIdFromTenantBuilding = async (tenantId: string): Promise<{
                return { success: false, error: buildingError.message };
           }
 
-          if (!building?.client_id) {
-               return { success: false, error: 'Building has no client assigned' };
+          if (!building?.customerId) {
+               return { success: false, error: 'Building has no customer assigned' };
           }
 
-          return { success: true, data: building.client_id };
+          return { success: true, data: building.customerId };
      } catch (error: any) {
-          log(`Error in getClientIdFromTenantBuilding: ${error.message}`);
+          log(`Error in getCustomerIdFromTenantBuilding: ${error.message}`);
           return { success: false, error: error.message || 'Unexpected error' };
      }
 };

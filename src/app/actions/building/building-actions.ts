@@ -2,7 +2,6 @@
 
 import { logServerAction } from "src/libs/supabase/server-logging";
 import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
-import { resolveClientFromClientOrMember } from "../client/client-members";
 import { Building, BuildingImage } from "src/types/building";
 import { removeAllEntityFiles } from "src/libs/supabase/sb-storage";
 import { validate as isUUID } from 'uuid';
@@ -24,7 +23,7 @@ export const getNotificationEmailsForBuildings = async (
      // 1) Client + client email(s) for these buildings
      const { data: buildingRows } = await supabase
           .from(TABLES.BUILDINGS!)
-          .select('id, client_id, client:client_id ( email )')
+          .select('id, customerId, client:customerId ( email )')
           .in('id', uniqueBuildingIds);
 
      const clientIds = Array.from(
@@ -33,23 +32,11 @@ export const getNotificationEmailsForBuildings = async (
                     .map((row: any) => {
                          const clientEmail = row?.client?.email as string | undefined;
                          if (clientEmail) emails.add(clientEmail);
-                         return row?.client_id as string | undefined;
+                         return row?.customerId as string | undefined;
                     })
                     .filter(Boolean)
           )
      ) as string[];
-
-     // 2) Client members for those clients
-     if (clientIds.length) {
-          const { data: clientMembers } = await supabase
-               .from(TABLES.CLIENT_MEMBERS!)
-               .select('email, client_id')
-               .in('client_id', clientIds);
-
-          (clientMembers || []).forEach((m: any) => {
-               if (m?.email) emails.add(m.email as string);
-          });
-     }
 
      // 3) Tenants in these buildings (via apartments)
      const { data: apartments } = await supabase
@@ -119,20 +106,18 @@ export const getAllBuildings = async (): Promise<{ success: boolean; error?: str
 
 /** Get all buildings from a client */
 export async function getAllBuildingsFromClient(
-     client_id: string
+     customerId: string
 ): Promise<{ success: boolean; error?: string; data?: Building[] }> {
      const t0 = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
 
-     const { data: resolvedClientData } = await resolveClientFromClientOrMember(client_id);
-     const resolvedClientId = resolvedClientData?.id!
      const { data: buildings, error } = await supabase
           .from(TABLES.BUILDINGS!)
           .select(`*, building_location:tblBuildingLocations!tblBuildings_building_location_fkey (*)`)
-          .eq("client_id", resolvedClientId);
+          .eq("customerId", customerId);
 
      if (error) {
-          await logServerAction({ action: "getAllBuildingsFromClient", duration_ms: Date.now() - t0, error: error.message, payload: { client_id: resolvedClientId }, status: "fail", type: "db", user_id: resolvedClientId, id: "" });
+          await logServerAction({ action: "getAllBuildingsFromClient", duration_ms: Date.now() - t0, error: error.message, payload: { customerId }, status: "fail", type: "db", user_id: customerId, id: "" });
           return { success: false, error: error.message };
      }
 
@@ -166,7 +151,7 @@ export async function getAllBuildingsFromClient(
           building_images: imagesByBuilding.get(b.id) ?? [],
      }));
 
-     await logServerAction({ action: "getAllBuildingsFromClient", duration_ms: Date.now() - t0, error: "", payload: { client_id: resolvedClientId }, status: "success", type: "db", user_id: resolvedClientId, id: "" });
+     await logServerAction({ action: "getAllBuildingsFromClient", duration_ms: Date.now() - t0, error: "", payload: { customerId }, status: "success", type: "db", user_id: customerId, id: "" });
      return { success: true, data };
 }
 

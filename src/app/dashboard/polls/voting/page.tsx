@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function VotingPage() {
-     const { client, clientMember, tenant, admin } = await getViewer();
+     const { customer, tenant, admin } = await getViewer();
 
      if (!client && !clientMember && !tenant && !admin) {
           redirect(paths.auth.login);

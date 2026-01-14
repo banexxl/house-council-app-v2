@@ -13,8 +13,8 @@ import type { Building } from 'src/types/building';
 import { getBuildingIdFromTenantId } from 'src/app/actions/tenant/tenant-actions';
 
 const Page = async () => {
-  const { client, clientMember, tenant, admin } = await getViewer();
-  const clientId = client ? client.id : clientMember ? clientMember.client_id : null;
+  const { customer, tenant, admin } = await getViewer();
+  const clientId = client ? client.id : clientMember ? clientMember.customerId : null;
   let events: CalendarEvent[] = [];
   if (client || clientMember || admin) {
     const result = await getCalendarEvents();

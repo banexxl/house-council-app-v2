@@ -30,7 +30,7 @@ interface Contact {
 
 type ViewerData = {
   client: { id: string; email?: string | null; name?: string | null } | null;
-  clientMember: { id: string; client_id: string | null; email?: string | null } | null;
+  clientMember: { id: string; customerId: string | null; email?: string | null } | null;
   tenant: (Tenant & { apartment?: any }) | null;
   admin: { id: string; email?: string | null; first_name?: string | null; last_name?: string | null } | null;
   userData: { id: string; email?: string | null } | null;
@@ -83,7 +83,7 @@ const useContacts = () => {
     const { data: buildings, error: buildingsError } = await supabaseBrowserClient
       .from(TABLES.BUILDINGS)
       .select('id')
-      .eq('client_id', clientId);
+      .eq('customerId', clientId);
 
     if (buildingsError) {
       console.error('Failed to fetch buildings for client', buildingsError);
@@ -229,7 +229,7 @@ const useContacts = () => {
         if (viewer.tenant?.id && tenantBuildingId) {
           tenantList = await fetchTenantsFromSameBuilding(tenantBuildingId, viewer.tenant.id);
         } else {
-          const clientId = viewer.client?.id || viewer.clientMember?.client_id || null;
+          const clientId = viewer.client?.id || viewer.clientMember?.customerId || null;
           if (clientId) {
             tenantList = await fetchTenantsForClient(clientId);
           }
@@ -273,7 +273,7 @@ const useContacts = () => {
     viewer?.tenant?.id,
     viewer?.tenant?.apartment,
     viewer?.client?.id,
-    viewer?.clientMember?.client_id,
+    viewer?.clientMember?.customerId,
     extractBuildingId,
     fetchTenantsForClient,
     fetchTenantsFromSameBuilding,

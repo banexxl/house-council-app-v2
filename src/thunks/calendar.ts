@@ -14,7 +14,7 @@ const getEvents = (): AppThunk => async (dispatch): Promise<void> => {
      }
 };
 
-type CreateEventInput = Omit<CalendarEvent, 'id' | 'client_id'>;
+type CreateEventInput = Omit<CalendarEvent, 'id' | 'customerId'>;
 
 const createEvent = (params: CreateEventInput): AppThunk => async (dispatch): Promise<void> => {
      const result = await createCalendarEvent({

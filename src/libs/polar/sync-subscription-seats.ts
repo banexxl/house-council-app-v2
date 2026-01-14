@@ -21,7 +21,7 @@ export async function syncPolarSeatsForClient({ clientId }: SyncSeatsArgs) {
      const { data: sub, error: subErr } = await supabase
           .from(TABLES.CLIENT_SUBSCRIPTION)
           .select("id,status,subscription_id,polar_subscription_id,customer_id")
-          .eq("client_id", data.id)
+          .eq("customerId", data.id)
           .in("status", ["trialing", "active"])
           .maybeSingle();
 
@@ -32,8 +32,8 @@ export async function syncPolarSeatsForClient({ clientId }: SyncSeatsArgs) {
      // 2) Count apartments
      const { count, error } = await supabase
           .from(TABLES.APARTMENTS)
-          .select("id, tblBuildings!inner(client_id)", { count: "exact", head: true })
-          .eq("tblBuildings.client_id", data.id);
+          .select("id, tblBuildings!inner(customerId)", { count: "exact", head: true })
+          .eq("tblBuildings.customerId", data.id);
 
      if (error) {
           return { success: false as const, error: "Failed to count apartments." };

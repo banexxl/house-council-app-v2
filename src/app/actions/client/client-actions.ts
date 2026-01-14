@@ -1,24 +1,25 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
-import { Client } from 'src/types/client';
 import { Tenant } from 'src/types/tenant';
 import { isUUIDv4 } from 'src/utils/uuid';
 import { validate as isUUID } from 'uuid';
 import { TABLES } from 'src/libs/supabase/tables';
 import log from 'src/utils/logger';
 import { getViewer } from 'src/libs/supabase/server-auth';
+import { PolarCustomer, PolarCustomerAddress } from 'src/types/polar-customer-types';
+import { polar } from 'src/libs/polar/polar';
+import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
 
-export type ClientBuildingOption = {
+export type CustomerBuildingOption = {
      id: string;
      label: string;
      street_address?: string;
      city?: string;
 };
 
-// --- Supabase Auth Actions for Client Management ---
+// --- Supabase Auth Actions for PolarCustomer Management ---
 export const sendPasswordRecoveryEmail = async (email: string): Promise<{ success: boolean; error?: string }> => {
      const supabase = await useServerSideSupabaseServiceRoleClient();
      const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -107,389 +108,6 @@ export const unbanUser = async (userId: string): Promise<{ success: boolean; err
      return { success: true };
 };
 
-export const createOrUpdateClientAction = async (
-     client: Partial<Client>
-): Promise<{
-     saveClientActionSuccess: boolean;
-     saveClientActionData?: Client;
-     saveClientActionError?: any;
-}> => {
-     const adminSupabase = await useServerSideSupabaseAnonClient();
-
-     const { id, unassigned_location_id, ...clientData } = client;
-
-     if (id && id !== '') {
-          // === UPDATE ===
-          const { data, error: updateError } = await adminSupabase
-               .from(TABLES.CLIENTS)
-               .update({ ...clientData, updated_at: new Date().toISOString() })
-               .eq('id', id)
-               .select()
-               .single();
-
-          if (updateError) {
-               log(`createOrUpdateClientAction update error for client ${id}: ${updateError.message}`, 'error');
-               await logServerAction({
-                    action: 'Update Client - Failed',
-                    duration_ms: 0,
-                    error: updateError.message,
-                    payload: { clientId: id, clientData },
-                    status: 'fail',
-                    type: 'action',
-                    user_id: id,
-               });
-               return { saveClientActionSuccess: false, saveClientActionError: updateError };
-          }
-          revalidatePath(`/dashboard/account`);
-          await logServerAction({
-               action: 'Update Client - Success',
-               duration_ms: 0,
-               error: '',
-               payload: { clientId: id, clientData },
-               status: 'success',
-               type: 'action',
-               user_id: id,
-          });
-
-          // Sync tenant profile for client (name/email/phone)
-          const profilePayload = {
-               first_name: clientData.contact_person || clientData.name || '',
-               last_name: '',
-               email: clientData.email || '',
-               phone_number: clientData.phone || clientData.mobile_phone || '',
-          };
-          await adminSupabase
-               .from(TABLES.TENANT_PROFILES)
-               .upsert({
-                    id: id, // use client id as profile id for consistency
-                    tenant_id: id,
-                    ...profilePayload,
-                    updated_at: new Date().toISOString(),
-               }, { onConflict: 'id' });
-
-          if (unassigned_location_id) {
-               // First, fetch the building location by unassigned_location_id
-               const { data: buildingLocation, error: fetchError } = await adminSupabase
-                    .from(TABLES.BUILDING_LOCATIONS)
-                    .select('*')
-                    .eq('id', unassigned_location_id)
-                    .single();
-
-               if (fetchError || !buildingLocation) {
-                    log(`createOrUpdateClientAction fetch unassigned location error for client ${id}: ${fetchError?.message || 'Not found'}`, 'error');
-                    await logServerAction({
-                         action: 'Fetch Unassigned Location - Failed',
-                         duration_ms: 0,
-                         error: fetchError?.message || 'Not found',
-                         payload: { clientId: id, unassignedLocationId: unassigned_location_id },
-                         status: 'fail',
-                         type: 'action',
-                         user_id: id,
-                    });
-                    return { saveClientActionSuccess: false, saveClientActionError: fetchError || 'Unassigned location not found' };
-               }
-
-               // Reassign unassigned location to the client
-               const { error: reassignError } = await adminSupabase
-                    .from(TABLES.BUILDING_LOCATIONS)
-                    .update({ client_id: id })
-                    .eq('id', unassigned_location_id);
-
-               if (reassignError) {
-                    log(`createOrUpdateClientAction reassign error for client ${id}: ${reassignError.message}`, 'error');
-                    await logServerAction({
-                         action: 'Reassign Unassigned Locations - Failed',
-                         duration_ms: 0,
-                         error: reassignError.message,
-                         payload: { clientId: id, unassignedLocationId: unassigned_location_id },
-                         status: 'fail',
-                         type: 'action',
-                         user_id: id,
-                    });
-                    return { saveClientActionSuccess: false, saveClientActionError: reassignError };
-               }
-          }
-
-          return {
-               saveClientActionSuccess: true,
-               saveClientActionData: data as Client,
-          };
-     } else {
-          // === CREATE ===
-          const { data: invitedUser, error: inviteError } = await adminSupabase.auth.admin.inviteUserByEmail(clientData.email!, {
-               redirectTo: process.env.NEXT_PUBLIC_SUPABASE_INVITE_REDIRECT_URL,
-          });
-
-          if (inviteError || !invitedUser?.user) {
-               log(`createOrUpdateClientAction invite error for email ${clientData.email}: ${inviteError?.message ?? 'Unknown error'}`, 'error');
-               await logServerAction({
-                    action: 'Invite Auth User - Failed',
-                    duration_ms: 0,
-                    error: inviteError?.message ?? 'Unknown error',
-                    payload: { email: clientData.email },
-                    status: 'fail',
-                    type: 'auth',
-                    user_id: null,
-               });
-
-               return {
-                    saveClientActionSuccess: false,
-                    saveClientActionError: inviteError?.message ?? 'Failed to invite auth user',
-               };
-          }
-
-          const { data, error: insertError } = await adminSupabase
-               .from(TABLES.CLIENTS)
-               .insert({ ...clientData, user_id: invitedUser.user.id })
-               .select()
-               .single();
-
-          if (insertError) {
-               log(`createOrUpdateClientAction insert error for email ${clientData.email}: ${insertError.message}`, 'error');
-               await logServerAction({
-                    action: 'Create Client - Failed',
-                    duration_ms: 0,
-                    error: insertError.message,
-                    payload: { clientData },
-                    status: 'fail',
-                    type: 'action',
-                    user_id: invitedUser.user.id,
-               });
-               return { saveClientActionSuccess: false, saveClientActionError: insertError };
-          }
-
-          await logServerAction({
-               action: 'Create Client - Success',
-               duration_ms: 0,
-               error: '',
-               payload: { clientData },
-               status: 'success',
-               type: 'action',
-               user_id: invitedUser.user.id,
-          });
-
-          // Create tenant profile for client
-          const profilePayload = {
-               id: data.id,
-               tenant_id: data.id,
-               first_name: clientData.contact_person || clientData.name || '',
-               last_name: '',
-               email: clientData.email || '',
-               phone_number: clientData.phone || clientData.mobile_phone || '',
-               created_at: new Date().toISOString(),
-               updated_at: new Date().toISOString(),
-          };
-          await adminSupabase.from(TABLES.TENANT_PROFILES).upsert(profilePayload);
-
-          revalidatePath(`/dashboard/clients/${data.id}`);
-
-          return {
-               saveClientActionSuccess: true,
-               saveClientActionData: data as Client,
-          };
-     }
-};
-
-export const readAllClientsAction = async (): Promise<{
-     getAllClientsActionSuccess: boolean;
-     getAllClientsActionData?: (Client & { subscription_plan_name?: string | null })[];
-     getAllClientsActionError?: string;
-}> => {
-     const supabase = await useServerSideSupabaseAnonClient();
-
-     try {
-          const { data: clients, error } = await supabase
-               .from(TABLES.CLIENTS)
-               .select('*');
-          if (error) throw error;
-
-          const baseClients = (clients ?? []) as Client[];
-
-          if (!baseClients.length) {
-               return {
-                    getAllClientsActionSuccess: true,
-                    getAllClientsActionData: [],
-               };
-          }
-
-          const clientIds = baseClients.map((c) => c.id).filter(Boolean);
-
-          // Fetch mapping client_id -> subscription_id from tblClient_Subscription
-          const { data: clientSubs, error: clientSubsError } = await supabase
-               .from(TABLES.CLIENT_SUBSCRIPTION)
-               .select('client_id, subscription_id')
-               .in('client_id', clientIds);
-
-          if (clientSubsError) throw clientSubsError;
-
-          const planIds = Array.from(
-               new Set(
-                    (clientSubs ?? [])
-                         .map((row: any) => row?.subscription_id)
-                         .filter(Boolean)
-               )
-          );
-
-          let planNameById: Record<string, string> = {};
-
-          if (planIds.length > 0) {
-               const { data: plans, error: plansError } = await supabase
-                    .from(TABLES.SUBSCRIPTION_PLANS)
-                    .select('id, name')
-                    .in('id', planIds);
-
-               if (plansError) throw plansError;
-
-               planNameById = (plans ?? []).reduce((acc: Record<string, string>, row: any) => {
-                    if (row && row.id) {
-                         acc[row.id] = row.name;
-                    }
-                    return acc;
-               }, {});
-          }
-
-          const planIdByClientId: Record<string, string | null> = {};
-          for (const row of clientSubs ?? []) {
-               const r: any = row;
-               if (r.client_id) {
-                    planIdByClientId[r.client_id] = r.subscription_id ?? null;
-               }
-          }
-
-          const enriched = baseClients.map((c) => {
-               const planId = planIdByClientId[c.id] ?? null;
-               const subscription_plan_name = planId ? planNameById[planId] ?? null : null;
-               return { ...c, subscription_plan_name };
-          });
-
-          return {
-               getAllClientsActionSuccess: true,
-               getAllClientsActionData: enriched,
-          };
-     } catch (error) {
-          const message = error instanceof Error ? error.message : 'Unknown error';
-          log(`readAllClientsAction error: ${message}`, 'error');
-          return {
-               getAllClientsActionSuccess: false,
-               getAllClientsActionData: [],
-               getAllClientsActionError: 'Failed to fetch clients',
-          };
-     }
-};
-
-export const readClientByIdAction = async (
-     clientId: string
-): Promise<{
-     getClientByIdActionSuccess: boolean;
-     getClientByIdActionData?: Client;
-     getClientByIdActionError?: string;
-}> => {
-     if (!isUUID(clientId)) {
-          log(`readClientByIdAction invalid ID: ${clientId}`, 'error');
-          return { getClientByIdActionSuccess: false, getClientByIdActionError: 'Invalid client ID format' };
-     }
-
-     const supabase = await useServerSideSupabaseAnonClient();
-
-     try {
-          const { data, error } = await supabase.from(TABLES.CLIENTS).select('*').eq('id', clientId).single();
-          if (error) throw error;
-          if (!data) throw new Error('Client not found');
-
-          return {
-               getClientByIdActionSuccess: true,
-               getClientByIdActionData: data as Client,
-          };
-     } catch (error) {
-          const message = error instanceof Error ? error.message : 'Unknown error';
-          log(`readClientByIdAction error for id ${clientId}: ${message}`, 'error');
-          return {
-               getClientByIdActionSuccess: false,
-               getClientByIdActionError: 'Failed to fetch client',
-          };
-     }
-};
-
-export const deleteClientByIDsAction = async (
-     ids: string[]
-): Promise<{ deleteClientByIDsActionSuccess: boolean; deleteClientByIDsActionError?: string }> => {
-
-     const anonSupabase = await useServerSideSupabaseAnonClient();
-     const adminSupabase = await useServerSideSupabaseServiceRoleClient();
-
-     try {
-          // Fetch user_ids before deleting clients
-          const { data: clientsToDelete, error: fetchError } = await anonSupabase
-               .from(TABLES.CLIENTS)
-               .select('user_id')
-               .in('id', ids);
-
-          if (fetchError) {
-               log(`deleteClientByIDsAction fetch error for ids ${ids.join(', ')}: ${fetchError.message}`, 'error');
-               throw fetchError;
-          }
-
-          const userIdsToDelete = clientsToDelete.map((c) => c.user_id).filter(Boolean);
-
-          // Delete from tblBuildings
-          const { error: deleteBuildings } = await anonSupabase.from(TABLES.BUILDINGS).delete().in('client_id', ids);
-          if (deleteBuildings) {
-               log(`Error deleting clients with IDs: ${ids.join(', ')}: ${deleteBuildings.message}`, 'error');
-               throw deleteBuildings
-          };
-
-          // Delete from tblClients
-          const { error: deleteClientError } = await anonSupabase.from(TABLES.CLIENTS).delete().in('id', ids);
-          if (deleteClientError) {
-               log(`Error deleting clients with IDs: ${ids.join(', ')}: ${deleteClientError.message}`, 'error');
-               throw deleteClientError
-          };
-
-          // Delete from auth.users
-          const failedDeletes: string[] = [];
-          for (const userId of userIdsToDelete) {
-               const { error: deleteUserError } = await adminSupabase.auth.admin.deleteUser(userId);
-               if (deleteUserError) {
-                    log(`Error deleting auth.user with ID: ${userId}: ${deleteUserError.message}`, 'error');
-                    failedDeletes.push(userId);
-               }
-          }
-
-          revalidatePath('/dashboard/clients');
-
-          if (failedDeletes.length > 0) {
-               return {
-                    deleteClientByIDsActionSuccess: false,
-                    deleteClientByIDsActionError: `Failed to delete auth.users for: ${failedDeletes.join(', ')}`,
-               };
-          }
-
-          return { deleteClientByIDsActionSuccess: true };
-     } catch (error: any) {
-          log(`deleteClientByIDsAction error for ids ${ids.join(', ')}: ${error?.message || 'Unknown error'}`, 'error');
-          return {
-               deleteClientByIDsActionSuccess: false,
-               deleteClientByIDsActionError: error.message,
-          };
-     }
-};
-
-export const readClientByEmailAction = async (
-     email: string
-): Promise<{ getClientByEmailActionSuccess: boolean; getClientByEmailActionData?: Client }> => {
-     const supabase = await useServerSideSupabaseAnonClient();
-
-     try {
-          const { data, error } = await supabase.from(TABLES.CLIENTS).select().eq('email', email).single();
-          if (error) throw error;
-          return { getClientByEmailActionSuccess: true, getClientByEmailActionData: data };
-     } catch (error) {
-          const message = error instanceof Error ? error.message : 'Unknown error';
-          log(`readClientByEmailAction error for email ${email}: ${message}`, 'error');
-          return { getClientByEmailActionSuccess: false };
-     }
-};
-
 export const resetPasswordWithOldPassword = async (email: string, oldPassword: string, newPassword: string): Promise<{ success: boolean, error?: string }> => {
 
      const startTime = Date.now();
@@ -499,7 +117,7 @@ export const resetPasswordWithOldPassword = async (email: string, oldPassword: s
      const supabase = await useServerSideSupabaseAnonClient();
 
      const { data: user, error: userError } = await supabase
-          .from(TABLES.CLIENTS)
+          .from(TABLES.POLAR_CUSTOMERS)
           .select('*')
           .eq('email', email)
           .single();
@@ -658,10 +276,513 @@ export const resetPasswordWithOldPassword = async (email: string, oldPassword: s
      }
 }
 
-export const readAllTenantsFromClientIdAction = async (client_id: string): Promise<{ tenants: Tenant[] }> => {
+// ========================================
+// CRUD Actions for PolarCustomer using Polar SDK
+// ========================================
+
+/**
+ * Create a new PolarCustomer via Polar SDK
+ * @param email - Customer email (required)
+ * @param name - Customer name
+ * @param avatarUrl - Customer avatar URL
+ * @param billingAddress - Customer billing address
+ * @param taxId - Customer tax IDs
+ */
+export const createPolarCustomerAction = async ({
+     email,
+     name,
+     avatarUrl,
+     billingAddress,
+     taxId,
+}: {
+     email: string;
+     name?: string | null;
+     avatarUrl?: string | null;
+     billingAddress?: PolarCustomerAddress | null;
+     taxId?: (string | null)[] | null;
+}): Promise<{
+     success: boolean;
+     data?: PolarCustomer;
+     error?: string;
+}> => {
+     const startTime = Date.now();
+
+     try {
+          // Prepare billing address for Polar SDK
+          const polarBillingAddress = billingAddress && billingAddress.country ? {
+               country: billingAddress.country as any, // Type assertion for country code
+               line1: billingAddress.line1 ?? undefined,
+               line2: billingAddress.line2 ?? undefined,
+               postalCode: billingAddress.postalCode ?? undefined,
+               city: billingAddress.city ?? undefined,
+               state: billingAddress.state ?? undefined,
+          } : undefined;
+
+          // Create customer via Polar SDK
+          const customer = await polar.customers.create({
+               email,
+               name: name ?? undefined,
+               metadata: avatarUrl ? { avatarUrl } : undefined,
+               billingAddress: polarBillingAddress,
+               taxId: taxId?.filter(Boolean) as string[] | undefined,
+          });
+
+          await logServerAction({
+               action: 'Create PolarCustomer via SDK - Success',
+               duration_ms: Date.now() - startTime,
+               error: '',
+               payload: { email, name },
+               status: 'success',
+               type: 'action',
+               user_id: customer.id,
+          });
+
+          revalidatePath('/dashboard/customers');
+
+          return {
+               success: true,
+               data: customer as unknown as PolarCustomer,
+          };
+     } catch (error: any) {
+          const message = error?.message || 'Failed to create customer';
+          log(`createPolarCustomerAction error for email ${email}: ${message}`, 'error');
+
+          await logServerAction({
+               action: 'Create PolarCustomer via SDK - Failed',
+               duration_ms: Date.now() - startTime,
+               error: message,
+               payload: { email, name },
+               status: 'fail',
+               type: 'action',
+               user_id: null,
+          });
+
+          return {
+               success: false,
+               error: message,
+          };
+     }
+};
+
+/**
+ * Update an existing PolarCustomer via Polar SDK
+ * Only updates: name, avatarUrl, billingAddress, taxId
+ * @param customerId - Polar customer ID
+ * @param name - Customer name
+ * @param avatarUrl - Customer avatar URL
+ * @param billingAddress - Customer billing address
+ * @param taxId - Customer tax IDs
+ */
+export const updatePolarCustomerAction = async ({
+     customerId,
+     name,
+     avatarUrl,
+     billingAddress,
+     taxId,
+}: {
+     customerId: string;
+     name?: string | null;
+     avatarUrl?: string | null;
+     billingAddress?: PolarCustomerAddress | null;
+     taxId?: (string | null)[] | null;
+}): Promise<{
+     success: boolean;
+     data?: PolarCustomer;
+     error?: string;
+}> => {
+     const startTime = Date.now();
+
+     try {
+          // Build update payload with only allowed fields
+          const updatePayload: any = {};
+
+          if (name !== undefined) updatePayload.name = name;
+          if (avatarUrl !== undefined) {
+               updatePayload.metadata = avatarUrl ? { avatarUrl } : {};
+          }
+          if (billingAddress !== undefined) {
+               updatePayload.billingAddress = billingAddress && billingAddress.country ? {
+                    country: billingAddress.country as any, // Type assertion for country code
+                    line1: billingAddress.line1 ?? undefined,
+                    line2: billingAddress.line2 ?? undefined,
+                    postalCode: billingAddress.postalCode ?? undefined,
+                    city: billingAddress.city ?? undefined,
+                    state: billingAddress.state ?? undefined,
+               } : undefined;
+          }
+          if (taxId !== undefined) updatePayload.taxId = taxId?.filter(Boolean) as string[] | undefined;
+
+          // Update customer via Polar SDK
+          const customer = await polar.customers.update({
+               id: customerId,
+               ...updatePayload,
+          });
+
+          await logServerAction({
+               action: 'Update PolarCustomer via SDK - Success',
+               duration_ms: Date.now() - startTime,
+               error: '',
+               payload: { customerId, ...updatePayload },
+               status: 'success',
+               type: 'action',
+               user_id: customerId,
+          });
+
+          revalidatePath(`/dashboard/customers/${customerId}`);
+          revalidatePath('/dashboard/customers');
+
+          return {
+               success: true,
+               data: customer as unknown as PolarCustomer,
+          };
+     } catch (error: any) {
+          const message = error?.message || 'Failed to update customer';
+          log(`updatePolarCustomerAction error for customer ${customerId}: ${message}`, 'error');
+
+          await logServerAction({
+               action: 'Update PolarCustomer via SDK - Failed',
+               duration_ms: Date.now() - startTime,
+               error: message,
+               payload: { customerId },
+               status: 'fail',
+               type: 'action',
+               user_id: customerId,
+          });
+
+          return {
+               success: false,
+               error: message,
+          };
+     }
+};
+
+/**
+ * Delete a PolarCustomer via Polar SDK
+ * @param customerId - Polar customer ID
+ */
+export const deletePolarCustomerAction = async (
+     customerId: string
+): Promise<{
+     success: boolean;
+     error?: string;
+}> => {
+     const startTime = Date.now();
+
+     try {
+          // Delete customer via Polar SDK
+          await polar.customers.delete({ id: customerId });
+
+          await logServerAction({
+               action: 'Delete PolarCustomer via SDK - Success',
+               duration_ms: Date.now() - startTime,
+               error: '',
+               payload: { customerId },
+               status: 'success',
+               type: 'action',
+               user_id: customerId,
+          });
+
+          revalidatePath('/dashboard/customers');
+
+          return {
+               success: true,
+          };
+     } catch (error: any) {
+          const message = error?.message || 'Failed to delete customer';
+          log(`deletePolarCustomerAction error for customer ${customerId}: ${message}`, 'error');
+
+          await logServerAction({
+               action: 'Delete PolarCustomer via SDK - Failed',
+               duration_ms: Date.now() - startTime,
+               error: message,
+               payload: { customerId },
+               status: 'fail',
+               type: 'action',
+               user_id: customerId,
+          });
+
+          return {
+               success: false,
+               error: message,
+          };
+     }
+};
+
+/**
+ * Get a PolarCustomer by ID via Polar SDK
+ * @param customerId - Polar customer ID
+ */
+export const getPolarCustomerAction = async (
+     customerId: string
+): Promise<{
+     success: boolean;
+     data?: PolarCustomer;
+     error?: string;
+}> => {
+     try {
+          const customer = await polar.customers.get({ id: customerId });
+
+          return {
+               success: true,
+               data: customer as unknown as PolarCustomer,
+          };
+     } catch (error: any) {
+          const message = error?.message || 'Failed to fetch customer';
+          log(`getPolarCustomerAction error for customer ${customerId}: ${message}`, 'error');
+
+          return {
+               success: false,
+               error: message,
+          };
+     }
+};
+
+/**
+ * List all PolarCustomers via Polar SDK
+ */
+export const listPolarCustomersAction = async (): Promise<{
+     success: boolean;
+     data?: PolarCustomer[];
+     error?: string;
+}> => {
+     try {
+          // Fetch all customers with pagination
+          const customers: any[] = [];
+          let page = 1;
+          let hasMore = true;
+
+          while (hasMore) {
+               const result = await polar.customers.list({ page, limit: 100 });
+
+               // Collect results from async iterator
+               for await (const customer of result) {
+                    customers.push(customer);
+               }
+
+               // Check if there are more pages
+               hasMore = customers.length >= page * 100;
+               page++;
+          }
+
+          return {
+               success: true,
+               data: customers as unknown as PolarCustomer[],
+          };
+     } catch (error: any) {
+          const message = error?.message || 'Failed to list customers';
+          log(`listPolarCustomersAction error: ${message}`, 'error');
+
+          return {
+               success: false,
+               error: message,
+          };
+     }
+};
+
+export const readAllCustomersAction = async (): Promise<{
+     getAllCustomersActionSuccess: boolean;
+     getAllCustomersActionData?: (PolarCustomer & { subscription_plan_name?: string | null })[];
+     getAllCustomersActionError?: string;
+}> => {
      const supabase = await useServerSideSupabaseAnonClient();
-     if (!isUUID(client_id)) {
-          log(`readAllTenantsFromClientIdAction invalid client_id: ${client_id}`, 'error');
+
+     try {
+          const { data: customers, error } = await supabase
+               .from(TABLES.POLAR_CUSTOMERS)
+               .select('*');
+          if (error) throw error;
+
+          const baseCustomers = (customers ?? []) as PolarCustomer[];
+
+          if (!baseCustomers.length) {
+               return {
+                    getAllCustomersActionSuccess: true,
+                    getAllCustomersActionData: [],
+               };
+          }
+
+          const customerIds = baseCustomers.map((c) => c.id).filter(Boolean);
+
+          // Fetch mapping customerId -> subscription_id from tblCustomer_Subscription
+          const { data: clientSubs, error: clientSubsError } = await supabase
+               .from(TABLES.POLAR_CUSTOMERS)
+               .select('id')
+               .in('id', customerIds);
+
+          if (clientSubsError) throw clientSubsError;
+
+          const planIds = Array.from(
+               new Set(
+                    (clientSubs ?? [])
+                         .map((row: any) => row?.subscription_id)
+                         .filter(Boolean)
+               )
+          );
+
+          let planNameById: Record<string, string> = {};
+
+          if (planIds.length > 0) {
+               const { data: plans, error: plansError } = await supabase
+                    .from(TABLES.POLAR_SUBSCRIPTIONS)
+                    .select('id, product')
+                    .in('id', planIds);
+
+               if (plansError) throw plansError;
+
+               planNameById = (plans ?? []).reduce((acc: Record<string, string>, row: any) => {
+                    if (row && row.id) {
+                         acc[row.id] = row.name;
+                    }
+                    return acc;
+               }, {});
+          }
+
+          const planIdByCustomerId: Record<string, string | null> = {};
+          for (const row of clientSubs ?? []) {
+               const r: any = row;
+               if (r.customerId) {
+                    planIdByCustomerId[r.customerId] = r.subscription_id ?? null;
+               }
+          }
+
+          const enriched = baseCustomers.map((c) => {
+               const planId = planIdByCustomerId[c.id] ?? null;
+               const subscription_plan_name = planId ? planNameById[planId] ?? null : null;
+               return { ...c, subscription_plan_name };
+          });
+
+          return {
+               getAllCustomersActionSuccess: true,
+               getAllCustomersActionData: enriched,
+          };
+     } catch (error) {
+          const message = error instanceof Error ? error.message : 'Unknown error';
+          log(`readAllCustomersAction error: ${message}`, 'error');
+          return {
+               getAllCustomersActionSuccess: false,
+               getAllCustomersActionData: [],
+               getAllCustomersActionError: 'Failed to fetch customers',
+          };
+     }
+};
+
+export const readCustomerByIdAction = async (
+     customerId: string
+): Promise<{
+     getCustomerByIdActionSuccess: boolean;
+     getCustomerByIdActionData?: PolarCustomer;
+     getCustomerByIdActionError?: string;
+}> => {
+     if (!isUUID(customerId)) {
+          log(`readCustomerByIdAction invalid ID: ${customerId}`, 'error');
+          return { getCustomerByIdActionSuccess: false, getCustomerByIdActionError: 'Invalid customer ID format' };
+     }
+
+     const supabase = await useServerSideSupabaseAnonClient();
+
+     try {
+          const { data, error } = await supabase.from(TABLES.POLAR_CUSTOMERS).select('*').eq('id', customerId).single();
+          if (error) throw error;
+          if (!data) throw new Error('PolarCustomer not found');
+
+          return {
+               getCustomerByIdActionSuccess: true,
+               getCustomerByIdActionData: data as PolarCustomer,
+          };
+     } catch (error) {
+          const message = error instanceof Error ? error.message : 'Unknown error';
+          log(`readCustomerByIdAction error for id ${customerId}: ${message}`, 'error');
+          return {
+               getCustomerByIdActionSuccess: false,
+               getCustomerByIdActionError: 'Failed to fetch customer',
+          };
+     }
+};
+
+export const deleteCustomerByIDsAction = async (
+     ids: string[]
+): Promise<{ deleteCustomerByIDsActionSuccess: boolean; deleteCustomerByIDsActionError?: string }> => {
+
+     const anonSupabase = await useServerSideSupabaseAnonClient();
+     const adminSupabase = await useServerSideSupabaseServiceRoleClient();
+
+     try {
+          // Fetch user_ids before deleting customers
+          const { data: customersToDelete, error: fetchError } = await anonSupabase
+               .from(TABLES.POLAR_CUSTOMERS)
+               .select('externalId')
+               .in('id', ids);
+
+          if (fetchError) {
+               log(`deleteCustomerByIDsAction fetch error for ids ${ids.join(', ')}: ${fetchError.message}`, 'error');
+               throw fetchError;
+          }
+
+          const userIdsToDelete = customersToDelete.map((c: any) => c.externalId).filter(Boolean);
+
+          // Delete from tblBuildings
+          const { error: deleteBuildings } = await anonSupabase.from(TABLES.BUILDINGS).delete().in('customerId', ids);
+          if (deleteBuildings) {
+               log(`Error deleting customers with IDs: ${ids.join(', ')}: ${deleteBuildings.message}`, 'error');
+               throw deleteBuildings
+          };
+
+          // Delete from tblCustomers
+          const { error: deleteCustomerError } = await anonSupabase.from(TABLES.POLAR_CUSTOMERS).delete().in('id', ids);
+          if (deleteCustomerError) {
+               log(`Error deleting customers with IDs: ${ids.join(', ')}: ${deleteCustomerError.message}`, 'error');
+               throw deleteCustomerError
+          };
+
+          // Delete from auth.users
+          const failedDeletes: string[] = [];
+          for (const userId of userIdsToDelete) {
+               const { error: deleteUserError } = await adminSupabase.auth.admin.deleteUser(userId);
+               if (deleteUserError) {
+                    log(`Error deleting auth.user with ID: ${userId}: ${deleteUserError.message}`, 'error');
+                    failedDeletes.push(userId);
+               }
+          }
+
+          revalidatePath('/dashboard/customers');
+
+          if (failedDeletes.length > 0) {
+               return {
+                    deleteCustomerByIDsActionSuccess: false,
+                    deleteCustomerByIDsActionError: `Failed to delete auth.users for: ${failedDeletes.join(', ')}`,
+               };
+          }
+
+          return { deleteCustomerByIDsActionSuccess: true };
+     } catch (error: any) {
+          log(`deleteCustomerByIDsAction error for ids ${ids.join(', ')}: ${error?.message || 'Unknown error'}`, 'error');
+          return {
+               deleteCustomerByIDsActionSuccess: false,
+               deleteCustomerByIDsActionError: error.message,
+          };
+     }
+};
+
+export const readCustomerByEmailAction = async (
+     email: string
+): Promise<{ getCustomerByEmailActionSuccess: boolean; getCustomerByEmailActionData?: PolarCustomer }> => {
+     const supabase = await useServerSideSupabaseAnonClient();
+
+     try {
+          const { data, error } = await supabase.from(TABLES.POLAR_CUSTOMERS).select().eq('email', email).single();
+          if (error) throw error;
+          return { getCustomerByEmailActionSuccess: true, getCustomerByEmailActionData: data };
+     } catch (error) {
+          const message = error instanceof Error ? error.message : 'Unknown error';
+          log(`readCustomerByEmailAction error for email ${email}: ${message}`, 'error');
+          return { getCustomerByEmailActionSuccess: false };
+     }
+};
+
+export const readAllTenantsFromCustomerIdAction = async (customerId: string): Promise<{ tenants: Tenant[] }> => {
+     const supabase = await useServerSideSupabaseAnonClient();
+     if (!isUUID(customerId)) {
+          log(`readAllTenantsFromCustomerIdAction invalid customerId: ${customerId}`, 'error');
           return { tenants: [] };
      }
 
@@ -669,10 +790,10 @@ export const readAllTenantsFromClientIdAction = async (client_id: string): Promi
           const { data: buildings, error: buildingsError } = await supabase
                .from(TABLES.BUILDINGS)
                .select('id')
-               .eq('client_id', client_id);
+               .eq('customerId', customerId);
 
           if (buildingsError) throw buildingsError;
-          const buildingIds = (buildings ?? []).map((b) => b.id).filter(Boolean);
+          const buildingIds = (buildings ?? []).map((b: any) => b.id).filter(Boolean);
           if (buildingIds.length === 0) return { tenants: [] };
 
           const { data: apartments, error: apartmentsError } = await supabase
@@ -681,7 +802,7 @@ export const readAllTenantsFromClientIdAction = async (client_id: string): Promi
                .in('building_id', buildingIds);
 
           if (apartmentsError) throw apartmentsError;
-          const apartmentIds = (apartments ?? []).map((a) => a.id).filter(Boolean);
+          const apartmentIds = (apartments ?? []).map((a: any) => a.id).filter(Boolean);
           if (apartmentIds.length === 0) return { tenants: [] };
 
           const { data: tenants, error: tenantsError } = await supabase
@@ -703,20 +824,20 @@ export const readAllTenantsFromClientIdAction = async (client_id: string): Promi
                .in('apartment_id', apartmentIds);
 
           if (tenantsError) {
-               log(`readAllTenantsFromClientIdAction tenants error for client_id ${client_id}: ${tenantsError.message}`, 'error');
+               log(`readAllTenantsFromCustomerIdAction tenants error for customerId ${customerId}: ${tenantsError.message}`, 'error');
                throw tenantsError
           };
 
           return { tenants: (tenants ?? []) as Tenant[] };
      } catch (error) {
           const message = error instanceof Error ? error.message : 'Unknown error';
-          log(`readAllTenantsFromClientIdAction error for client ${client_id}: ${message}`, 'error');
+          log(`readAllTenantsFromCustomerIdAction error for customer ${customerId}: ${message}`, 'error');
           return { tenants: [] };
      }
 }
 
-// --- Social profile helpers for clients ---
-const calculateClientProfileProgress = (profile: Partial<{ first_name?: string; last_name?: string; phone_number?: string; bio?: string; avatar_url?: string; cover_image_url?: string; current_city?: string; current_job_title?: string; current_job_company?: string; previous_job_title?: string; previous_job_company?: string; origin_city?: string; quote?: string; }>): number => {
+// --- Social profile helpers for customers ---
+const calculateCustomerProfileProgress = (profile: Partial<{ first_name?: string; last_name?: string; phone_number?: string; bio?: string; avatar_url?: string; cover_image_url?: string; current_city?: string; current_job_title?: string; current_job_company?: string; previous_job_title?: string; previous_job_company?: string; origin_city?: string; quote?: string; }>): number => {
      const fields = [
           'first_name',
           'last_name',
@@ -739,16 +860,16 @@ const calculateClientProfileProgress = (profile: Partial<{ first_name?: string; 
      return Math.round((completed.length / fields.length) * 100);
 };
 
-export const getClientBuildingsForSocialProfile = async (
+export const getCustomerBuildingsForSocialProfile = async (
      clientId?: string
-): Promise<{ success: boolean; data?: ClientBuildingOption[]; error?: string }> => {
+): Promise<{ success: boolean; data?: CustomerBuildingOption[]; error?: string }> => {
      const supabase = await useServerSideSupabaseAnonClient();
      const viewer = await getViewer();
-     const effectiveClientId = clientId ?? viewer.client?.id ?? viewer.clientMember?.client_id ?? null;
+     const effectiveCustomerId = clientId ?? viewer.customer?.id
 
-     if (!effectiveClientId) {
-          log('getClientBuildingsForSocialProfile error: Client not found', 'error');
-          return { success: false, error: 'Client not found' };
+     if (!effectiveCustomerId) {
+          log('getCustomerBuildingsForSocialProfile error: PolarCustomer not found', 'error');
+          return { success: false, error: 'PolarCustomer not found' };
      }
 
      const { data, error } = await supabase
@@ -761,15 +882,15 @@ export const getClientBuildingsForSocialProfile = async (
                     country
                )
           `)
-          .eq('client_id', effectiveClientId)
+          .eq('customerId', effectiveCustomerId)
           .order('created_at', { ascending: false });
 
      if (error) {
-          log(`getClientBuildingsForSocialProfile error for clientId ${effectiveClientId}: ${error.message}`, 'error');
+          log(`getCustomerBuildingsForSocialProfile error for clientId ${effectiveCustomerId}: ${error.message}`, 'error');
           return { success: false, error: error.message };
      }
 
-     const options: ClientBuildingOption[] = (data ?? []).map((row: any) => {
+     const options: CustomerBuildingOption[] = (data ?? []).map((row: any) => {
           const location = row.building_location as any;
           const labelPieces = [location?.street_address, location?.city].filter(Boolean);
           const label = labelPieces.length ? labelPieces.join(', ') : 'Building';
@@ -784,101 +905,96 @@ export const getClientBuildingsForSocialProfile = async (
      return { success: true, data: options };
 };
 
-export const createClientSocialProfile = async (buildingId: string): Promise<{ success: boolean; error?: string }> => {
+// export const createCustomerSocialProfile = async (buildingId: string): Promise<{ success: boolean; error?: string }> => {
+//      const supabase = await useServerSideSupabaseAnonClient();
+//      const viewer = await getViewer();
+//      const customer = viewer.customer ?? null;
+//      const clientId = customer?.id ?? null
+
+//      if (!clientId) {
+//           log('createCustomerSocialProfile error: PolarCustomer not found', 'error');
+//           return { success: false, error: 'PolarCustomer not found' };
+//      }
+
+//      if (!buildingId || !isUUID(buildingId)) {
+//           log('createCustomerSocialProfile error: Invalid building selected', 'error');
+//           return { success: false, error: 'Invalid building selected' };
+//      }
+
+//      // Ensure the selected building belongs to this customer
+//      const { data: buildingRow, error: buildingError } = await supabase
+//           .from(TABLES.BUILDINGS)
+//           .select(`
+//                id,
+//                customerId,
+//                building_location:tblBuildingLocations!tblBuildings_building_location_fkey (city)
+//           `)
+//           .eq('id', buildingId)
+//           .single();
+
+//      if (buildingError || !buildingRow) {
+//           log(`createCustomerSocialProfile error: ${buildingError?.message ?? 'Building not found'}`, 'error');
+//           return { success: false, error: buildingError?.message ?? 'Building not found' };
+//      }
+
+//      if (buildingRow.customerId !== clientId) {
+//           log('createCustomerSocialProfile error: Building does not belong to this customer', 'error');
+//           return { success: false, error: 'Building does not belong to this customer' };
+//      }
+
+//      const { data: clientRow, error: customerError } = await supabase
+//           .from(TABLES.POLAR_CUSTOMERS)
+//           .select('id, name, email')
+//           .eq('id', clientId)
+//           .single();
+
+//      if (customerError || !clientRow) {
+//           log(`createCustomerSocialProfile error: ${customerError?.message ?? 'PolarCustomer not found'}`, 'error');
+//           return { success: false, error: customerError?.message ?? 'PolarCustomer not found' };
+//      }
+
+//      const profilePayload = {
+//           id: clientId,
+//           tenant_id: clientId,
+//           customerId: clientId,
+//           name: clientRow.name || '',
+//           email: clientRow.email || '',
+//           billingAddress: buildingRow.billingAddress.city as any || '',
+//      };
+
+//      const profile_progress = calculateCustomerProfileProgress(profilePayload);
+//      const nowIso = new Date().toISOString();
+
+//      const { error: upsertError } = await supabase
+//           .from(TABLES.TENANT_PROFILES)
+//           .upsert(
+//                {
+//                     ...profilePayload,
+//                     profile_progress,
+//                     updated_at: nowIso,
+//                     created_at: nowIso,
+//                },
+//                { onConflict: 'id' }
+//           );
+
+//      if (upsertError) {
+//           log(`createCustomerSocialProfile upsert error: ${upsertError.message}`, 'error');
+//           return { success: false, error: upsertError.message };
+//      }
+
+//      revalidatePath('/dashboard/social/profile');
+//      revalidatePath('/dashboard/social');
+//      return { success: true };
+// };
+
+// Returns true if the provided userId corresponds to a PolarCustomer record; false if tenant or not found.
+export const isCustomerUserId = async (userId: string): Promise<boolean> => {
      const supabase = await useServerSideSupabaseAnonClient();
-     const viewer = await getViewer();
-     const client = viewer.client ?? null;
-     const clientId = client?.id ?? viewer.clientMember?.client_id ?? null;
-
-     if (!clientId) {
-          log('createClientSocialProfile error: Client not found', 'error');
-          return { success: false, error: 'Client not found' };
-     }
-
-     if (!buildingId || !isUUID(buildingId)) {
-          log('createClientSocialProfile error: Invalid building selected', 'error');
-          return { success: false, error: 'Invalid building selected' };
-     }
-
-     // Ensure the selected building belongs to this client
-     const { data: buildingRow, error: buildingError } = await supabase
-          .from(TABLES.BUILDINGS)
-          .select(`
-               id,
-               client_id,
-               building_location:tblBuildingLocations!tblBuildings_building_location_fkey (city)
-          `)
-          .eq('id', buildingId)
-          .single();
-
-     if (buildingError || !buildingRow) {
-          log(`createClientSocialProfile error: ${buildingError?.message ?? 'Building not found'}`, 'error');
-          return { success: false, error: buildingError?.message ?? 'Building not found' };
-     }
-
-     if (buildingRow.client_id !== clientId) {
-          log('createClientSocialProfile error: Building does not belong to this client', 'error');
-          return { success: false, error: 'Building does not belong to this client' };
-     }
-
-     const { data: clientRow, error: clientError } = await supabase
-          .from(TABLES.CLIENTS)
-          .select('id, contact_person, name, email, phone, mobile_phone')
-          .eq('id', clientId)
-          .single();
-
-     if (clientError || !clientRow) {
-          log(`createClientSocialProfile error: ${clientError?.message ?? 'Client not found'}`, 'error');
-          return { success: false, error: clientError?.message ?? 'Client not found' };
-     }
-
-     const profilePayload = {
-          id: clientId,
-          tenant_id: clientId,
-          client_id: clientId,
-          first_name: clientRow.contact_person || clientRow.name || viewer.clientMember?.name || '',
-          last_name: '',
-          email: clientRow.email || viewer.clientMember?.email || '',
-          phone_number: clientRow.phone || clientRow.mobile_phone || '',
-          current_city: (buildingRow as any)?.building_location?.city ?? null,
-     };
-
-     const profile_progress = calculateClientProfileProgress(profilePayload);
-     const nowIso = new Date().toISOString();
-
-     const { error: upsertError } = await supabase
-          .from(TABLES.TENANT_PROFILES)
-          .upsert(
-               {
-                    ...profilePayload,
-                    profile_progress,
-                    updated_at: nowIso,
-                    created_at: nowIso,
-               },
-               { onConflict: 'id' }
-          );
-
-     if (upsertError) {
-          log(`createClientSocialProfile upsert error: ${upsertError.message}`, 'error');
-          return { success: false, error: upsertError.message };
-     }
-
-     revalidatePath('/dashboard/social/profile');
-     revalidatePath('/dashboard/social');
-     return { success: true };
-};
-
-// Returns true if the provided userId corresponds to a Client record; false if tenant or not found.
-export const isClientUserId = async (userId: string): Promise<boolean> => {
-     const supabase = await useServerSideSupabaseAnonClient();
-     const { data: client, error: clientError } = await supabase.from(TABLES.CLIENTS).select('id').eq('user_id', userId).single();
-     if (clientError) log(`isClientUserId error (client): ${clientError.message}`, 'error');
-     if (client && isUUIDv4(client.id) && !clientError) return true;
-     const { data: clientMember, error: clientMemberError } = await supabase.from(TABLES.CLIENT_MEMBERS).select('id').eq('user_id', userId).single();
-     if (clientMemberError) log(`isClientUserId error (clientMember): ${clientMemberError.message}`, 'error');
-     if (clientMember && isUUIDv4(clientMember.id) && !clientMemberError) return true;
+     const { data: customer, error: customerError } = await supabase.from(TABLES.POLAR_CUSTOMERS).select('customerId').eq('externalId', userId).single();
+     if (customerError) log(`isCustomerUserId error (customer): ${customerError.message}`, 'error');
+     if (customer && isUUIDv4(customer.customerId) && !customerError) return true;
      const { data: tenant, error: tenantError } = await supabase.from(TABLES.TENANTS).select('id').eq('user_id', userId).single();
-     if (tenantError) log(`isClientUserId error (tenant): ${tenantError.message}`, 'error');
+     if (tenantError) log(`isCustomerUserId error (tenant): ${tenantError.message}`, 'error');
      if (tenant && isUUIDv4(tenant.id) && !tenantError) return false;
      return !!tenant;
 }

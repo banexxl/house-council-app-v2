@@ -27,8 +27,8 @@ export async function GET(request: Request) {
   if ('error' in auth) {
     return NextResponse.json({ error: auth.error }, { status: 401 });
   }
-  const { client, clientMember } = await getViewer();
-  const clientId = client?.id ?? clientMember?.client_id ?? null;
+  const { customer } = await getViewer();
+  const clientId = customer?.id ?? null;
   if (!clientId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
@@ -77,8 +77,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: auth.error }, { status: 401 });
   }
   const { userId } = auth;
-  const { client, clientMember } = await getViewer();
-  const clientId = client?.id ?? clientMember?.client_id ?? null;
+  const { customer } = await getViewer();
+  const clientId = customer?.id ?? null;
   if (!clientId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
@@ -113,8 +113,8 @@ export async function PUT(request: Request) {
   if ('error' in auth) {
     return NextResponse.json({ error: auth.error }, { status: 401 });
   }
-  const { client, clientMember } = await getViewer();
-  const clientId = client?.id ?? clientMember?.client_id ?? null;
+  const { customer } = await getViewer();
+  const clientId = customer?.id ?? null;
   if (!clientId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
@@ -152,8 +152,8 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: auth.error }, { status: 401 });
   }
   const { userId } = auth;
-  const { client, clientMember } = await getViewer();
-  const clientId = client?.id ?? clientMember?.client_id ?? null;
+  const { customer } = await getViewer();
+  const clientId = customer?.id ?? null;
   if (!clientId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }

@@ -12,8 +12,8 @@ import { paths } from "src/paths";
 export default async function Page() {
 
   let apartments: Apartment[] = [];
-  const { client, clientMember, tenant, admin } = await getViewer();
-  const client_id = client ? client.id : clientMember ? clientMember.client_id : null;
+  const { customer, tenant, admin } = await getViewer();
+  const customerId = client ? client.id : clientMember ? clientMember.customerId : null;
   if (!client && !tenant && !admin && !clientMember) {
     redirect(paths.auth.login);
   }
@@ -24,13 +24,13 @@ export default async function Page() {
       apartments = data;
     }
   } else if (client) {
-    const { success, data } = await getAllApartmentsFromClientsBuildings(client_id!);
+    const { success, data } = await getAllApartmentsFromClientsBuildings(customerId!);
     if (success && data) {
       apartments = data.apartments;
     }
   } else if (clientMember) {
-    const { success, data } = await resolveClientFromClientOrMember(client_id!);
-    const { success: success2, data: data2 } = await getAllApartmentsFromClientsBuildings(client_id!);
+    const { success, data } = await resolveClientFromClientOrMember(customerId!);
+    const { success: success2, data: data2 } = await getAllApartmentsFromClientsBuildings(customerId!);
     if (success2 && data2) {
       apartments = data2.apartments;
     }

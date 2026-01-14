@@ -24,7 +24,7 @@ export const ResetPasswordClient = () => {
   const searchParams = useSearchParams();
   const tokenFromUrl = searchParams.get('token') || '';
   const emailFromUrl = searchParams.get('email') || '';
-  const clientIdFromUrl = searchParams.get('client_id') || '';
+  const clientIdFromUrl = searchParams.get('customerId') || '';
   const isClientMember = searchParams.get('role') === 'client_member';
   const hasValidToken = !!tokenFromUrl;
 

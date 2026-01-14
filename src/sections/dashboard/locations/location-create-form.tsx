@@ -68,7 +68,7 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData, clientCoords, us
                latitude: data.latitude,
                longitude: data.longitude,
                post_code: data.postcode ? parseInt(data.postcode) : null,
-               client_id: userData?.client?.id! ? userData.client.id : userData?.clientMember?.id!,
+               customerId: userData?.client?.id! ? userData.client.id : userData?.clientMember?.id!,
                building_id: null,
                location_occupied: false
           };
@@ -158,7 +158,7 @@ const LocationCreateForm = ({ mapBoxAccessToken, locationsData, clientCoords, us
                     city: city,
                     region: region,
                     post_code: postcode,
-                    client_id: userData?.client?.id!,
+                    customerId: userData?.client?.id!,
                     building_id: null,
                     location_occupied: false
                },

@@ -33,8 +33,8 @@ export async function POST(req: NextRequest) {
      try {
           // 2) Fetch all subscriptions
           const { data: client_subscriptions, error } = await supabase
-               .from(TABLES.CLIENT_SUBSCRIPTION)
-               .select('id, client_id, status, next_payment_date');
+               .from(TABLES.POLAR_SUBSCRIPTIONS)
+               .select('id, customerId, status, next_payment_date');
 
           if (error) {
                await logServerAction({
@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
                await logServerAction({
                     user_id: null,
                     action: 'Processing subscription',
-                    payload: { subscriptionId: sub.id, clientId: sub.client_id, status: sub.status, next_payment_date: sub.next_payment_date },
+                    payload: { subscriptionId: sub.id, clientId: sub.customerId, status: sub.status, next_payment_date: sub.next_payment_date },
                     status: 'success',
                     error: '',
                     duration_ms: 0,
@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
                if (!allowedStatuses.has(sub.status)) {
                     stats.skippedUnknown++;
                     results.push({
-                         clientId: sub.client_id,
+                         clientId: sub.customerId,
                          previousStatus: sub.status,
                          newStatus: sub.status,
                          nextPaymentDate: nextPaymentDate ? nextPaymentDate.toISOString() : null,
@@ -125,14 +125,14 @@ export async function POST(req: NextRequest) {
 
                if (newStatus !== sub.status) {
                     const { error: updateError } = await supabase
-                         .from(TABLES.CLIENT_SUBSCRIPTION)
+                         .from(TABLES.POLAR_SUBSCRIPTIONS)
                          .update({ status: newStatus, updated_at: now.toISOString() })
                          .eq('id', sub.id);
 
                     await logServerAction({
                          user_id: null,
                          action: 'Subscription status transition',
-                         payload: { subscriptionId: sub.id, clientId: sub.client_id, from: sub.status, to: newStatus, action },
+                         payload: { subscriptionId: sub.id, clientId: sub.customerId, from: sub.status, to: newStatus, action },
                          status: updateError ? 'fail' : 'success',
                          error: updateError?.message || '',
                          duration_ms: 0,
@@ -157,7 +157,7 @@ export async function POST(req: NextRequest) {
                     await logServerAction({
                          user_id: null,
                          action: 'Evaluated subscription expiration window',
-                         payload: { subscriptionId: sub.id, clientId: sub.client_id, daysUntilExpiration },
+                         payload: { subscriptionId: sub.id, clientId: sub.customerId, daysUntilExpiration },
                          status: 'success',
                          error: '',
                          duration_ms: 0,
@@ -166,16 +166,16 @@ export async function POST(req: NextRequest) {
 
                     if ([7, 3, 1].includes(daysUntilExpiration)) {
                          const { data: clientData, error: clientError } = await supabase
-                              .from(TABLES.CLIENTS)
+                              .from(TABLES.POLAR_CUSTOMERS)
                               .select('email')
-                              .eq('id', sub.client_id)
+                              .eq('id', sub.customerId)
                               .single();
 
                          if (clientError) {
                               await logServerAction({
                                    user_id: null,
                                    action: 'Fetch client email - Error',
-                                   payload: { clientId: sub.client_id },
+                                   payload: { clientId: sub.customerId },
                                    status: 'fail',
                                    error: clientError.message,
                                    duration_ms: 0,
@@ -192,7 +192,7 @@ export async function POST(req: NextRequest) {
                                    await logServerAction({
                                         user_id: null,
                                         action: 'sendTrialEndingEmailToClient failed',
-                                        payload: { clientId: sub.client_id, subscriptionId: sub.id, clientEmail, daysUntilExpiration },
+                                        payload: { clientId: sub.customerId, subscriptionId: sub.id, clientEmail, daysUntilExpiration },
                                         status: 'fail',
                                         error: e?.message || 'unknown',
                                         duration_ms: 0,
@@ -205,13 +205,13 @@ export async function POST(req: NextRequest) {
                                    sendSubscriptionEndingNotificationToSupportResponse = await sendSubscriptionEndingNotificationToSupport({
                                         daysRemaining: daysUntilExpiration,
                                         clientEmail,
-                                        clientId: sub.client_id,
+                                        clientId: sub.customerId,
                                    });
                               } catch (e: any) {
                                    await logServerAction({
                                         user_id: null,
                                         action: 'sendSubscriptionEndingNotificationToSupport failed',
-                                        payload: { clientId: sub.client_id, subscriptionId: sub.id, clientEmail, daysUntilExpiration },
+                                        payload: { clientId: sub.customerId, subscriptionId: sub.id, clientEmail, daysUntilExpiration },
                                         status: 'fail',
                                         error: e?.message || 'unknown',
                                         duration_ms: 0,
@@ -224,7 +224,7 @@ export async function POST(req: NextRequest) {
                                    action: `Upcoming expiration in ${daysUntilExpiration} day(s)`,
                                    payload: {
                                         subscriptionId: sub.id,
-                                        clientId: sub.client_id,
+                                        clientId: sub.customerId,
                                         daysUntilExpiration,
                                         expirationDate: nextPaymentDate.toISOString(),
                                         sendExpirationEmailToClientResponse,
@@ -240,7 +240,7 @@ export async function POST(req: NextRequest) {
                }
 
                results.push({
-                    clientId: sub.client_id,
+                    clientId: sub.customerId,
                     previousStatus: sub.status,
                     newStatus,
                     nextPaymentDate: nextPaymentDate ? nextPaymentDate.toISOString() : null,

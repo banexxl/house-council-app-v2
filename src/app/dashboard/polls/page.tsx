@@ -6,8 +6,8 @@ import Polls from './polls';
 
 export default async function PollsPage() {
 
-  const { client, clientMember, tenant, admin } = await getViewer();
-  const client_id = client ? client.id : clientMember ? clientMember.client_id : null;
+  const { customer, tenant, admin } = await getViewer();
+  const customerId = client ? client.id : clientMember ? clientMember.customerId : null;
 
   if (!client && !clientMember && !tenant && !admin) {
     redirect('/auth/login');
@@ -20,7 +20,7 @@ export default async function PollsPage() {
     polls = Array.isArray(data) ? data : [];
   } else if (client || clientMember) {
 
-    const { data } = await getPollsFromClient({ client_id: client_id! });
+    const { data } = await getPollsFromClient({ customerId: customerId! });
     polls = Array.isArray(data) ? data : [];
   } else if (tenant) {
     redirect('/dashboard/social/profile');
@@ -32,7 +32,7 @@ export default async function PollsPage() {
     const { data } = await getAllBuildings();
     buildings = Array.isArray(data) ? data : [];
   } else if (client || clientMember) {
-    const { data } = await getAllBuildingsFromClient(client_id!);
+    const { data } = await getAllBuildingsFromClient(customerId!);
     buildings = Array.isArray(data) ? data : [];
   }
 

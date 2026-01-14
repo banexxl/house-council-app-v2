@@ -32,7 +32,7 @@ const mapRow = (r: any): CalendarEvent => ({
                     ? r.start_date_time.toISOString()
                     : r.start_date_time,
      title: r.title,
-     client_id: r.client_id,
+     customerId: r.customerId,
      calendar_event_type: (r.calendar_event_type as CalendarEvent['calendar_event_type']) || undefined,
      building_id: r.building_id ?? null,
      created_at: r.created_at instanceof Date ? r.created_at.toISOString() : r.created_at
@@ -43,29 +43,28 @@ type ActionResult<T> = { success: true; data: T } | { success: false; error: str
 export const getCalendarEvents = async (): Promise<ActionResult<CalendarEvent[]>> => {
      const time = Date.now();
      try {
-          const { client, clientMember, tenant, admin } = await getViewer();
-          let clientId: string | null = null;
+          const { customer, tenant, admin } = await getViewer();
+          let customerId: string | null = null;
 
-          if (client) clientId = client.id;
-          else if (clientMember) clientId = clientMember.client_id;
+          if (customer) customerId = customer.id;
           // Tenants may not have client-level visibility yet; restrict to empty set
-          if (tenant && !clientId) {
+          if (tenant && !customerId && !admin) {
                await logServerAction({ user_id: null, action: 'getCalendarEvents', duration_ms: Date.now() - time, error: '', payload: { tenant: true, clientScoped: false, returned: 0 }, status: 'success', type: 'db' });
                return { success: true, data: [] };
           }
 
           const supabase = await useServerSideSupabaseAnonClient();
           const query = supabase.from(TABLES.CALENDAR_EVENTS).select("*");
-          if (clientId && !admin) {
-               query.eq("client_id", clientId);
+          if (customerId && !admin) {
+               query.eq("customerId", customerId);
           }
           const { data, error } = await query.order("start_date_time", { ascending: true });
           if (error) {
-               await logServerAction({ user_id: null, action: 'getCalendarEvents', duration_ms: Date.now() - time, error: error.message, payload: { clientId, admin }, status: 'fail', type: 'db' });
+               await logServerAction({ user_id: null, action: 'getCalendarEvents', duration_ms: Date.now() - time, error: error.message, payload: { customerId, admin }, status: 'fail', type: 'db' });
                return { success: false, error: error.message };
           }
           const rows = (data || []).map(mapRow);
-          await logServerAction({ user_id: null, action: 'getCalendarEvents', duration_ms: Date.now() - time, error: '', payload: { clientId, admin, count: rows.length }, status: 'success', type: 'db' });
+          await logServerAction({ user_id: null, action: 'getCalendarEvents', duration_ms: Date.now() - time, error: '', payload: { customerId, admin, count: rows.length }, status: 'success', type: 'db' });
           return { success: true, data: rows };
      } catch (err: any) {
           await logServerAction({ user_id: null, action: 'getCalendarEvents', duration_ms: Date.now() - time, error: err?.message || 'unexpected', payload: {}, status: 'fail', type: 'db' });
@@ -84,12 +83,12 @@ export const listDashboardEvents = async ({
 }>> => {
      const time = Date.now();
      try {
-          const { client, clientMember, tenant, admin } = await getViewer();
-          const clientId = client?.id || clientMember?.client_id || null;
+          const { customer, tenant, admin } = await getViewer();
+          const customerId = customer?.id || null;
           const scopedBuildingIds = (buildingIds || []).filter(Boolean);
           const hasBuildingScope = scopedBuildingIds.length > 0;
 
-          if (tenant && !clientId && !admin && !hasBuildingScope) {
+          if (tenant && !customerId && !admin && !hasBuildingScope) {
                await logServerAction({ user_id: null, action: 'listDashboardEvents', duration_ms: Date.now() - time, error: '', payload: { tenant: true, clientScoped: false, returned: 0 }, status: 'success', type: 'db' });
                return { success: true, data: { upcoming: [], past: [] } };
           }
@@ -101,7 +100,7 @@ export const listDashboardEvents = async ({
           const supabase = await useServerSideSupabaseAnonClient();
           const applyScope = (query: any) => {
                if (hasBuildingScope) return query.in('building_id', scopedBuildingIds);
-               if (clientId && !admin) return query.eq('client_id', clientId);
+               if (customerId && !admin) return query.eq('customerId', customerId);
                return query;
           };
           const upcomingQuery = applyScope(supabase.from(TABLES.CALENDAR_EVENTS).select('*'));
@@ -129,7 +128,7 @@ export const listDashboardEvents = async ({
                     action: 'listDashboardEvents',
                     duration_ms: Date.now() - time,
                     error: errMsg,
-                    payload: { clientId, admin, buildingIds: scopedBuildingIds.length },
+                    payload: { customerId, admin, buildingIds: scopedBuildingIds.length },
                     status: 'fail',
                     type: 'db',
                });
@@ -144,7 +143,7 @@ export const listDashboardEvents = async ({
                action: 'listDashboardEvents',
                duration_ms: Date.now() - time,
                error: '',
-               payload: { clientId, admin, buildingIds: scopedBuildingIds.length, upcoming: upcoming.length, past: past.length },
+               payload: { customerId, admin, buildingIds: scopedBuildingIds.length, upcoming: upcoming.length, past: past.length },
                status: 'success',
                type: 'db',
           });
@@ -159,16 +158,16 @@ export const listDashboardEvents = async ({
 export const createCalendarEvent = async (input: CalendarEvent, locale: string = "rs"): Promise<ActionResult<CalendarEvent>> => {
      const time = Date.now();
      try {
-          const { client, clientMember, admin } = await getViewer();
-          const clientId = client?.id || clientMember?.client_id;
-          if (!clientId && !admin) {
-               await logServerAction({ user_id: null, action: 'createCalendarEvent', duration_ms: Date.now() - time, error: 'unauthorized', payload: { hasClient: !!clientId, admin }, status: 'fail', type: 'db' });
+          const { customer, admin } = await getViewer();
+          const customerId = customer?.id || null;
+          if (!customerId && !admin) {
+               await logServerAction({ user_id: null, action: 'createCalendarEvent', duration_ms: Date.now() - time, error: 'unauthorized', payload: { hasCustomer: !!customerId, admin }, status: 'fail', type: 'db' });
                return { success: false, error: "Unauthorized" };
           }
 
           const payload = {
                ...input,
-               client_id: clientId,
+               customerId: customerId,
                building_id: input.building_id ?? null,
                // Ensure timestamptz columns receive ISO8601 strings
                start_date_time: new Date(input.start_date_time).toISOString(),
@@ -181,7 +180,7 @@ export const createCalendarEvent = async (input: CalendarEvent, locale: string =
                .select("*")
                .single();
           if (error || !data) {
-               await logServerAction({ user_id: null, action: 'createCalendarEvent', duration_ms: Date.now() - time, error: error?.message || 'insertFailed', payload: { clientId }, status: 'fail', type: 'db' });
+               await logServerAction({ user_id: null, action: 'createCalendarEvent', duration_ms: Date.now() - time, error: error?.message || 'insertFailed', payload: { customerId }, status: 'fail', type: 'db' });
                return { success: false, error: error?.message || "Insert failed" };
           }
           revalidatePath('/dashboard/calendar');
@@ -249,7 +248,7 @@ export const createCalendarEvent = async (input: CalendarEvent, locale: string =
                }
           }
 
-          await logServerAction({ user_id: null, action: 'createCalendarEvent', duration_ms: Date.now() - time, error: '', payload: { clientId, id: mapped.id }, status: 'success', type: 'db' });
+          await logServerAction({ user_id: null, action: 'createCalendarEvent', duration_ms: Date.now() - time, error: '', payload: { customerId, id: mapped.id }, status: 'success', type: 'db' });
           return { success: true, data: mapped };
      } catch (err: any) {
           await logServerAction({ user_id: null, action: 'createCalendarEvent', duration_ms: Date.now() - time, error: err?.message || 'unexpected', payload: {}, status: 'fail', type: 'db' });
@@ -260,13 +259,13 @@ export const createCalendarEvent = async (input: CalendarEvent, locale: string =
 export const updateCalendarEvent = async ({ eventId, update }: UpdateCalendarEventInput): Promise<ActionResult<CalendarEvent>> => {
      const time = Date.now();
      try {
-          const { client, clientMember, admin } = await getViewer();
-          const clientId = client?.id || clientMember?.client_id;
+          const { customer, admin } = await getViewer();
+          const customerId = customer?.id || null;
           // If not admin ensure event belongs to their client
           const supabase = await useServerSideSupabaseAnonClient();
           let ownershipCheck = supabase
                .from(TABLES.CALENDAR_EVENTS)
-               .select('client_id')
+               .select('customerId')
                .eq('id', eventId)
                .limit(1)
                .single();
@@ -275,8 +274,8 @@ export const updateCalendarEvent = async ({ eventId, update }: UpdateCalendarEve
                await logServerAction({ user_id: null, action: 'updateCalendarEvent', duration_ms: Date.now() - time, error: ownerErr.message, payload: { eventId, stage: 'ownership' }, status: 'fail', type: 'db' });
                return { success: false, error: ownerErr.message };
           }
-          if (!admin && ownerRow?.client_id !== clientId) {
-               await logServerAction({ user_id: null, action: 'updateCalendarEvent', duration_ms: Date.now() - time, error: 'forbidden', payload: { eventId, ownerClient: ownerRow?.client_id, viewerClient: clientId }, status: 'fail', type: 'db' });
+          if (!admin && ownerRow?.customerId !== customerId) {
+               await logServerAction({ user_id: null, action: 'updateCalendarEvent', duration_ms: Date.now() - time, error: 'forbidden', payload: { eventId, ownerClient: ownerRow?.customerId, viewerClient: customerId }, status: 'fail', type: 'db' });
                return { success: false, error: 'Forbidden' };
           }
 
@@ -313,12 +312,12 @@ export const updateCalendarEvent = async ({ eventId, update }: UpdateCalendarEve
 export const deleteCalendarEvent = async (eventId: string): Promise<ActionResult<{ id: string }>> => {
      const time = Date.now();
      try {
-          const { client, clientMember, admin } = await getViewer();
-          const clientId = client?.id || clientMember?.client_id;
+          const { customer, admin } = await getViewer();
+          const customerId = customer?.id || null;
           const supabase = await useServerSideSupabaseAnonClient();
           const { data: ownerRow, error: ownerErr } = await supabase
                .from(TABLES.CALENDAR_EVENTS)
-               .select('client_id')
+               .select('customerId')
                .eq('id', eventId)
                .limit(1)
                .single();
@@ -326,8 +325,8 @@ export const deleteCalendarEvent = async (eventId: string): Promise<ActionResult
                await logServerAction({ user_id: null, action: 'deleteCalendarEvent', duration_ms: Date.now() - time, error: ownerErr.message, payload: { eventId, stage: 'ownership' }, status: 'fail', type: 'db' });
                return { success: false, error: ownerErr.message };
           }
-          if (!admin && ownerRow?.client_id !== clientId) {
-               await logServerAction({ user_id: null, action: 'deleteCalendarEvent', duration_ms: Date.now() - time, error: 'forbidden', payload: { eventId, ownerClient: ownerRow?.client_id, viewerClient: clientId }, status: 'fail', type: 'db' });
+          if (!admin && ownerRow?.customerId !== customerId) {
+               await logServerAction({ user_id: null, action: 'deleteCalendarEvent', duration_ms: Date.now() - time, error: 'forbidden', payload: { eventId, ownerClient: ownerRow?.customerId, viewerClient: customerId }, status: 'fail', type: 'db' });
                return { success: false, error: 'Forbidden' };
           }
 

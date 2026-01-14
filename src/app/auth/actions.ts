@@ -105,9 +105,9 @@ export const magicLinkLogin = async (email: string, ipAddress: string): Promise<
                     }
 
                     // Get client ID from tenant's building
-                    const { data: client_id, success: clientIdSuccess, error: clientIdError } = await getClientIdFromTenantBuilding(userId);
+                    const { data: customerId, success: clientIdSuccess, error: clientIdError } = await getClientIdFromTenantBuilding(userId);
 
-                    if (!clientIdSuccess || !client_id) {
+                    if (!clientIdSuccess || !customerId) {
                          await logServerAction({
                               user_id: userId,
                               action: 'NLA - Magic link failed - could not get client ID from tenant building',
@@ -121,13 +121,13 @@ export const magicLinkLogin = async (email: string, ipAddress: string): Promise<
                     }
 
                     // Check client subscription status
-                    const { success: subscriptionSuccess, isActive, error: subscriptionError } = await checkClientSubscriptionStatus(client_id);
+                    const { success: subscriptionSuccess, isActive, error: subscriptionError } = await checkClientSubscriptionStatus(customerId);
 
                     if (!subscriptionSuccess) {
                          await logServerAction({
                               user_id: userId,
                               action: 'NLA - Magic link failed - subscription check failed',
-                              payload: { email, tenantId: userId, clientId: client_id, error: subscriptionError },
+                              payload: { email, tenantId: userId, clientId: customerId, error: subscriptionError },
                               status: 'fail',
                               error: subscriptionError || 'Subscription check failed',
                               duration_ms: 0,
@@ -140,7 +140,7 @@ export const magicLinkLogin = async (email: string, ipAddress: string): Promise<
                          await logServerAction({
                               user_id: userId,
                               action: 'NLA - Magic link blocked - no active subscription for tenant building',
-                              payload: { email, tenantId: userId, clientId: client_id },
+                              payload: { email, tenantId: userId, clientId: customerId },
                               status: 'fail',
                               error: 'No active subscription found for building client',
                               duration_ms: 0,
@@ -394,9 +394,9 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
                     }
 
                     // Get client ID from tenant's building
-                    const { data: client_id, success: clientIdSuccess, error: clientIdError } = await getClientIdFromTenantBuilding(userId);
+                    const { data: customerId, success: clientIdSuccess, error: clientIdError } = await getClientIdFromTenantBuilding(userId);
 
-                    if (!clientIdSuccess || !client_id) {
+                    if (!clientIdSuccess || !customerId) {
                          await logServerAction({
                               user_id: userId,
                               action: 'Signing in failed - could not get client ID from tenant building',
@@ -410,13 +410,13 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
                     }
 
                     // Check client subscription status
-                    const { success: subscriptionSuccess, isActive, error: subscriptionError } = await checkClientSubscriptionStatus(client_id);
+                    const { success: subscriptionSuccess, isActive, error: subscriptionError } = await checkClientSubscriptionStatus(customerId);
 
                     if (!subscriptionSuccess) {
                          await logServerAction({
                               user_id: userId,
                               action: 'Signing in failed - subscription check failed',
-                              payload: { email: values.email, tenantId: userId, clientId: client_id, error: subscriptionError },
+                              payload: { email: values.email, tenantId: userId, clientId: customerId, error: subscriptionError },
                               status: 'fail',
                               error: subscriptionError || 'Subscription check failed',
                               duration_ms: Date.now() - start,
@@ -429,7 +429,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
                          await logServerAction({
                               user_id: userId,
                               action: 'Signing in blocked - no active subscription for tenant building',
-                              payload: { email: values.email, tenantId: userId, clientId: client_id },
+                              payload: { email: values.email, tenantId: userId, clientId: customerId },
                               status: 'fail',
                               error: 'No active subscription found for building client',
                               duration_ms: Date.now() - start,
@@ -489,7 +489,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
                const { data: subscriptionData, error: subscriptionError } = await supabase
                     .from(TABLES.CLIENT_SUBSCRIPTION)
                     .select('*')
-                    .eq('client_id', data?.id)
+                    .eq('customerId', data?.id)
                     .in('status', ['active', 'trialing'])
                     .single();
 
@@ -552,7 +552,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
           const { data: subscriptionData, error: subscriptionError } = await supabase
                .from(TABLES.CLIENT_SUBSCRIPTION)
                .select('*')
-               .eq('client_id', userId)
+               .eq('customerId', userId)
                .in('status', ['active', 'trialing'])
                .single();
 

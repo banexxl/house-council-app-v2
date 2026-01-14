@@ -31,7 +31,7 @@ const Page = async () => {
   const clientIds = Array.from(
     new Set(
       invoices
-        .map((invoice) => invoice.client_id)
+        .map((invoice) => invoice.customerId)
         .filter((id): id is string => Boolean(id))
     )
   );

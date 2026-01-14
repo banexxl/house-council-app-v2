@@ -88,7 +88,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
      const [scheduledTime, setScheduledTime] = useState<Dayjs | null>(null);
 
      const formik = useFormik({
-          initialValues: { ...announcementInitialValues, client_id: client.id },
+          initialValues: { ...announcementInitialValues, customerId: client.id },
           validationSchema: buildAnnouncementValidationSchema(t),
           // Do not validate on mount; defer validation feedback until user interaction or submit
           validateOnMount: false,
@@ -102,7 +102,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                     subcategory: values.subcategory || null,
                     buildings: values.buildings || [],
                     pinned: values.pinned,
-                    client_id: client.id,
+                    customerId: client.id,
                     schedule_enabled: values.schedule_enabled,
                     scheduled_at: values.schedule_enabled ? values.scheduled_at : null,
                     scheduled_timezone: values.schedule_enabled ? values.scheduled_timezone || Intl.DateTimeFormat().resolvedOptions().timeZone : null,
@@ -150,7 +150,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                               user_id: updated.user_id,
                               images: (updated.images && updated.images.length ? updated.images : []),
                               documents: (updated.documents && updated.documents.length ? updated.documents : []),
-                              client_id: client.id,
+                              customerId: client.id,
                          }
                     });
                     // Make sure the list/table reflects latest changes
@@ -161,10 +161,10 @@ export default function Announcements({ client, announcements, buildings }: Anno
 
      // Helper to decide when to show an error for a field (user has interacted or submitted)
      const showFieldError = (name: string) => !!(formik.touched as any)[name] || formik.submitCount > 0;
-     // Ensure client_id is always set and never surfaces as an error
+     // Ensure customerId is always set and never surfaces as an error
      useEffect(() => {
-          if (formik.values.client_id !== client.id) {
-               formik.setFieldValue('client_id', client.id, false);
+          if (formik.values.customerId !== client.id) {
+               formik.setFieldValue('customerId', client.id, false);
           }
      }, [client.id]);
 
@@ -300,7 +300,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                     user_id: a.user_id,
                     images: (a.images && a.images.length ? a.images : []),
                     documents: (a.documents && a.documents.length ? a.documents : []),
-                    client_id: a.client_id!,
+                    customerId: a.customerId!,
                }
           });
           hydrateScheduledAt(
@@ -486,13 +486,13 @@ export default function Announcements({ client, announcements, buildings }: Anno
                toast.success(t(tokens.announcements.toasts.deleted));
                if (editingEntity!.id === id!) {
                     formik.resetForm({
-                         values: { ...announcementInitialValues, created_at: new Date(), client_id: client.id }
+                         values: { ...announcementInitialValues, created_at: new Date(), customerId: client.id }
                     });
                     setEditingEntity(null);
                }
           }
           formik.resetForm({
-               values: { ...announcementInitialValues, client_id: client.id }
+               values: { ...announcementInitialValues, customerId: client.id }
           });
           formik.setSubmitting(false);
           setRowBusy(null);
@@ -545,7 +545,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                   setIsStartingNew(true);
                                                   setEditingEntity(null);
                                                   formik.resetForm({
-                                                       values: { ...announcementInitialValues, created_at: new Date(), client_id: client.id }
+                                                       values: { ...announcementInitialValues, created_at: new Date(), customerId: client.id }
                                                   });
                                                   setIsStartingNew(false);
                                              }}
@@ -559,14 +559,14 @@ export default function Announcements({ client, announcements, buildings }: Anno
                               ) : (
                                    <Button
                                         variant="outlined"
-                                       href={paths.dashboard.announcements.index}
-                                       onClick={() => setIsHeaderNavigating(true)}
-                                       disabled={isHeaderNavigating}
-                                       startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
-                                       sx={{ width: { xs: '100%', sm: 'auto' } }}
-                                  >
-                                       {t(tokens.announcements.table.heading)}
-                                  </Button>
+                                        href={paths.dashboard.announcements.index}
+                                        onClick={() => setIsHeaderNavigating(true)}
+                                        disabled={isHeaderNavigating}
+                                        startIcon={isHeaderNavigating ? <CircularProgress size={16} color="inherit" /> : undefined}
+                                        sx={{ width: { xs: '100%', sm: 'auto' } }}
+                                   >
+                                        {t(tokens.announcements.table.heading)}
+                                   </Button>
                               )
                          }
                     />
@@ -1012,7 +1012,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                             ? (
                                                                  <Stack component="ol" spacing={0.5} sx={{ m: 0, pl: 2 }}>
                                                                       {Object.entries(formik.errors)
-                                                                           .filter(([key]) => key !== 'client_id')
+                                                                           .filter(([key]) => key !== 'customerId')
                                                                            .map(([, err], idx) => {
                                                                                 const items = typeof err === 'string' ? [err] : Object.values(err as any);
                                                                                 return items.filter(Boolean).map((msg, innerIdx) => (

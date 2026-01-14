@@ -60,10 +60,10 @@ export const ClientForm: FC<ClientNewFormProps> = ({ clientData, availableSubscr
 
   useEffect(() => {
     const fetchBuildingLocations = async () => {
-      // Make sure client_id is defined
-      const client_id = clientData?.id;
-      if (!client_id) return;
-      const { data, error } = await supabaseBrowserClient.from(TABLES.BUILDING_LOCATIONS).select('*').eq('client_id', client_id).is('building_id', null);
+      // Make sure customerId is defined
+      const customerId = clientData?.id;
+      if (!customerId) return;
+      const { data, error } = await supabaseBrowserClient.from(TABLES.BUILDING_LOCATIONS).select('*').eq('customerId', customerId).is('building_id', null);
       setUnassignedLocations(data || []);
     };
     fetchBuildingLocations();

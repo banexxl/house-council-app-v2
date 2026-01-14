@@ -17,7 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { tokens } from 'src/locales/tokens';
 import { markAllNotificationsRead, markNotificationRead } from 'src/app/actions/notification/notification-actions';
 import toast from 'react-hot-toast';
-import { isClientUserId } from 'src/app/actions/client/client-actions';
+import { isCustomerUserId } from 'src/app/actions/client/client-actions';
 import { TABLES } from 'src/libs/supabase/tables';
 
 const MAX_DISPLAY = 10;
@@ -87,7 +87,7 @@ export function useNotifications() {
     if (!userId) return;
     let cleanup: (() => Promise<void>) | null = null;
     (async () => {
-      const isUserClient = await isClientUserId(userId);
+      const isUserClient = await isCustomerUserId(userId);
       cleanup = await initNotificationsRealtime((payload: any) => {
         const eventType = payload.eventType;
 

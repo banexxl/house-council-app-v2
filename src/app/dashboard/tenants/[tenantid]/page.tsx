@@ -12,8 +12,8 @@ export default async function Page({ params }: {
   params: Promise<{ tenantid: string }>
 }) {
 
-  const { client, clientMember, tenant, admin } = await getViewer();
-  const client_id = client ? client.id : clientMember ? clientMember.client_id : null;
+  const { customer, tenant, admin } = await getViewer();
+  const customerId = client ? client.id : clientMember ? clientMember.customerId : null;
   if (!client && !clientMember && !tenant && !admin) {
     redirect('/auth/login');
   }
@@ -23,7 +23,7 @@ export default async function Page({ params }: {
   const [{ getTenantByIdActionSuccess, getTenantByIdActionData }, session, buildingsResult] = await Promise.all([
     readTenantByIdAction(tenantid),
     getViewer(),
-    getAllBuildingsWithApartmentsForClient(client_id!),
+    getAllBuildingsWithApartmentsForClient(customerId!),
   ]);
 
   const buildings = buildingsResult.success && buildingsResult.data ? buildingsResult.data : [];

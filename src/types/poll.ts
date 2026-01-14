@@ -132,7 +132,7 @@ export const getScoreAggOptions = (t: I18nFn) => SCORE_AGG_VALUES.map(v => ({ va
  *  ========================= */
 export interface Poll {
      id: string;
-     client_id: string;
+     customerId: string;
      building_id: string;
 
      type: PollType;
@@ -174,7 +174,7 @@ export interface PollOption {
 
 export const pollInitialValues: Poll = {
      id: '',
-     client_id: '',
+     customerId: '',
      building_id: '',
      type: 'yes_no',
      title: '',
@@ -348,7 +348,7 @@ export const buildPollValidationSchema = (t: (k: string) => string) => {
                     return isUUIDv4(v as UUID);
                })
                .optional(),
-          client_id: Yup.string().trim().required(msg('polls.validation.clientRequired', 'Client required')),
+          customerId: Yup.string().trim().required(msg('polls.validation.clientRequired', 'Client required')),
           building_id: Yup.string().trim().required(msg('polls.validation.buildingRequired', 'Building required')),
           type: Yup.mixed<PollType>()
                .oneOf(['yes_no', 'single_choice', 'multiple_choice', 'ranked_choice', 'score'] as const)
@@ -508,7 +508,7 @@ export const buildPollValidationSchema = (t: (k: string) => string) => {
  */
 export const pollSchemaTranslationTokens: Record<string, string> = {
      id: 'polls.validation.invalidId',
-     client_id: 'polls.validation.clientRequired',
+     customerId: 'polls.validation.clientRequired',
      building_id: 'polls.validation.buildingRequired',
      type: 'polls.types', // Use POLL_TYPE_META for specific types
      title: 'polls.validation.titleRequired',

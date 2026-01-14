@@ -28,7 +28,7 @@ export type IncidentCategory =
 
 export interface IncidentReport {
      id: string;
-     client_id: string;
+     customerId: string;
      building_id: string;
      apartment_id?: string | null;
      building_label?: string | null;

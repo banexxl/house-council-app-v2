@@ -121,7 +121,7 @@ export const IncidentCreate: FC<IncidentCreateProps> = ({
   const formik = useFormik({
     enableReinitialize: true,
     initialValues: {
-      client_id: incident?.client_id ?? defaultClientId ?? '',
+      customerId: incident?.customerId ?? defaultClientId ?? '',
       building_id: incident?.building_id ?? defaultBuildingId ?? '',
       apartment_id: incident?.apartment_id ?? defaultApartmentId ?? '',
       reported_by: incident?.reported_by ?? defaultReporterId ?? '',
@@ -134,7 +134,7 @@ export const IncidentCreate: FC<IncidentCreateProps> = ({
       is_emergency: incident?.is_emergency ?? false,
     },
     validationSchema: Yup.object({
-      client_id: Yup.string().trim().required('Client is required'),
+      customerId: Yup.string().trim().required('Client is required'),
       building_id: Yup.string().trim().required('Building is required'),
       reported_by: Yup.string().trim().required('Reporter is required'),
       title: Yup.string().trim().required('Title is required'),
@@ -214,7 +214,7 @@ export const IncidentCreate: FC<IncidentCreateProps> = ({
           entity: 'incident-image',
           entityId: incidentId,
           files: files as unknown as File[],
-          clientId: formik.values.client_id,
+          clientId: formik.values.customerId,
           buildingId: formik.values.building_id,
           apartmentId: formik.values.apartment_id || null,
         });
@@ -235,7 +235,7 @@ export const IncidentCreate: FC<IncidentCreateProps> = ({
         toast.error(t('common.actionUploadError', 'Upload failed'));
       }
     },
-    [incidentId, formik.values.client_id, formik.values.building_id, formik.values.apartment_id, t]
+    [incidentId, formik.values.customerId, formik.values.building_id, formik.values.apartment_id, t]
   );
 
   const handleRemoveImage = useCallback(

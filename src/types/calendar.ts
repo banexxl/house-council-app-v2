@@ -7,7 +7,7 @@ export interface CalendarEvent {
   end_date_time: string;
   start_date_time: string;
   title: string;
-  client_id: string;
+  customerId: string;
   calendar_event_type?: EventType;
   building_id?: string | null;
 }

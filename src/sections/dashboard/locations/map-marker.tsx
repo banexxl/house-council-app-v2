@@ -18,14 +18,14 @@ interface MarkerProps {
      full_address: string;
      location_id: string;
      map: mapboxgl.Map;
-     client_id: string;
+     customerId: string;
      client_name?: string;
      cover_bucket?: string;
      cover_path?: string;
 }
 
-const hashStringToColor = (client_id: string) => {
-     const firstPart = client_id.split('-')[0];
+const hashStringToColor = (customerId: string) => {
+     const firstPart = customerId.split('-')[0];
      // Remove the last 2 characters
      const trimmed = firstPart.slice(0, -2);
      // Use the trimmed string to generate a hash
@@ -42,7 +42,7 @@ const hashStringToColor = (client_id: string) => {
      return color;
 };
 
-const Marker: React.FC<MarkerProps> = React.memo(({ lat, lng, full_address, location_id, map, client_id, client_name, cover_bucket, cover_path }) => {
+const Marker: React.FC<MarkerProps> = React.memo(({ lat, lng, full_address, location_id, map, customerId, client_name, cover_bucket, cover_path }) => {
 
      const { t } = useTranslation();
      const markerEl = useRef<HTMLDivElement>(null);
@@ -51,7 +51,7 @@ const Marker: React.FC<MarkerProps> = React.memo(({ lat, lng, full_address, loca
      const { colorPreset } = useContext(SettingsContext);
      const [open, setOpen] = useState(false);
      const primary = getPrimary(colorPreset);
-     const customColor = hashStringToColor(client_id) || primary.main;
+     const customColor = hashStringToColor(customerId) || primary.main;
      const { url: signedCoverUrl } = useSignedUrl(
           cover_bucket && cover_path ? cover_bucket : '',
           cover_bucket && cover_path ? cover_path : '',

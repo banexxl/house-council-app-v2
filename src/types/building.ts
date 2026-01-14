@@ -19,7 +19,7 @@ export interface Building {
      building_location: BuildingLocation | null;
      building_status: string;
      number_of_apartments: number;
-     client_id: string;
+     customerId: string;
      /**
       * Images linked via tblBuildingImages. During create/update flows this may contain string paths/URLs,
       * while in read flows it may contain full image rows. Kept as a union for minimal churn across the app.
@@ -76,7 +76,7 @@ export const buildingInitialValues: Building = {
      has_elevator: false,
      stories_high: 1,
      number_of_apartments: 1,
-     client_id: '',
+     customerId: '',
      building_images: [],
      building_status: 'active',
      created_at: new Date(),

@@ -23,7 +23,7 @@ const Page = async () => {
     redirect('/auth/login');
   }
 
-  const clientId = client?.id || clientMember?.client_id || null;
+  const clientId = client?.id || clientMember?.customerId || null;
   let tenantBuildingIds: string[] = [];
   if (tenant && userData?.id) {
     const buildingRes = await getBuildingIDsFromUserId(userData.id);

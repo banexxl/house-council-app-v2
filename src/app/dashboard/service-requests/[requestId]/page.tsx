@@ -67,7 +67,7 @@ const Page = async ({ params }: PageProps) => {
   const { tenant, client, clientMember, userData } = await getViewer();
   log(`Loaded incident report page for incidentId: ${incidentId}, found: ${found}, incident: ${incident ? JSON.stringify(incident) : 'null'}`);
   let defaultBuildingId: string | undefined = incident?.building_id ?? undefined;
-  let defaultClientId: string | undefined = incident?.client_id ?? undefined;
+  let defaultClientId: string | undefined = incident?.customerId ?? undefined;
   const defaultApartmentId = incident?.apartment_id ?? tenant?.apartment_id ?? null;
   const defaultTenantId = tenant?.id ?? null;
   let buildingOptions: Array<{ id: string; label: string; apartments: { id: string; apartment_number: string }[] }> = [];
@@ -97,8 +97,8 @@ const Page = async ({ params }: PageProps) => {
   if (!defaultClientId && client?.id) {
     defaultClientId = client.id;
   }
-  if (!defaultClientId && clientMember?.client_id) {
-    defaultClientId = clientMember.client_id;
+  if (!defaultClientId && clientMember?.customerId) {
+    defaultClientId = clientMember.customerId;
   }
 
   if (!defaultBuildingId && userData?.id) {

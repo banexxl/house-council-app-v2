@@ -12,7 +12,7 @@ import { useState } from "react";
 // Domain model: minimal subset of tblClient_Subscription columns needed here
 interface ClientSubscriptionRow {
      id: string;
-     client_id: string;
+     customerId: string;
      status: "trialing" | "active" | "past_due" | "canceled" | string;
      next_payment_date: string | null;
 }
@@ -24,12 +24,12 @@ export default function ClientSubscriptionWatcher() {
 
      const [viewer, setViewer] = useState<{
           client: { id: string } | null;
-          clientMember: { client_id: string | null } | null;
+          clientMember: { customerId: string | null } | null;
           userData: { id: string } | null;
      } | null>(null);
      const router = useRouter(); // Used to redirect to login after sign-out
 
-     const clientId = viewer?.client?.id ?? viewer?.clientMember?.client_id ?? null; // Guard: no client => skip watcher logic
+     const clientId = viewer?.client?.id ?? viewer?.clientMember?.customerId ?? null; // Guard: no client => skip watcher logic
 
      useEffect(() => { // Core effect: sets up initial validation, realtime listener, and polling fallback
           let active = true;
@@ -82,7 +82,7 @@ export default function ClientSubscriptionWatcher() {
                     const { data: current, error: readErr } = await supabaseBrowserClient
                          .from(TABLES.CLIENT_SUBSCRIPTION)
                          .select('status')
-                         .eq('client_id', clientId)
+                         .eq('customerId', clientId)
                          .single();
 
                     if (!readErr) { // Successfully read subscription row
@@ -127,7 +127,7 @@ export default function ClientSubscriptionWatcher() {
                          const row: ClientSubscriptionRow | null = (raw && typeof raw === 'object')
                               ? {
                                    id: String((raw as any).id || ''),
-                                   client_id: String((raw as any).client_id || ''),
+                                   customerId: String((raw as any).customerId || ''),
                                    status: ((raw as any).status as any) ?? 'active',
                                    next_payment_date: (raw as any).next_payment_date ?? null,
                               }
@@ -135,7 +135,7 @@ export default function ClientSubscriptionWatcher() {
                          if (!row) return;
 
                          const status = row.status;
-                         const affectedClientId = row.client_id;
+                         const affectedClientId = row.customerId;
 
                          if (affectedClientId !== clientId) return; // Ignore stray events (shouldn't happen with filter)
 
@@ -205,7 +205,7 @@ export default function ClientSubscriptionWatcher() {
                          const { data: current, error: readErr } = await supabaseBrowserClient
                               .from(TABLES.CLIENT_SUBSCRIPTION)
                               .select('status')
-                              .eq('client_id', clientId)
+                              .eq('customerId', clientId)
                               .single();
                          if (!readErr) { // Got current subscription snapshot
                               const statusNow = (current as any)?.status as string | undefined;

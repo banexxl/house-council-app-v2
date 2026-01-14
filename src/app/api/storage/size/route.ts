@@ -25,8 +25,8 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: auth.error }, { status: 401 });
   }
 
-  const { client, clientMember } = await getViewer();
-  const clientId = client?.id ?? clientMember?.client_id ?? null;
+  const { customer } = await getViewer();
+  const clientId = customer?.id ?? null;
   if (!clientId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }

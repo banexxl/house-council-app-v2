@@ -15,7 +15,7 @@ export default async function Page({ params }: {
 
   const { clientid } = await params
 
-  const { client, clientMember, tenant, admin, userData } = await getViewer();
+  const { customer, tenant, admin, userData } = await getViewer();
 
   let clientSubscription: ClientSubscription & { subscription_plan: SubscriptionPlan } | null
   let availableSubscriptions: SubscriptionPlan[] = []

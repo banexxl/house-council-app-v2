@@ -74,7 +74,7 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
           // ✏️ EDIT MODE
           const { success, error } = await updateBuilding(buildingData.id, {
             ...values,
-            client_id: userData.client?.id! ? userData.client?.id! : userData.clientMember?.client_id!
+            customerId: userData.client?.id! ? userData.client?.id! : userData.clientMember?.customerId!
           });
 
           if (!success) {
@@ -89,7 +89,7 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
           // ➕ CREATE MODE
           const { success, data, error } = await createBuilding({
             ...values,
-            client_id: userData.client?.id ? userData.client.id : userData.clientMember?.client_id!
+            customerId: userData.client?.id ? userData.client.id : userData.clientMember?.customerId!
           });
 
           if (!success) {
@@ -142,7 +142,7 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
         entity: 'building-image',
         entityId: buildingData.id,
         files: newFiles as unknown as globalThis.File[],
-        clientId: userData.client?.id ?? userData.clientMember?.client_id ?? undefined,
+        clientId: userData.client?.id ?? userData.clientMember?.customerId ?? undefined,
       });
 
       // Stop progress simulation
@@ -170,7 +170,7 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
       setUploadProgress(undefined);
       toast.error(t('common.actionUploadError'));
     }
-  }, [buildingData?.id, formik, t, userData.client?.id, userData.clientMember?.client_id]);
+  }, [buildingData?.id, formik, t, userData.client?.id, userData.clientMember?.customerId]);
 
   const handleFileRemove = useCallback(async (filePath: string): Promise<void> => {
     try {

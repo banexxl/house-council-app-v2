@@ -1,6 +1,6 @@
 export interface BuildingLocation {
      id: string; // UUID
-     client_id: string; // Foreign key to tblClients
+     customerId: string; // Foreign key to tblClients
      building_id: string | null; // Foreign key to tblBuildings
      location_id: string; // Foreign key to tblLocations
      created_at?: Date; // Timestamp of creation

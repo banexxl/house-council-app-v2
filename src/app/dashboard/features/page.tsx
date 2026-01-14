@@ -9,7 +9,7 @@ import Features from "./features";
 
 export default async function FeaturesPage() {
 
-     const { client, clientMember, tenant, admin } = await getViewer();
+     const { customer, tenant, admin } = await getViewer();
      if (!client && !clientMember && !tenant && !admin) {
           redirect('/auth/login');
      }

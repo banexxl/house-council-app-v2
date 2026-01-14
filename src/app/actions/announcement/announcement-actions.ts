@@ -73,17 +73,17 @@ export async function getAnnouncements(): Promise<{ success: boolean; error?: st
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
 
-     const { client, clientMember, admin } = await getViewer();
-     const clientId = client?.id ?? clientMember?.client_id ?? null;
+     const { customer, admin } = await getViewer();
+     const customerId = customer?.id ?? null;
 
      let query = supabase
           .from(ANNOUNCEMENTS_TABLE)
           .select('*')
           .order('created_at', { ascending: false });
 
-     if (!admin && clientId) {
-          query = query.eq('client_id', clientId);
-     } else if (!admin && !clientId) {
+     if (!admin && customerId) {
+          query = query.eq('customerId', customerId);
+     } else if (!admin && !customerId) {
           return { success: true, data: [] };
      }
 
@@ -475,15 +475,15 @@ export async function upsertAnnouncement(
 ): Promise<{ success: boolean; error?: string; data?: Announcement }> {
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
-     const { client, clientMember, admin } = await getViewer();
-     const clientId = input.client_id || client?.id || clientMember?.client_id || null;
-     if (!clientId && !admin) {
-          return { success: false, error: 'Client required' };
+     const { customer, admin } = await getViewer();
+     const customerId = input.customerId || customer?.id || null;
+     if (!customerId && !admin) {
+          return { success: false, error: 'Customer required' };
      }
 
      const now = new Date();
      const isUpdate = !!input.id;
-     const record: any = { ...input, client_id: clientId ?? input.client_id };
+     const record: any = { ...input, customerId: customerId ?? input.customerId };
 
      const buildingIdsInput: string[] = Array.isArray(record.buildings)
           ? [...new Set(record.buildings.filter((id: any) => typeof id === 'string'))] as string[]

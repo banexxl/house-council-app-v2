@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
 import { logServerAction } from "src/libs/supabase/server-logging";
 import { BuildingLocation } from "src/types/location";
-import { resolveClientFromClientOrMember } from "../client/client-members";
 import { TABLES } from "src/libs/supabase/tables";
 import { useServerSideSupabaseServiceRoleClient } from "src/libs/supabase/sb-server";
 
@@ -22,7 +21,7 @@ const enrichLocationsWithExtras = async (
      if (!locations?.length) return [];
 
      const buildingIds = Array.from(new Set(locations.map((l) => l.building_id).filter(Boolean))) as string[];
-     const clientIds = Array.from(new Set(locations.map((l) => l.client_id).filter(Boolean))) as string[];
+     const clientIds = Array.from(new Set(locations.map((l) => l.customerId).filter(Boolean))) as string[];
 
      const coverByBuilding = new Map<string, { storage_bucket: string; storage_path: string }>();
      if (buildingIds.length) {
@@ -44,8 +43,8 @@ const enrichLocationsWithExtras = async (
      const clientNameById = new Map<string, string>();
      if (clientIds.length) {
           const { data: clients } = await supabase
-               .from(TABLES.CLIENTS)
-               .select("id, name, contact_person")
+               .from(TABLES.POLAR_CUSTOMERS)
+               .select("id, name")
                .in("id", clientIds);
           (clients || []).forEach((c: any) => {
                clientNameById.set(c.id, c.name || c.contact_person || c.id);
@@ -54,7 +53,7 @@ const enrichLocationsWithExtras = async (
 
      return locations.map((loc) => {
           const cover = loc.building_id ? coverByBuilding.get(loc.building_id) : undefined;
-          const clientName = clientNameById.get(loc.client_id);
+          const clientName = clientNameById.get(loc.customerId);
           return {
                ...loc,
                location_occupied: !!(loc.building_id && loc.building_id !== ""),
@@ -80,8 +79,7 @@ export const insertLocationAction = async (
 ): Promise<{ success: boolean; error?: ErrorResponse; data?: BuildingLocation }> => {
      const t0 = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
-     const { data: resolvedForInsert } = await resolveClientFromClientOrMember(values.client_id);
-     const client_id = resolvedForInsert?.id!;
+     const customerId = values.customerId;
 
      if (
           !values ||
@@ -90,7 +88,7 @@ export const insertLocationAction = async (
           !values.city?.trim() ||
           !values.country?.trim() ||
           !values.street_number?.trim() ||
-          !client_id.trim()
+          !customerId.trim()
      ) {
           await logServerAction({
                action: "insertLocationAction",
@@ -163,7 +161,7 @@ export const insertLocationAction = async (
           }
 
           const insertPayload = {
-               client_id,
+               customerId,
                location_id: values.location_id,
                street_address: values.street_address,
                city: values.city,
@@ -261,35 +259,34 @@ export const getAllAddedLocations = async (): Promise<{
 };
 
 export const getAllAddedLocationsByClientId = async (
-     client_id: string
+     customerId: string
 ): Promise<{ success: boolean; error?: ErrorResponse; data?: BuildingLocation[] }> => {
      const supabase = await useServerSideSupabaseAnonClient();
      const serviceSupabase = await useServerSideSupabaseServiceRoleClient();
-     const { data: resolvedClientData } = await resolveClientFromClientOrMember(client_id);
-     const resolvedClientId = resolvedClientData?.id!;
+     const resolvedClientId = customerId;
      if (!resolvedClientId.trim()) {
           await logServerAction({
                action: "getAllAddedLocationsByClientId",
                duration_ms: 0,
-               error: "Invalid client_id",
-               payload: { client_id },
+               error: "Invalid customerId",
+               payload: { customerId },
                status: "fail",
                type: "db",
                user_id: null,
           });
-          return { success: false, error: { code: "400", details: null, hint: null, message: "Invalid client_id" } };
+          return { success: false, error: { code: "400", details: null, hint: null, message: "Invalid customerId" } };
      }
      try {
           const { data, error } = await supabase
                .from(TABLES.BUILDING_LOCATIONS)
                .select("*")
-               .eq("client_id", resolvedClientId);
+               .eq("customerId", resolvedClientId);
           if (error) {
                await logServerAction({
                     action: "getAllAddedLocationsByClientId",
                     duration_ms: 0,
                     error: error.message,
-                    payload: { client_id: resolvedClientId },
+                    payload: { customerId: resolvedClientId },
                     status: "fail",
                     type: "db",
                     user_id: null,
@@ -301,7 +298,7 @@ export const getAllAddedLocationsByClientId = async (
                action: "getAllAddedLocationsByClientId",
                duration_ms: 0,
                error: "",
-               payload: { client_id: resolvedClientId },
+               payload: { customerId: resolvedClientId },
                status: "success",
                type: "db",
                user_id: null,
@@ -312,7 +309,7 @@ export const getAllAddedLocationsByClientId = async (
                action: "getAllAddedLocationsByClientId",
                duration_ms: 0,
                error: e.message,
-               payload: { client_id: resolvedClientId },
+               payload: { customerId: resolvedClientId },
                status: "fail",
                type: "db",
                user_id: null,
@@ -322,30 +319,29 @@ export const getAllAddedLocationsByClientId = async (
 };
 
 export const getAllOtherClientsLocations = async (
-     client_id: string
+     customerId: string
 ): Promise<{ success: boolean; error?: ErrorResponse; data?: BuildingLocation[] }> => {
      const supabase = await useServerSideSupabaseAnonClient();
      const serviceSupabase = await useServerSideSupabaseServiceRoleClient();
-     const { data: resolvedClientData } = await resolveClientFromClientOrMember(client_id);
-     const resolvedClientId = resolvedClientData?.id!;
+     const resolvedClientId = customerId;
      if (!resolvedClientId.trim()) {
           await logServerAction({
                action: "getAllOtherClientsLocations",
                duration_ms: 0,
-               error: "Invalid client_id",
-               payload: { client_id },
+               error: "Invalid customerId",
+               payload: { customerId },
                status: "fail",
                type: "db",
                user_id: null,
           });
-          return { success: false, error: { code: "400", details: null, hint: null, message: "Invalid client_id" } };
+          return { success: false, error: { code: "400", details: null, hint: null, message: "Invalid customerId" } };
      }
 
      try {
           const { data, error } = await supabase
                .from(TABLES.BUILDING_LOCATIONS)
                .select("*")
-               .neq("client_id", resolvedClientId)
+               .neq("customerId", resolvedClientId)
                .not("building_id", "is", null);
 
           if (error) {
@@ -353,7 +349,7 @@ export const getAllOtherClientsLocations = async (
                     action: "getAllOtherClientsLocations",
                     duration_ms: 0,
                     error: error.message,
-                    payload: { client_id: resolvedClientId },
+                    payload: { customerId: resolvedClientId },
                     status: "fail",
                     type: "db",
                     user_id: null,
@@ -367,7 +363,7 @@ export const getAllOtherClientsLocations = async (
                action: "getAllOtherClientsLocations",
                duration_ms: 0,
                error: "",
-               payload: { client_id: resolvedClientId },
+               payload: { customerId: resolvedClientId },
                status: "success",
                type: "db",
                user_id: null,
@@ -378,7 +374,7 @@ export const getAllOtherClientsLocations = async (
                action: "getAllOtherClientsLocations",
                duration_ms: 0,
                error: e.message,
-               payload: { client_id: resolvedClientId },
+               payload: { customerId: resolvedClientId },
                status: "fail",
                type: "db",
                user_id: null,
@@ -388,35 +384,34 @@ export const getAllOtherClientsLocations = async (
 }
 
 export const getAllNotOcupiedLocationsAddedByClient = async (
-     client_id: string
+     customerId: string
 ): Promise<{ success: boolean; error?: ErrorResponse; data?: BuildingLocation[] }> => {
      const supabase = await useServerSideSupabaseAnonClient();
-     const { data: resolvedClientData2 } = await resolveClientFromClientOrMember(client_id);
-     const resolvedClientId = typeof resolvedClientData2 === 'string' ? resolvedClientData2 : resolvedClientData2?.id ?? client_id;
+     const resolvedClientId = customerId;
      if (!resolvedClientId.trim()) {
           await logServerAction({
                action: "getAllNotOcupiedLocationsAddedByClient",
                duration_ms: 0,
-               error: "Invalid client_id",
-               payload: { client_id },
+               error: "Invalid customerId",
+               payload: { customerId },
                status: "fail",
                type: "db",
                user_id: null,
           });
-          return { success: false, error: { code: "400", details: null, hint: null, message: "Invalid client_id" } };
+          return { success: false, error: { code: "400", details: null, hint: null, message: "Invalid customerId" } };
      }
      try {
           const { data, error } = await supabase
                .from(TABLES.BUILDING_LOCATIONS)
                .select("*")
-               .eq("client_id", resolvedClientId)
+               .eq("customerId", resolvedClientId)
                .is("building_id", null);
           if (error) {
                await logServerAction({
                     action: "getAllNotOcupiedLocationsAddedByClient",
                     duration_ms: 0,
                     error: error.message,
-                    payload: { client_id: resolvedClientId },
+                    payload: { customerId: resolvedClientId },
                     status: "fail",
                     type: "db",
                     user_id: null,
@@ -427,7 +422,7 @@ export const getAllNotOcupiedLocationsAddedByClient = async (
                action: "getAllNotOcupiedLocationsAddedByClient",
                duration_ms: 0,
                error: "",
-               payload: { client_id: resolvedClientId },
+               payload: { customerId: resolvedClientId },
                status: "success",
                type: "db",
                user_id: null,
@@ -438,7 +433,7 @@ export const getAllNotOcupiedLocationsAddedByClient = async (
                action: "getAllNotOcupiedLocationsAddedByClient",
                duration_ms: 0,
                error: e.message,
-               payload: { client_id: resolvedClientId },
+               payload: { customerId: resolvedClientId },
                status: "fail",
                type: "db",
                user_id: null,

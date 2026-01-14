@@ -9,7 +9,7 @@ import { BuildingLocation } from "src/types/location";
 
 const Page = async () => {
 
-     const { client, clientMember, tenant, admin, userData } = await getViewer();
+     const { customer, tenant, admin, userData } = await getViewer();
      if (!client && !clientMember && !tenant && !admin) {
           redirect('/auth/login');
      }

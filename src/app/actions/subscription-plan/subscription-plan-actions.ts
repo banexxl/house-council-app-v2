@@ -3,482 +3,507 @@
 import { revalidatePath } from "next/cache";
 import { logServerAction } from "src/libs/supabase/server-logging";
 import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
-import { ClientSubscription, PolarRecurringInterval, SubscriptionPlan } from "src/types/subscription-plan";
-import { Feature } from "src/types/base-entity";
+import { ClientSubscription, PolarRecurringInterval } from "src/types/subscription-plan";
+import { PolarProduct, PolarProductPrice } from "src/types/polar-product-types";
 import { TABLES } from "src/libs/supabase/tables";
 
-export const createSubscriptionPlan = async (subscriptionPlan: SubscriptionPlan):
+/**
+ * Creates a new Polar product in the database.
+ * @param {PolarProduct} product The Polar product to create.
+ * @returns {Promise<{success: boolean; product?: PolarProduct; error?: any}>}
+ */
+export const createSubscriptionPlan = async (product: PolarProduct):
      Promise<{
           createSubscriptionPlanSuccess: boolean;
-          createdSubscriptionPlan?: SubscriptionPlan;
+          createdSubscriptionPlan?: PolarProduct;
           createSubscriptionPlanError?: any;
      }> => {
 
      const supabase = await useServerSideSupabaseAnonClient();
+     const start = Date.now();
+
+     // Separate nested data
+     const { prices, benefits, medias, attachedCustomFields, ...productData } = product;
 
      const { data, error } = await supabase
-          .from(TABLES.SUBSCRIPTION_PLANS)
-          .insert({ ...subscriptionPlan, features: undefined })
+          .from(TABLES.POLAR_PRODUCTS)
+          .insert(productData)
           .select()
           .single();
 
      if (error) {
+          await logServerAction({
+               user_id: null,
+               action: 'Create Polar Product Failed',
+               payload: { product, error },
+               status: 'fail',
+               error: error.message,
+               duration_ms: Date.now() - start,
+               type: 'db'
+          });
           return { createSubscriptionPlanSuccess: false, createSubscriptionPlanError: error };
      }
 
      if (!data || !data.id) {
-          return { createSubscriptionPlanSuccess: false, createSubscriptionPlanError: "Failed to create subscription plan." };
+          return { createSubscriptionPlanSuccess: false, createSubscriptionPlanError: "Failed to create product." };
      }
 
-     const featureEntries = subscriptionPlan.features && subscriptionPlan.features.length > 0 ?
-          subscriptionPlan.features.map((featureId) => ({
-               subscription_plan_id: data.id,
-               feature_id: featureId,
-          }))
-          : [];
+     // Insert prices if provided
+     if (prices && prices.length > 0) {
+          const priceEntries = prices.map(price => ({
+               ...price,
+               product_id: data.id
+          }));
 
-     if (featureEntries.length > 0) {
-          const { error: featureInsertError } = await supabase
-               .from(TABLES.SUBSCRIPTION_PLANS_FEATURES)
-               .insert(featureEntries);
+          const { error: priceError } = await supabase
+               .from(TABLES.POLAR_PRODUCT_PRICES)
+               .insert(priceEntries);
 
-          if (featureInsertError) {
-               return {
-                    createSubscriptionPlanSuccess: false,
-                    createSubscriptionPlanError: featureInsertError
-               };
+          if (priceError) {
+               await logServerAction({
+                    user_id: null,
+                    action: 'Insert Polar Product Prices Failed',
+                    payload: { productId: data.id, priceError },
+                    status: 'fail',
+                    error: priceError.message,
+                    duration_ms: Date.now() - start,
+                    type: 'db'
+               });
           }
      }
 
-     return { createSubscriptionPlanSuccess: true, createdSubscriptionPlan: { ...data, features: subscriptionPlan.features } };
+     await logServerAction({
+          user_id: null,
+          action: 'Create Polar Product Success',
+          payload: { productId: data.id },
+          status: 'success',
+          error: '',
+          duration_ms: Date.now() - start,
+          type: 'db'
+     });
+
+     return { createSubscriptionPlanSuccess: true, createdSubscriptionPlan: data };
 };
 
 /**
- * Updates an existing subscription plan in the database.
- * @param {SubscriptionPlan} subscriptionPlan The subscription plan to update.
- * @returns {Promise<{updateSubscriptionPlanSuccess: boolean, updatedSubscriptionPlan?: SubscriptionPlan, updateSubscriptionPlanError?: any}>}
- * A promise that resolves to an object with the following properties:
- * - `updateSubscriptionPlanSuccess`: A boolean indicating whether the subscription plan was updated successfully.
- * - `updatedSubscriptionPlan`: The updated subscription plan, if successful.
- * - `updateSubscriptionPlanError`: The error that occurred, if any.
- * If the subscription plan is updated successfully the path is revalidated
+ * Updates an existing Polar product in the database.
+ * @param {PolarProduct} product The Polar product to update.
+ * @returns {Promise<{success: boolean, product?: PolarProduct, error?: any}>}
  */
 export const updateSubscriptionPlan = async (
-     subscriptionPlan: SubscriptionPlan
+     product: PolarProduct
 ): Promise<{
      updateSubscriptionPlanSuccess: boolean;
-     updatedSubscriptionPlan?: SubscriptionPlan;
+     updatedSubscriptionPlan?: PolarProduct;
      updateSubscriptionPlanError?: any;
 }> => {
 
      const start = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
 
+     // Separate nested data
+     const { prices, benefits, medias, attachedCustomFields, ...productData } = product;
+
      const { data, error } = await supabase
-          .from(TABLES.SUBSCRIPTION_PLANS)
-          .update({ ...subscriptionPlan, features: undefined })
-          .eq("id", subscriptionPlan.id)
+          .from(TABLES.POLAR_PRODUCTS)
+          .update(productData)
+          .eq("id", product.id)
           .select()
           .single();
-
-     if (data) {
-          await logServerAction({
-               user_id: null,
-               action: 'Updating tblSubscriptionPlans successfull - ' + subscriptionPlan.id,
-               payload: subscriptionPlan,
-               status: 'success',
-               error: '',
-               duration_ms: Date.now() - start,
-               type: 'db'
-          })
-     }
 
      if (error) {
           await logServerAction({
                user_id: null,
-               action: 'Updating tblSubscriptionPlans failed - ' + subscriptionPlan.id,
-               payload: { subscriptionPlan, error },
+               action: 'Update Polar Product Failed',
+               payload: { product, error },
                status: 'fail',
                error: error.message,
                duration_ms: Date.now() - start,
                type: 'db'
-          })
+          });
           return { updateSubscriptionPlanSuccess: false, updateSubscriptionPlanError: error };
      }
 
      if (!data || !data.id) {
-          return { updateSubscriptionPlanSuccess: false, updateSubscriptionPlanError: "Failed to update subscription plan." };
+          return { updateSubscriptionPlanSuccess: false, updateSubscriptionPlanError: "Failed to update product." };
      }
 
-     const featureEntries = subscriptionPlan.features && subscriptionPlan.features.length > 0 ?
-          subscriptionPlan.features.map((featureId) => ({
-               subscription_plan_id: data.id,
-               feature_id: featureId,
-          }))
-          : [];
-
-     // If the features array is not empty, then remove any feature entries not present in the array
-     if (featureEntries.length > 0) {
-
-          // Delete all existing feature entries for the subscription plan
-          const { error: featureDeleteError } = await supabase
-               .from(TABLES.SUBSCRIPTION_PLANS_FEATURES)
+     // Update prices if provided
+     if (prices && prices.length > 0) {
+          // Delete existing prices
+          await supabase
+               .from(TABLES.POLAR_PRODUCT_PRICES)
                .delete()
-               .match({ subscription_plan_id: data.id });
+               .eq('product_id', data.id);
 
-          if (featureDeleteError) {
+          // Insert new prices
+          const priceEntries = prices.map(price => ({
+               ...price,
+               product_id: data.id
+          }));
+
+          const { error: priceError } = await supabase
+               .from(TABLES.POLAR_PRODUCT_PRICES)
+               .insert(priceEntries);
+
+          if (priceError) {
                await logServerAction({
                     user_id: null,
-                    action: 'Updating tblSubscriptionPlans_Features failed - ' + subscriptionPlan.id,
-                    payload: { subscriptionPlan, error },
+                    action: 'Update Polar Product Prices Failed',
+                    payload: { productId: data.id, priceError },
                     status: 'fail',
-                    error: featureDeleteError.message,
+                    error: priceError.message,
                     duration_ms: Date.now() - start,
                     type: 'db'
-               })
-               return { updateSubscriptionPlanSuccess: false, updateSubscriptionPlanError: featureDeleteError };
-          }
-
-          // Insert the new feature entries
-          const { error: featureInsertError } = await supabase
-               .from(TABLES.SUBSCRIPTION_PLANS_FEATURES)
-               .insert(featureEntries);
-
-          if (featureInsertError) {
-               await logServerAction({
-                    user_id: null,
-                    action: 'Inserting into tblSubscriptionPlans_Features failed - ' + subscriptionPlan.id,
-                    payload: { subscriptionPlan, error },
-                    status: 'fail',
-                    error: featureInsertError.message,
-                    duration_ms: Date.now() - start,
-                    type: 'db'
-               })
-               return { updateSubscriptionPlanSuccess: false, updateSubscriptionPlanError: featureInsertError };
-          }
-
-     } else {
-          const { error: featureDeleteError } = await supabase
-               .from(TABLES.SUBSCRIPTION_PLANS_FEATURES)
-               .delete()
-               .match({ subscription_plan_id: data.id });
-
-          if (featureDeleteError) {
-               await logServerAction({
-                    user_id: null,
-                    action: 'Deleting from tblSubscriptionPlans_Features failed - ' + subscriptionPlan.id,
-                    payload: { subscriptionPlan, error: featureDeleteError },
-                    status: 'fail',
-                    error: featureDeleteError.message,
-                    duration_ms: Date.now() - start,
-                    type: 'db'
-               })
-               return { updateSubscriptionPlanSuccess: false, updateSubscriptionPlanError: featureDeleteError };
+               });
           }
      }
+
+     await logServerAction({
+          user_id: null,
+          action: 'Update Polar Product Success',
+          payload: { productId: data.id },
+          status: 'success',
+          error: '',
+          duration_ms: Date.now() - start,
+          type: 'db'
+     });
 
      revalidatePath(`/dashboard/subscriptions/${data.id}`);
      revalidatePath("/dashboard/subscriptions");
-     return { updateSubscriptionPlanSuccess: true, updatedSubscriptionPlan: { ...data, features: subscriptionPlan.features } };
+     return { updateSubscriptionPlanSuccess: true, updatedSubscriptionPlan: data };
 };
 
 /**
- * Reads a subscription plan from the database.
- * @param {string} id The id of the subscription plan to read.
- * @returns {Promise<{readSubscriptionPlanSuccess: boolean, subscriptionPlan?: SubscriptionPlan, readSubscriptionPlanError?: string}>}
- * A promise that resolves to an object with the following properties:
- * - `readSubscriptionPlanSuccess`: A boolean indicating whether the subscription plan was read successfully.
- * - `subscriptionPlan`: The subscription plan that was read, if successful.
- * - `readSubscriptionPlanError`: The error that occurred, if any.
+ * Reads a Polar product from the database by ID.
+ * @param {string} id The id of the product to read.
+ * @returns {Promise<{readSubscriptionPlanSuccess: boolean, subscriptionPlan?: PolarProduct, readSubscriptionPlanError?: string}>}
  */
 export const readSubscriptionPlan = async (id: string): Promise<{
-     readSubscriptionPlanSuccess: boolean; subscriptionPlan?: SubscriptionPlan; readSubscriptionPlanError?: string;
+     readSubscriptionPlanSuccess: boolean;
+     subscriptionPlan?: PolarProduct;
+     readSubscriptionPlanError?: string;
 }> => {
 
      const supabase = await useServerSideSupabaseAnonClient();
 
-     // Fetch the subscription plan along with its features using a join
-     const { data: subscriptionPlan, error: planError } = await supabase
-          .from(TABLES.SUBSCRIPTION_PLANS)
-          .select(`
-      *,
-      tblSubscriptionPlans_Features (
-        feature_id,
-        tblFeatures (*)
-      )
-    `)
+     // Fetch the product with prices and benefits
+     const { data: product, error: productError } = await supabase
+          .from(TABLES.POLAR_PRODUCTS)
+          .select('*')
           .eq("id", id)
           .single();
 
-     if (planError) {
-          return { readSubscriptionPlanSuccess: false, readSubscriptionPlanError: planError.message };
+     if (!productError && product) {
+          // Fetch related data separately
+          const [pricesResult, benefitsResult, mediasResult] = await Promise.all([
+               supabase.from(TABLES.POLAR_PRODUCT_PRICES).select('*').eq('product_id', id),
+               supabase.from(TABLES.POLAR_PRODUCT_BENEFITS).select('*').eq('product_id', id),
+               supabase.from(TABLES.POLAR_PRODUCT_MEDIAS).select('*').eq('product_id', id)
+          ]);
+
+          product.prices = pricesResult.data || [];
+          product.benefits = benefitsResult.data || [];
+          product.medias = mediasResult.data || [];
      }
 
-     // Extract features from the subscription plan and exclude tblSubscriptionPlans_Features
-     const features = subscriptionPlan.tblSubscriptionPlans_Features.map((relation: any) => relation.tblFeatures);
-
-     // Return the subscription plan without tblSubscriptionPlans_Features
-     const { tblSubscriptionPlans_Features, ...restOfSubscriptionPlan } = subscriptionPlan;
+     if (productError) {
+          await logServerAction({
+               user_id: null,
+               action: 'Read Polar Product by ID Failed',
+               payload: { id, productError },
+               status: 'fail',
+               error: productError.message,
+               duration_ms: 0,
+               type: 'db'
+          });
+          return { readSubscriptionPlanSuccess: false, readSubscriptionPlanError: productError.message };
+     }
 
      return {
           readSubscriptionPlanSuccess: true,
-          subscriptionPlan: { ...restOfSubscriptionPlan, features },
+          subscriptionPlan: product,
      };
 };
 
 /**
- * Reads all subscription plans from the database.
- * @returns {Promise<{readAllSubscriptionPlansSuccess: boolean, subscriptionPlansData?: SubscriptionPlan[], readAllSubscriptionPlansError?: string}>}
- * A promise that resolves to an object with the following properties:
- * - `readAllSubscriptionPlansSuccess`: A boolean indicating whether the subscription plans were read successfully.
- * - `subscriptionPlansData`: An array of subscription plans, if successful.
- * - `readAllSubscriptionPlansError`: The error message, if any occurred during the reading process.
+ * Reads all Polar products from the database.
+ * @returns {Promise<{readAllSubscriptionPlansSuccess: boolean, subscriptionPlansData?: PolarProduct[], readAllSubscriptionPlansError?: string}>}
  */
-
 export const readAllSubscriptionPlans = async (): Promise<{
-     readAllSubscriptionPlansSuccess: boolean; subscriptionPlansData?: SubscriptionPlan[]; readAllSubscriptionPlansError?: string;
+     readAllSubscriptionPlansSuccess: boolean;
+     subscriptionPlansData?: PolarProduct[];
+     readAllSubscriptionPlansError?: string;
 }> => {
 
      const supabase = await useServerSideSupabaseAnonClient();
 
-     const { data: subscriptionPlans, error: planError } = await supabase
-          .from(TABLES.SUBSCRIPTION_PLANS)
-          .select(`
-      *,
-      tblSubscriptionPlans_Features (
-        feature_id,
-        tblFeatures (*)
-      )
-    `);
 
-     if (planError) {
-          return { readAllSubscriptionPlansSuccess: false, readAllSubscriptionPlansError: planError.message };
+     const { data: products, error: productError } = await supabase
+          .from(TABLES.POLAR_PRODUCTS)
+          .select('*')
+          .order('createdAt', { ascending: false });
+     console.log('data', products);
+     console.log('error', productError);
+
+     // Fetch related data for all products
+     if (!productError && products) {
+          for (const product of products) {
+               const [pricesResult, benefitsResult, mediasResult] = await Promise.all([
+                    supabase.from(TABLES.POLAR_PRODUCT_PRICES).select('*').eq('productId', product.id),
+                    supabase.from(TABLES.POLAR_PRODUCT_BENEFITS).select('*').eq('productId', product.id),
+                    supabase.from(TABLES.POLAR_PRODUCT_MEDIAS).select('*').eq('productId', product.id)
+               ]);
+               console.log('pricesResult', pricesResult);
+               console.log('benefitsResult', benefitsResult);
+               console.log('mediasResult', mediasResult);
+
+               product.prices = pricesResult.data || [];
+               product.benefits = benefitsResult.data || [];
+               product.medias = mediasResult.data || [];
+          }
      }
 
-     return { readAllSubscriptionPlansSuccess: true, subscriptionPlansData: subscriptionPlans };  // Return the subscription plans
+     if (productError) {
+          await logServerAction({
+               user_id: null,
+               action: 'Read All Polar Products Failed',
+               payload: { productError },
+               status: 'fail',
+               error: productError.message,
+               duration_ms: 0,
+               type: 'db'
+          });
+          return { readAllSubscriptionPlansSuccess: false, readAllSubscriptionPlansError: productError.message };
+     }
+
+     return { readAllSubscriptionPlansSuccess: true, subscriptionPlansData: products };
 };
 
-export const deleteSubscriptionPlansByIds = async (ids: string[]): Promise<{ deleteSubscriptionPlansSuccess: boolean, deleteSubscriptionPlansError?: any }> => {
+/**
+ * Deletes Polar products by their IDs.
+ * @param {string[]} ids Array of product IDs to delete.
+ * @returns {Promise<{deleteSubscriptionPlansSuccess: boolean, deleteSubscriptionPlansError?: any}>}
+ */
+export const deleteSubscriptionPlansByIds = async (ids: string[]): Promise<{
+     deleteSubscriptionPlansSuccess: boolean,
+     deleteSubscriptionPlansError?: any
+}> => {
 
      const supabase = await useServerSideSupabaseAnonClient();
+     const start = Date.now();
 
-     // Delete related entries from the connection table first
-     const { error: relationError } = await supabase.from(TABLES.SUBSCRIPTION_PLANS_FEATURES).delete().in("subscription_plan_id", ids);
+     // Delete related prices first
+     const { error: priceError } = await supabase
+          .from(TABLES.POLAR_PRODUCT_PRICES)
+          .delete()
+          .in("product_id", ids);
 
-     if (relationError) {
-          return { deleteSubscriptionPlansSuccess: false, deleteSubscriptionPlansError: relationError };
+     if (priceError) {
+          await logServerAction({
+               user_id: null,
+               action: 'Delete Polar Product Prices Failed',
+               payload: { ids, priceError },
+               status: 'fail',
+               error: priceError.message,
+               duration_ms: Date.now() - start,
+               type: 'db'
+          });
+          return { deleteSubscriptionPlansSuccess: false, deleteSubscriptionPlansError: priceError };
      }
 
-     // Now delete the subscription plans
-     const { error } = await supabase.from(TABLES.SUBSCRIPTION_PLANS).delete().in("id", ids);
+     // Delete related benefits
+     await supabase
+          .from(TABLES.POLAR_PRODUCT_BENEFITS)
+          .delete()
+          .in("product_id", ids);
+
+     // Delete related medias
+     await supabase
+          .from(TABLES.POLAR_PRODUCT_MEDIAS)
+          .delete()
+          .in("product_id", ids);
+
+     // Now delete the products
+     const { error } = await supabase
+          .from(TABLES.POLAR_PRODUCTS)
+          .delete()
+          .in("id", ids);
 
      if (error) {
+          await logServerAction({
+               user_id: null,
+               action: 'Delete Polar Products Failed',
+               payload: { ids, error },
+               status: 'fail',
+               error: error.message,
+               duration_ms: Date.now() - start,
+               type: 'db'
+          });
           return { deleteSubscriptionPlansSuccess: false, deleteSubscriptionPlansError: error };
      }
+
+     await logServerAction({
+          user_id: null,
+          action: 'Delete Polar Products Success',
+          payload: { ids },
+          status: 'success',
+          error: '',
+          duration_ms: Date.now() - start,
+          type: 'db'
+     });
 
      revalidatePath("/dashboard/subscriptions");
      return { deleteSubscriptionPlansSuccess: true };
 };
 
-export const readSubscriptionPlanFromClientId = async (clientId: string): Promise<{
-     readSubscriptionPlanFromClientIdSuccess: boolean;
-     subscriptionPlan?: SubscriptionPlan;
-     readSubscriptionPlanFromClientIdError?: string;
-}> => {
-
-     const supabase = await useServerSideSupabaseAnonClient();
-
-     // Fetch the subscription_id from tblClient_Subscription based on client_id
-     const { data: clientSubscription, error: clientSubscriptionError } = await supabase
-          .from(TABLES.CLIENT_SUBSCRIPTION)
-          .select("subscription_id")
-          .eq("client_id", clientId)
-          .single();
-
-     if (clientSubscriptionError || !clientSubscription) {
-          return {
-               readSubscriptionPlanFromClientIdSuccess: false,
-               readSubscriptionPlanFromClientIdError: clientSubscriptionError?.message || "Client subscription not found."
-          };
-     }
-
-     // Now fetch the subscription plan using the subscription_id from tblSubscriptionPlans
-     const { data: subscriptionPlan, error: planError } = await supabase
-          .from(TABLES.SUBSCRIPTION_PLANS)
-          .select(`*`)
-          .eq("id", clientSubscription.subscription_id)
-          .single()
-
-     if (planError) {
-          return {
-               readSubscriptionPlanFromClientIdSuccess: false,
-               readSubscriptionPlanFromClientIdError: planError.message
-          };
-     }
-
-     return {
-          readSubscriptionPlanFromClientIdSuccess: true,
-          subscriptionPlan
-     };
-};
-
+/**
+ * Reads all active (non-archived) Polar products.
+ * @returns {Promise<{readAllActiveSubscriptionPlansSuccess: boolean, activeSubscriptionPlansData?: PolarProduct[], readAllActiveSubscriptionPlansError?: string}>}
+ */
 export const readAllActiveSubscriptionPlans = async (): Promise<{
      readAllActiveSubscriptionPlansSuccess: boolean;
-     activeSubscriptionPlansData?: SubscriptionPlan[];
+     activeSubscriptionPlansData?: PolarProduct[];
      readAllActiveSubscriptionPlansError?: string;
 }> => {
      const supabase = await useServerSideSupabaseAnonClient();
 
-     const { data, error } = await supabase
-          .from(TABLES.SUBSCRIPTION_PLANS)
-          .select(`
-      *,
-      tblSubscriptionPlans_Features (
-        feature_id,
-        tblFeatures (*)
-      )
-    `)
-          .eq("status", "active");
+     const { data: products, error } = await supabase
+          .from(TABLES.POLAR_PRODUCTS)
+          .select('*')
+          .eq("is_archived", false)
+          .order('createdAt', { ascending: false });
+
+     // Fetch related data for all products
+     if (!error && products) {
+          for (const product of products) {
+               const [pricesResult, benefitsResult, mediasResult] = await Promise.all([
+                    supabase.from(TABLES.POLAR_PRODUCT_PRICES).select('*').eq('product_id', product.id),
+                    supabase.from(TABLES.POLAR_PRODUCT_BENEFITS).select('*').eq('product_id', product.id),
+                    supabase.from(TABLES.POLAR_PRODUCT_MEDIAS).select('*').eq('product_id', product.id)
+               ]);
+               product.prices = pricesResult.data || [];
+               product.benefits = benefitsResult.data || [];
+               product.medias = mediasResult.data || [];
+          }
+     }
 
      if (error) {
+          await logServerAction({
+               user_id: null,
+               action: 'Read Active Polar Products Failed',
+               payload: { error },
+               status: 'fail',
+               error: error.message,
+               duration_ms: 0,
+               type: 'db'
+          });
           return {
                readAllActiveSubscriptionPlansSuccess: false,
                readAllActiveSubscriptionPlansError: error.message,
           };
      }
 
-     // Map DB rows -> SubscriptionPlan with features: string[]
-     const activeSubscriptionPlansData: SubscriptionPlan[] =
-          (data ?? []).map((plan: any) => {
-               const {
-                    tblSubscriptionPlans_Features: relations = [],
-                    created_at,
-                    updated_at,
-                    ...rest
-               } = plan;
-
-               // Prefer a stable string field from tblFeatures; fall back sensibly
-               const features: string[] = relations
-                    .map((rel: any) =>
-                         rel?.tblFeatures?.key ??
-                         rel?.tblFeatures?.name ??
-                         String(rel?.feature_id)
-                    )
-                    .filter(Boolean);
-
-               return {
-                    ...rest,
-                    created_at: created_at ? new Date(created_at) : new Date(0),
-                    updated_at: updated_at ? new Date(updated_at) : new Date(0),
-                    features,
-               } as SubscriptionPlan;
-          });
-
      return {
           readAllActiveSubscriptionPlansSuccess: true,
-          activeSubscriptionPlansData,
+          activeSubscriptionPlansData: products,
      };
 };
 
-
-export const readSubscriptionPlanFeatures = async (
-     id: string | null
-): Promise<{
-     readSubscriptionPlanFeaturesSuccess: boolean;
-     subscriptionPlanFeatures?: SubscriptionPlan & { features: Feature[] };
-     readSubscriptionPlanFeaturesError?: string;
+/**
+ * Reads a Polar product from a client ID via POLAR_SUBSCRIPTIONS table.
+ * @param {string} customerId The client ID.
+ * @returns {Promise<{readSubscriptionPlanFromClientIdSuccess: boolean, subscriptionPlan?: PolarProduct, readSubscriptionPlanFromClientIdError?: string}>}
+ */
+export const readSubscriptionPlanFromClientId = async (customerId: string): Promise<{
+     readSubscriptionPlanFromClientIdSuccess: boolean;
+     subscriptionPlan?: PolarProduct;
+     readSubscriptionPlanFromClientIdError?: string;
 }> => {
-     if (!id) {
-          return {
-               readSubscriptionPlanFeaturesSuccess: false,
-               readSubscriptionPlanFeaturesError: "Subscription plan ID is required",
-          };
-     }
 
      const supabase = await useServerSideSupabaseAnonClient();
-     const userId = (await supabase.auth.getUser()).data.user?.id;
 
-     const { data: subscriptionPlan, error } = await supabase
-          .from(TABLES.SUBSCRIPTION_PLANS)
-          .select(`
-      *,
-      tblSubscriptionPlans_Features (
-        tblFeatures (*)
-      )
-    `)
-          .eq("id", id)
+     // Fetch the product_id from POLAR_SUBSCRIPTIONS based on customerId
+     const { data: clientSubscription, error: clientSubscriptionError } = await supabase
+          .from(TABLES.POLAR_SUBSCRIPTIONS)
+          .select("id")
+          .eq("customerId", customerId)
           .single();
 
-     if (error || !subscriptionPlan) {
-          await logServerAction({
-               user_id: userId || '',
-               action: 'Read Subscription Plan by ID',
-               payload: { id, error },
-               status: 'fail',
-               error: error?.message || 'Not found',
-               duration_ms: 0,
-               type: 'db',
-          });
-
+     if (clientSubscriptionError || !clientSubscription || !clientSubscription.id) {
           return {
-               readSubscriptionPlanFeaturesSuccess: false,
-               readSubscriptionPlanFeaturesError: error?.message || 'Subscription plan not found',
+               readSubscriptionPlanFromClientIdSuccess: false,
+               readSubscriptionPlanFromClientIdError: clientSubscriptionError?.message || "Client subscription not found."
           };
      }
 
-     // Normalize: rename tblSubscriptionPlans_Features → features
-     const features: Feature[] = subscriptionPlan.tblSubscriptionPlans_Features?.map(
-          (relation: { tblFeatures: Feature }) => relation.tblFeatures
-     ) || [];
+     // Now fetch the product using the product_id
+     const { data: product, error: productError } = await supabase
+          .from(TABLES.POLAR_PRODUCTS)
+          .select('*')
+          .eq("id", clientSubscription.id)
+          .single();
 
-     const { tblSubscriptionPlans_Features, ...planData } = subscriptionPlan;
+     if (!productError && product) {
+          const [pricesResult, benefitsResult] = await Promise.all([
+               supabase.from(TABLES.POLAR_PRODUCT_PRICES).select('*').eq('product_id', product.id),
+               supabase.from(TABLES.POLAR_PRODUCT_BENEFITS).select('*').eq('product_id', product.id)
+          ]);
+          product.prices = pricesResult.data || [];
+          product.benefits = benefitsResult.data || [];
+     }
 
-     await logServerAction({
-          user_id: null,
-          action: 'Read Subscription Plan by ID',
-          payload: { id },
-          status: 'success',
-          error: '',
-          duration_ms: 0,
-          type: 'db',
-     });
+     if (productError) {
+          return {
+               readSubscriptionPlanFromClientIdSuccess: false,
+               readSubscriptionPlanFromClientIdError: productError.message
+          };
+     }
 
      return {
-          readSubscriptionPlanFeaturesSuccess: true,
-          subscriptionPlanFeatures: {
-               ...planData,
-               features,
-          },
+          readSubscriptionPlanFromClientIdSuccess: true,
+          subscriptionPlan: product
      };
 };
 
+/**
+ * Subscribe a client to a Polar product.
+ * @param {string} customerId The client ID.
+ * @param {string} productId The Polar product ID.
+ * @param {PolarRecurringInterval} renewal_period The renewal period.
+ * @returns {Promise<{success: boolean; error?: string}>}
+ */
 export const subscribeClientAction = async (
-     clientId: string,
-     subscriptionPlanId: string,
+     customerId: string,
+     productId: string,
      renewal_period: PolarRecurringInterval
 ): Promise<{ success: boolean; error?: string }> => {
      const supabase = await useServerSideSupabaseAnonClient();
      const userId = (await supabase.auth.getUser()).data.user?.id;
 
      const { data, error } = await supabase
-          .from(TABLES.CLIENT_SUBSCRIPTION)
+          .from(TABLES.POLAR_SUBSCRIPTIONS)
           .insert({
-               client_id: clientId,
-               subscription_id: subscriptionPlanId,
+               customerId: customerId,
+               product_id: productId,
                status: "trialing",
-               created_at: new Date().toISOString(),
+               createdAt: new Date().toISOString(),
                updated_at: new Date().toISOString(),
-               is_auto_renew: true,
-               next_payment_date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(),
-               renewal_period: renewal_period
+               recurring_interval: renewal_period,
+               recurring_interval_count: 1,
+               apartment_count: 0,
+               amount: 0,
+               currency: 'USD',
+               current_period_start: new Date().toISOString(),
+               current_period_end: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(),
+               cancel_at_period_end: false
           });
-
 
      if (error) {
           await logServerAction({
                user_id: userId ?? '',
-               action: "Subscribe Action Error",
-               payload: { clientId, subscriptionPlanId, error },
+               action: "Subscribe Client Action Error",
+               payload: { customerId, productId, error },
                status: "fail",
                error: error.message,
                duration_ms: 0,
@@ -489,8 +514,8 @@ export const subscribeClientAction = async (
 
      await logServerAction({
           user_id: userId ?? '',
-          action: "Subscribtion Action Successful",
-          payload: { clientId, subscriptionPlanId },
+          action: "Subscribe Client Action Successful",
+          payload: { customerId, productId },
           status: "success",
           error: "",
           duration_ms: 0,
@@ -500,26 +525,32 @@ export const subscribeClientAction = async (
      return { success: true };
 };
 
+/**
+ * Unsubscribe a client (cancel their subscription).
+ * @param {string} customerId The client ID.
+ * @returns {Promise<{success: boolean; error?: string}>}
+ */
 export const unsubscribeClientAction = async (
-     clientId: string
+     customerId: string
 ): Promise<{ success: boolean; error?: string }> => {
      const supabase = await useServerSideSupabaseAnonClient();
      const userId = (await supabase.auth.getUser()).data.user?.id;
 
      const { data, error } = await supabase
-          .from(TABLES.CLIENT_SUBSCRIPTION)
+          .from(TABLES.POLAR_SUBSCRIPTIONS)
           .update({
                status: "canceled",
-               next_payment_date: new Date().toISOString(),
+               cancel_at_period_end: true,
+               canceled_at: new Date().toISOString(),
           })
-          .eq("client_id", clientId)
-          .eq("status", "active"); // only cancel active subs
+          .eq("customerId", customerId)
+          .eq("status", "active");
 
      if (error) {
           await logServerAction({
                user_id: userId ?? '',
-               action: "Unsubscribe Action",
-               payload: { clientId, error },
+               action: "Unsubscribe Client Action",
+               payload: { customerId, error },
                status: "fail",
                error: error.message,
                duration_ms: 0,
@@ -530,8 +561,8 @@ export const unsubscribeClientAction = async (
 
      await logServerAction({
           user_id: userId ?? '',
-          action: "Unsubscribe Action",
-          payload: { clientId },
+          action: "Unsubscribe Client Action",
+          payload: { customerId },
           status: "success",
           error: "",
           duration_ms: 0,
@@ -541,100 +572,67 @@ export const unsubscribeClientAction = async (
      return { success: true };
 };
 
-export const readFeaturesFromSubscriptionPlanId = async (subscriptionPlanId: string | null): Promise<{ success: boolean, features?: Feature[], error?: string }> => {
+/**
+ * Read a client's subscription details with the associated Polar product.
+ * @param {string} customerId The client ID.
+ * @returns {Promise<{success: boolean, clientSubscriptionPlanData?: ClientSubscription & { product: PolarProduct } | null, error?: string}>}
+ */
+export const readClientSubscriptionPlanFromClientId = async (customerId: string): Promise<{
+     success: boolean,
+     clientSubscriptionPlanData?: ClientSubscription & { product: PolarProduct } | null,
+     error?: string
+}> => {
 
-     if (!subscriptionPlanId) {
-          await logServerAction({
-               user_id: null,
-               action: 'Read Features from Subscription Plan ID',
-               payload: { subscriptionPlanId },
-               status: 'fail',
-               error: "Subscription plan ID is required",
-               duration_ms: 0,
-               type: 'db'
-          })
-          return { success: false, error: "Subscription plan ID is required" };
-     }
-
-     const supabase = await useServerSideSupabaseAnonClient();
-     const userId = (await supabase.auth.getUser()).data.user?.id;
-     const { data: subscriptionPlan, error: planError } = await supabase
-          .from(TABLES.SUBSCRIPTION_PLANS)
-          .select(`
-      *,
-          tblSubscriptionPlans_Features (
-          feature_id,
-          tblFeatures (*)
-          )
-    `)
-          .eq("id", subscriptionPlanId)
-          .single();
-
-     if (planError) {
-          await logServerAction({
-               user_id: userId ? userId : '',
-               action: 'Read Features from Subscription Plan ID',
-               payload: { subscriptionPlanId, planError },
-               status: 'fail',
-               error: planError.message,
-               duration_ms: 0,
-               type: 'db'
-          })
-          return { success: false, error: planError.message };
-     }
-     // Extract features from the subscription plan and exclude tblSubscriptionPlans_Features
-     const features = subscriptionPlan.tblSubscriptionPlans_Features.map((relation: any) => relation.tblFeatures);
-     // Return the subscription plan without tblSubscriptionPlans_Features
-     const { tblSubscriptionPlans_Features, ...restOfSubscriptionPlan } = subscriptionPlan;
-
-     await logServerAction({
-          user_id: null,
-          action: 'Read Features from Subscription Plan ID',
-          payload: { subscriptionPlanId },
-          status: 'success',
-          error: '',
-          duration_ms: 0,
-          type: 'db'
-     })
-
-     return { success: true, features };
-}
-
-export const readClientSubscriptionPlanFromClientId = async (clientId: string): Promise<{ success: boolean, clientSubscriptionPlanData?: ClientSubscription & { subscription_plan: SubscriptionPlan } | null, error?: string }> => {
-
-     if (!clientId) {
+     if (!customerId) {
           await logServerAction({
                user_id: null,
                action: 'Read Client Subscription Plan',
-               payload: { clientId },
+               payload: { customerId },
                status: 'fail',
                error: "Client ID is required",
                duration_ms: 0,
                type: 'db'
-          })
+          });
           return { success: false, error: "Client ID is required" };
      }
-     const supabase = await useServerSideSupabaseAnonClient(); // Use the server-side Supabase client
+
+     const supabase = await useServerSideSupabaseAnonClient();
 
      const { data: clientSubscriptionPlanData, error: clientSubscriptionDataError } = await supabase
-          .from(TABLES.CLIENT_SUBSCRIPTION)
-          .select(`
-    *,
-    subscription_plan:subscription_id (*)
-  `)
-          .eq("client_id", clientId)
+          .from(TABLES.POLAR_SUBSCRIPTIONS)
+          .select('*')
+          .eq("customerId", customerId)
           .single();
+
+     if (!clientSubscriptionDataError && clientSubscriptionPlanData && clientSubscriptionPlanData.product_id) {
+          // Fetch the product separately
+          const { data: product } = await supabase
+               .from(TABLES.POLAR_PRODUCTS)
+               .select('*')
+               .eq('id', clientSubscriptionPlanData.product_id)
+               .single();
+
+          if (product) {
+               const [pricesResult, benefitsResult] = await Promise.all([
+                    supabase.from(TABLES.POLAR_PRODUCT_PRICES).select('*').eq('product_id', product.id),
+                    supabase.from(TABLES.POLAR_PRODUCT_BENEFITS).select('*').eq('product_id', product.id)
+               ]);
+               product.prices = pricesResult.data || [];
+               product.benefits = benefitsResult.data || [];
+               (clientSubscriptionPlanData as any).product = product;
+          }
+     }
 
      if (clientSubscriptionDataError) {
           await logServerAction({
                user_id: null,
                action: 'Read Client Subscription Plan',
-               payload: { clientId },
+               payload: { customerId },
                status: 'fail',
                error: clientSubscriptionDataError.message,
                duration_ms: 0,
                type: 'db'
-          })
+          });
           return { success: false, error: clientSubscriptionDataError.message, clientSubscriptionPlanData: null };
      }
 
@@ -642,53 +640,65 @@ export const readClientSubscriptionPlanFromClientId = async (clientId: string): 
           await logServerAction({
                user_id: null,
                action: 'Read Client Subscription Plan',
-               payload: { clientId, clientSubscriptionDataError },
+               payload: { customerId, clientSubscriptionDataError },
                status: 'fail',
                error: "Client subscription data not found",
                duration_ms: 0,
                type: 'db'
-          })
+          });
           return { success: false, error: "Client subscription data not found", clientSubscriptionPlanData: null };
      }
+
      await logServerAction({
           user_id: null,
           action: 'Read Client Subscription Plan',
-          payload: { clientId },
+          payload: { customerId },
           status: 'success',
           error: '',
           duration_ms: 0,
           type: 'db'
-     })
+     });
 
      return { success: true, clientSubscriptionPlanData };
+};
 
-}
-
+/**
+ * Update or create a client's subscription.
+ * @param {string} customerId The client ID.
+ * @param {string} productId The Polar product ID.
+ * @param {object} opts Optional parameters like status, apartment_count, etc.
+ * @returns {Promise<{success: boolean; error?: string}>}
+ */
 export const updateClientSubscriptionForClient = async (
-     clientId: string,
-     subscriptionPlanId: string,
-     opts?: { nextPaymentDate?: string | null; status?: 'trialing' | 'active' | 'past_due' | 'canceled' }
+     customerId: string,
+     productId: string,
+     opts?: {
+          status?: 'trialing' | 'active' | 'past_due' | 'canceled',
+          apartment_count?: number,
+          amount?: number,
+          current_period_end?: string
+     }
 ): Promise<{ success: boolean; error?: string }> => {
 
-     if (!clientId || !subscriptionPlanId) {
-          return { success: false, error: 'Client ID and Subscription Plan ID are required' };
+     if (!customerId || !productId) {
+          return { success: false, error: 'Client ID and Product ID are required' };
      }
 
      const supabase = await useServerSideSupabaseAnonClient();
      const userId = (await supabase.auth.getUser()).data.user?.id;
 
-     // Check existing subscription row
+     // Check if subscription exists
      const { data: existing, error: readErr } = await supabase
-          .from(TABLES.CLIENT_SUBSCRIPTION)
+          .from(TABLES.POLAR_SUBSCRIPTIONS)
           .select('id')
-          .eq('client_id', clientId)
+          .eq('customerId', customerId)
           .single();
 
      if (readErr && readErr.code !== 'PGRST116') {
           await logServerAction({
                user_id: userId ?? '',
                action: 'Read Client Subscription (for update)',
-               payload: { clientId, readErr },
+               payload: { customerId, readErr },
                status: 'fail',
                error: readErr.message,
                duration_ms: 0,
@@ -698,25 +708,21 @@ export const updateClientSubscriptionForClient = async (
      }
 
      const nowIso = new Date().toISOString();
-     const nextPaymentDate = opts?.nextPaymentDate ?? null;
-     const computedStatus = (nextPaymentDate && !Number.isNaN(new Date(nextPaymentDate).getTime()) && new Date(nextPaymentDate).getTime() > Date.now())
-          ? 'active'
-          : 'canceled';
-     const subscriptionStatus = opts?.status ?? computedStatus;
+     const subscriptionStatus = opts?.status ?? 'active';
 
      if (existing?.id) {
           const updatePayload: any = {
-               subscription_id: subscriptionPlanId,
-               next_payment_date: nextPaymentDate,
+               product_id: productId,
                updated_at: nowIso,
+               status: subscriptionStatus,
           };
 
-          if (subscriptionStatus) {
-               updatePayload.status = subscriptionStatus;
-          }
+          if (opts?.apartment_count !== undefined) updatePayload.apartment_count = opts.apartment_count;
+          if (opts?.amount !== undefined) updatePayload.amount = opts.amount;
+          if (opts?.current_period_end) updatePayload.current_period_end = opts.current_period_end;
 
           const { error: updErr } = await supabase
-               .from(TABLES.CLIENT_SUBSCRIPTION)
+               .from(TABLES.POLAR_SUBSCRIPTIONS)
                .update(updatePayload)
                .eq('id', existing.id);
 
@@ -724,7 +730,7 @@ export const updateClientSubscriptionForClient = async (
                await logServerAction({
                     user_id: userId ?? '',
                     action: 'Update Client Subscription',
-                    payload: { clientId, subscriptionPlanId, nextPaymentDate, error: updErr.message },
+                    payload: { customerId, productId, error: updErr.message },
                     status: 'fail',
                     error: updErr.message,
                     duration_ms: 0,
@@ -736,35 +742,40 @@ export const updateClientSubscriptionForClient = async (
           await logServerAction({
                user_id: userId ?? '',
                action: 'Update Client Subscription',
-               payload: { clientId, subscriptionPlanId, nextPaymentDate },
+               payload: { customerId, productId },
                status: 'success',
                error: '',
                duration_ms: 0,
                type: 'db'
           });
-          revalidatePath(`/dashboard/clients/${clientId}`);
+          revalidatePath(`/dashboard/clients/${customerId}`);
           return { success: true };
      }
 
      // Insert if missing
      const { error: insErr } = await supabase
-          .from(TABLES.CLIENT_SUBSCRIPTION)
+          .from(TABLES.POLAR_SUBSCRIPTIONS)
           .insert({
-               client_id: clientId,
-               subscription_id: subscriptionPlanId,
-               status: subscriptionStatus ?? 'active',
-               created_at: nowIso,
+               customerId: customerId,
+               product_id: productId,
+               status: subscriptionStatus,
+               createdAt: nowIso,
                updated_at: nowIso,
-               is_auto_renew: true,
-               next_payment_date: nextPaymentDate,
-               renewal_period: 'monthly'
+               apartment_count: opts?.apartment_count ?? 0,
+               amount: opts?.amount ?? 0,
+               currency: 'USD',
+               recurring_interval: 'month',
+               recurring_interval_count: 1,
+               current_period_start: nowIso,
+               current_period_end: opts?.current_period_end ?? new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(),
+               cancel_at_period_end: false
           });
 
      if (insErr) {
           await logServerAction({
                user_id: userId ?? '',
                action: 'Insert Client Subscription',
-               payload: { clientId, subscriptionPlanId, nextPaymentDate, error: insErr.message },
+               payload: { customerId, productId, error: insErr.message },
                status: 'fail',
                error: insErr.message,
                duration_ms: 0,
@@ -776,31 +787,37 @@ export const updateClientSubscriptionForClient = async (
      await logServerAction({
           user_id: userId ?? '',
           action: 'Insert Client Subscription',
-          payload: { clientId, subscriptionPlanId, nextPaymentDate },
+          payload: { customerId, productId },
           status: 'success',
           error: '',
           duration_ms: 0,
           type: 'db'
      });
-     revalidatePath(`/dashboard/clients/${clientId}`);
+     revalidatePath(`/dashboard/clients/${customerId}`);
      return { success: true };
 };
 
+/**
+ * Check if a client's subscription is active.
+ * @param {string} customerId The client ID.
+ * @returns {Promise<{success: boolean; isActive?: boolean; error?: string}>}
+ */
 export const checkClientSubscriptionStatus = async (
-     clientId: string
+     customerId: string
 ): Promise<{ success: boolean; isActive?: boolean; error?: string }> => {
 
      const supabase = await useServerSideSupabaseAnonClient();
      const { data, error } = await supabase
-          .from(TABLES.CLIENT_SUBSCRIPTION)
+          .from(TABLES.POLAR_SUBSCRIPTIONS)
           .select('status')
-          .eq('client_id', clientId)
+          .eq('customerId', customerId)
           .single();
+
      if (error) {
           await logServerAction({
-               user_id: clientId ?? '',
+               user_id: customerId ?? '',
                action: 'Check Client Subscription Status',
-               payload: { clientId, error },
+               payload: { customerId, error },
                status: 'fail',
                error: error.message,
                duration_ms: 0,
@@ -808,22 +825,29 @@ export const checkClientSubscriptionStatus = async (
           });
           return { success: false, error: error.message };
      }
+
      return { success: true, isActive: data?.status === 'active' || data?.status === 'trialing' };
 };
 
+/**
+ * Delete a client's subscription.
+ * @param {string} customerId The client ID.
+ * @returns {Promise<{success: boolean; error?: string}>}
+ */
 export const deleteClientSubscription = async (
-     clientId: string
+     customerId: string
 ): Promise<{ success: boolean; error?: string }> => {
      const supabase = await useServerSideSupabaseAnonClient();
      const { error } = await supabase
-          .from(TABLES.CLIENT_SUBSCRIPTION)
+          .from(TABLES.POLAR_SUBSCRIPTIONS)
           .delete()
-          .eq('client_id', clientId);
+          .eq('customerId', customerId);
+
      if (error) {
           await logServerAction({
-               user_id: clientId ?? '',
+               user_id: customerId ?? '',
                action: 'Delete Client Subscription',
-               payload: { clientId, error },
+               payload: { customerId, error },
                status: 'fail',
                error: error.message,
                duration_ms: 0,
@@ -831,15 +855,16 @@ export const deleteClientSubscription = async (
           });
           return { success: false, error: error.message };
      }
+
      await logServerAction({
-          user_id: clientId ?? '',
+          user_id: customerId ?? '',
           action: 'Delete Client Subscription',
-          payload: { clientId },
+          payload: { customerId },
           status: 'success',
           error: '',
           duration_ms: 0,
           type: 'db'
      });
-     revalidatePath(`/dashboard/clients/${clientId}`);
+     revalidatePath(`/dashboard/clients/${customerId}`);
      return { success: true };
-}
+};

@@ -93,11 +93,11 @@ export async function reorderPolls(pollId: string, optionIds: string[]): Promise
     return { success: true };
 }
 
-export async function getPollsFromClient(params?: { client_id?: string; building_id?: string; status?: PollStatus }): Promise<{ success: boolean; error?: string; data?: Poll[] }> {
+export async function getPollsFromClient(params?: { customerId?: string; building_id?: string; status?: PollStatus }): Promise<{ success: boolean; error?: string; data?: Poll[] }> {
     const t0 = Date.now();
     const supabase = await useServerSideSupabaseAnonClient();
     let query = supabase.from(TABLES.POLLS).select('*');
-    if (params?.client_id) query = query.eq('client_id', params.client_id);
+    if (params?.customerId) query = query.eq('customerId', params.customerId);
     if (params?.building_id) query = query.eq('building_id', params.building_id);
     if (params?.status) query = query.eq('status', params.status);
     query = query.order('created_at', { ascending: false });

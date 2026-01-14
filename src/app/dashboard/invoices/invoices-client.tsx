@@ -140,7 +140,7 @@ export const InvoicesClient = ({ invoices, invoiceClients }: InvoicesClientProps
 
           if (filters.clients && filters.clients.length > 0) {
                const selectedClientIds = new Set(filters.clients);
-               filtered = filtered.filter((invoice) => selectedClientIds.has(invoice.client_id));
+               filtered = filtered.filter((invoice) => selectedClientIds.has(invoice.customerId));
           }
 
           if (filters.status) {

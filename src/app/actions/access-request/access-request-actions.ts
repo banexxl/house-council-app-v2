@@ -245,12 +245,12 @@ export const submitAccessRequest = async ({
                const supabase = await useServerSideSupabaseServiceRoleClient();
                const { data: buildingRow } = await supabase
                     .from(TABLES.BUILDINGS)
-                    .select('client_id')
+                    .select('customerId')
                     .eq('id', buildingId)
                     .single();
-               const clientId = (buildingRow as any)?.client_id;
-               if (clientId) {
-                    const { data: clientRow } = await supabase.from(TABLES.CLIENTS).select('email').eq('id', clientId).single();
+               const customerId = (buildingRow as any)?.customerId;
+               if (customerId) {
+                    const { data: clientRow } = await supabase.from(TABLES.POLAR_CUSTOMERS).select('email').eq('id', customerId).single();
                     buildingClientEmail = (clientRow as any)?.email || null;
                }
           }

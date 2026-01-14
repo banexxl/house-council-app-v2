@@ -2,7 +2,6 @@
 
 import { revalidatePath } from "next/cache";
 import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
-import { resolveClientFromClientOrMember } from "../client/client-members";
 import { logServerAction } from "src/libs/supabase/server-logging";
 import { Apartment } from "src/types/apartment";
 import { validate as isUUID } from "uuid";
@@ -64,22 +63,21 @@ export async function getAllApartments(): Promise<{ success: boolean; error?: st
      return { success: true, data };
 }
 
-export async function getAllApartmentsFromClientsBuildings(clientid: string) {
+export async function getAllApartmentsFromCustomersBuildings(customerId: string) {
      const t0 = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
-     const { data: resolvedClientOrMemberId } = await resolveClientFromClientOrMember(clientid);
      const { data: buildings, error: buildingsError } = await supabase
           .from(TABLES.BUILDINGS)
           .select("*")
-          .eq("client_id", resolvedClientOrMemberId!.id);
+          .eq("customerId", customerId);
 
      if (buildingsError) {
-          await logServerAction({ action: "getAllApartmentsFromClientsBuildings", duration_ms: Date.now() - t0, error: buildingsError.message, payload: { clientid: resolvedClientOrMemberId }, status: "fail", type: "db", user_id: typeof resolvedClientOrMemberId === "string" ? resolvedClientOrMemberId : resolvedClientOrMemberId!.id, id: "" });
+          await logServerAction({ action: "getAllApartmentsFromCustomersBuildings", duration_ms: Date.now() - t0, error: buildingsError.message, payload: { customerId }, status: "fail", type: "db", user_id: customerId, id: "" });
           return { success: false, error: buildingsError.message };
      }
 
      if (!buildings?.length) {
-          await logServerAction({ action: "getAllApartmentsFromClientsBuildings", duration_ms: Date.now() - t0, error: "", payload: { clientid: resolvedClientOrMemberId }, status: "success", type: "db", user_id: typeof resolvedClientOrMemberId === "string" ? resolvedClientOrMemberId : resolvedClientOrMemberId!.id, id: "" });
+          await logServerAction({ action: "getAllApartmentsFromCustomersBuildings", duration_ms: Date.now() - t0, error: "", payload: { customerId }, status: "success", type: "db", user_id: customerId, id: "" });
           return { success: true, data: { apartments: [], building_images: [] } }; // keep shape
      }
 
@@ -99,7 +97,7 @@ export async function getAllApartmentsFromClientsBuildings(clientid: string) {
           .in("building_id", buildings.map(b => b.id));
 
      if (apartmentsError) {
-          await logServerAction({ action: "getAllApartmentsFromClientsBuildings", duration_ms: Date.now() - t0, error: apartmentsError.message, payload: { clientid }, status: "fail", type: "db", user_id: clientid, id: "" });
+          await logServerAction({ action: "getAllApartmentsFromCustomersBuildings", duration_ms: Date.now() - t0, error: apartmentsError.message, payload: { customerId }, status: "fail", type: "db", user_id: customerId, id: "" });
           return { success: false, error: apartmentsError.message };
      }
 
@@ -129,7 +127,7 @@ export async function getAllApartmentsFromClientsBuildings(clientid: string) {
           });
      }
 
-     await logServerAction({ action: "getAllApartmentsFromClientsBuildings", duration_ms: Date.now() - t0, error: "", payload: { clientid }, status: "success", type: "db", user_id: clientid, id: "" });
+     await logServerAction({ action: "getAllApartmentsFromCustomersBuildings", duration_ms: Date.now() - t0, error: "", payload: { customerId }, status: "success", type: "db", user_id: customerId, id: "" });
      // Return apartments with image rows attached (legacy building_images field omitted; not used by callers)
      const apartmentsWithImages: Apartment[] = (apartments ?? []).map(a => ({
           ...a,
@@ -275,7 +273,7 @@ export async function createOrUpdateApartment(payload: Apartment) {
           // enforce building capacity
           const { data: building, error: buildingError } = await supabase
                .from(TABLES.BUILDINGS)
-               .select("client_id,number_of_apartments")
+               .select("customerId,number_of_apartments")
                .eq("id", (apartmentPayload as any).building_id)
                .single();
 
@@ -320,9 +318,9 @@ export async function createOrUpdateApartment(payload: Apartment) {
 
           // ✅ NEW: sync Polar seats
           // You must know the clientId here.
-          // If apartmentPayload has client_id, use it.
+          // If apartmentPayload has customerId, use it.
           // Otherwise derive clientId from the building.
-          const clientId = building.client_id
+          const clientId = building.customerId
 
           const sync = await syncPolarSeatsForClient({ clientId });
 
@@ -377,13 +375,13 @@ export async function deleteApartment(id: string) {
 
      const { data: building, error: buildingError } = await supabase
           .from(TABLES.BUILDINGS)
-          .select("client_id")
+          .select("customerId")
           .eq("id", buildingId)
           .single();
 
      if (buildingError) {
           await logServerAction({
-               action: "deleteApartment - resolve client_id failed",
+               action: "deleteApartment - resolve customerId failed",
                duration_ms: Date.now() - t0,
                error: buildingError.message,
                payload: { id, buildingId },
@@ -394,7 +392,7 @@ export async function deleteApartment(id: string) {
           return { success: false, error: "Failed to resolve client for apartment." };
      }
 
-     const clientId = (building as any)?.client_id as string | undefined;
+     const clientId = (building as any)?.customerId as string | undefined;
      if (!clientId) {
           await logServerAction({
                action: "deleteApartment - clientId missing",

@@ -12,8 +12,8 @@ export default async function Page({ params }: {
   params: Promise<{ apartmentid: string }>
 }) {
   const { apartmentid } = await params;
-  const { client, clientMember, tenant, admin, userData, error } = await getViewer();
-  const client_id = client ? client.id : clientMember ? clientMember.client_id : null;
+  const { customer, tenant, admin, userData, error } = await getViewer();
+  const customerId = client ? client.id : clientMember ? clientMember.customerId : null;
   if (!client && !clientMember && !tenant && !admin) {
     redirect(paths.auth.login);
   }
@@ -32,19 +32,19 @@ export default async function Page({ params }: {
   } else if (client) {
     // For client, fetch only their buildings and the apartment by id
     const [buildingsRes, apartmentRes] = await Promise.all([
-      getAllBuildingsFromClient(client_id!),
+      getAllBuildingsFromClient(customerId!),
       apartmentid ? getApartmentById(apartmentid) : Promise.resolve({ success: true, data: undefined }),
     ]);
     buildings = buildingsRes.success ? buildingsRes.data : undefined;
     apartment = apartmentRes.success ? apartmentRes.data : undefined;
   } else if (clientMember) {
     // For client, fetch only their buildings and the apartment by id
-    const { success, data } = await resolveClientFromClientOrMember(client_id!);
+    const { success, data } = await resolveClientFromClientOrMember(customerId!);
     if (!success || !data) {
       redirect('/dashboard/apartments');
     }
     const [buildingsRes, apartmentRes] = await Promise.all([
-      getAllBuildingsFromClient(client_id!),
+      getAllBuildingsFromClient(customerId!),
       apartmentid ? getApartmentById(apartmentid) : Promise.resolve({ success: true, data: undefined }),
     ]);
     buildings = buildingsRes.success ? buildingsRes.data : undefined;

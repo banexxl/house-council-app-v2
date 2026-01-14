@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 
 export default async function Page() {
 
-     const { client, clientMember, tenant, admin } = await getViewer();
+     const { customer, tenant, admin } = await getViewer();
      if (!client && !clientMember && !tenant && !admin) {
           redirect('/auth/login');
      }

@@ -119,7 +119,7 @@ export async function GET(request: Request) {
     const { data: subscription, error: subscriptionError } = await supabase
       .from(TABLES.CLIENT_SUBSCRIPTION)
       .select("*")
-      .eq("client_id", clientId)
+      .eq("customerId", clientId)
       .in("status", ["active", "trialing"])
       .single();
 
@@ -135,7 +135,7 @@ export async function GET(request: Request) {
     const { data: subscription, error: subscriptionError } = await supabase
       .from(TABLES.CLIENT_SUBSCRIPTION)
       .select("*")
-      .eq("client_id", clientData && typeof clientData === "object" && "id" in clientData ? (clientData as { id: string }).id : '')
+      .eq("customerId", clientData && typeof clientData === "object" && "id" in clientData ? (clientData as { id: string }).id : '')
       .in("status", ["active", "trialing"])
       .single();
 
@@ -150,9 +150,9 @@ export async function GET(request: Request) {
   if (role === "tenant") {
     try {
       // Get client ID from tenant's building
-      const { data: client_id, success: clientIdSuccess, error: clientIdError } = await getClientIdFromTenantBuilding(userId!);
+      const { data: customerId, success: clientIdSuccess, error: clientIdError } = await getClientIdFromTenantBuilding(userId!);
 
-      if (!clientIdSuccess || !client_id) {
+      if (!clientIdSuccess || !customerId) {
         log(`Failed to get client ID from tenant's building: ${clientIdError}`, 'error');
         await supabase.auth.signOut();
         cookieStore.getAll().forEach((c) => cookieStore.delete(c.name));
@@ -160,17 +160,17 @@ export async function GET(request: Request) {
       }
 
       // Check client subscription status
-      const { success: subscriptionSuccess, isActive, error: subscriptionError } = await checkClientSubscriptionStatus(client_id);
+      const { success: subscriptionSuccess, isActive, error: subscriptionError } = await checkClientSubscriptionStatus(customerId);
 
       if (!subscriptionSuccess) {
-        log(`Subscription check failed for client ID ${client_id}: ${subscriptionError}`, 'error');
+        log(`Subscription check failed for client ID ${customerId}: ${subscriptionError}`, 'error');
         await supabase.auth.signOut();
         cookieStore.getAll().forEach((c) => cookieStore.delete(c.name));
         return NextResponse.redirect(`${requestUrl.origin}/auth/error?error_code=subscription_check_failed&error=${encodeURIComponent(subscriptionError || 'Subscription check failed')}`);
       }
 
       if (!isActive) {
-        log(`No active subscription for client ID ${client_id}`, 'info');
+        log(`No active subscription for client ID ${customerId}`, 'info');
         await supabase.auth.signOut();
         cookieStore.getAll().forEach((c) => cookieStore.delete(c.name));
         return NextResponse.redirect(`${requestUrl.origin}/auth/error?error_code=no_building_subscription`);

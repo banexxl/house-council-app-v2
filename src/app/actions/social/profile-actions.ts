@@ -77,8 +77,7 @@ export async function getCurrentUserProfile(): Promise<ActionResponse<TenantProf
           const lookupIds: string[] = [];
 
           if (viewer.tenant?.id) lookupIds.push(viewer.tenant.id);
-          if (viewer.client?.id) lookupIds.push(viewer.client.id);
-          if (viewer.clientMember?.id) lookupIds.push(viewer.clientMember.id);
+          if (viewer.customer?.id) lookupIds.push(viewer.customer.id);
           if (viewer.admin?.id) lookupIds.push(viewer.admin.id);
           if (viewer.userData?.id) lookupIds.push(viewer.userData.id);
 
