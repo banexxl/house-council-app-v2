@@ -143,22 +143,22 @@ export const initNotificationsRealtime = (onEvent: InitListenerOptions["onEvent"
           onEvent,
      });
 
-export const initClientSubscriptionRealtime = (clientId: string, onEvent: InitListenerOptions["onEvent"]) => {
+export const initClientSubscriptionRealtime = (customerId: string, onEvent: InitListenerOptions["onEvent"]) => {
      // Enforce a non-empty filter; if missing, no-op with safe cleanup
-     if (!clientId) {
-          log('[Realtime] initClientSubscriptionRealtime called without clientId; skipping subscribe.', 'warn');
+     if (!customerId) {
+          log('[Realtime] initClientSubscriptionRealtime called without customerId; skipping subscribe.', 'warn');
           return Promise.resolve(async () => { /* noop */ });
      }
 
      // Correct Postgres filter syntax requires operator (eq.)
-     const filter = `customerId=eq.${clientId}`;
+     const filter = `customerId=eq.${customerId}`;
 
      log(`[Realtime] Subscribing to tblClient_Subscription ${filter}`, 'info');
 
 
-     return initTableRealtimeListener(TABLES.CLIENT_SUBSCRIPTION, ["INSERT", "UPDATE", "DELETE"], {
+     return initTableRealtimeListener(TABLES.POLAR_SUBSCRIPTIONS, ["INSERT", "UPDATE", "DELETE"], {
           schema: "public",
-          channelName: `client_${clientId}_subscription`,
+          channelName: `client_${customerId}_subscription`,
           filter,
           onEvent: (payload) => {
                log(`[Realtime] Client subscription event ${JSON.stringify(payload)}`);

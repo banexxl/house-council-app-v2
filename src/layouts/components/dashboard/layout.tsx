@@ -12,7 +12,7 @@ import { supabaseBrowserClient } from 'src/libs/supabase/sb-client';
 import { TABLES } from 'src/libs/supabase/tables';
 import { useFeatureAccess } from 'src/contexts/feature-access';
 
-type Role = 'admin' | 'client' | 'clientMember' | 'tenant';
+type Role = 'admin' | 'client' | 'tenant';
 interface LayoutProps { children?: ReactNode; }
 
 export const Layout: FC<LayoutProps> = (props) => {
@@ -30,18 +30,16 @@ export const Layout: FC<LayoutProps> = (props) => {
       const email = data.session?.user?.email;
       if (!email) { setRole('tenant'); window.localStorage.setItem('dashboardRole', 'tenant'); return; }
 
-      const [adminRes, tenantRes, clientMemberRes, clientRes] = await Promise.all([
+      const [adminRes, tenantRes, customerRes] = await Promise.all([
         supabaseBrowserClient.from(TABLES.SUPER_ADMINS).select('id').eq('email', email).maybeSingle(),
         supabaseBrowserClient.from(TABLES.TENANTS).select('id').eq('email', email).maybeSingle(),
-        supabaseBrowserClient.from(TABLES.CLIENT_MEMBERS).select('id').eq('email', email).maybeSingle(),
-        supabaseBrowserClient.from(TABLES.CLIENTS).select('id').eq('email', email).maybeSingle(),
+        supabaseBrowserClient.from(TABLES.POLAR_CUSTOMERS).select('id').eq('email', email).maybeSingle(),
       ]);
 
       let resolved: Role = 'tenant';
       if (adminRes.data) resolved = 'admin';
       else if (tenantRes.data) resolved = 'tenant';
-      else if (clientMemberRes.data) resolved = 'clientMember';
-      else if (clientRes.data) resolved = 'client';
+      else if (customerRes.data) resolved = 'client';
 
       setRole(resolved);
       window.localStorage.setItem('dashboardRole', resolved);

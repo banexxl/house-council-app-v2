@@ -15,8 +15,8 @@ export const useServerSideSupabaseAnonClient = async () => {
           {
                cookies: {
                     getAll: () => cookieStore.getAll(),
-                    setAll: (cookiesToSet) => {
-                         cookiesToSet.forEach(({ name, value, options }) => {
+                    setAll: (cookiesToSet: any) => {
+                         cookiesToSet.forEach(({ name, value, options }: any) => {
                               try {
                                    cookieStore.set(name, value, options);
                               } catch {
@@ -40,8 +40,8 @@ export const useServerSideSupabaseServiceRoleClient = async () => {
           {
                cookies: {
                     getAll: () => cookieStore.getAll(),
-                    setAll: (cookiesToSet) => {
-                         cookiesToSet.forEach(({ name, value, options }) => {
+                    setAll: (cookiesToSet: any) => {
+                         cookiesToSet.forEach(({ name, value, options }: any) => {
                               try {
                                    cookieStore.set(name, value, options);
                               } catch {

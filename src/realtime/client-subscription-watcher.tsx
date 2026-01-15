@@ -29,7 +29,7 @@ export default function ClientSubscriptionWatcher() {
      } | null>(null);
      const router = useRouter(); // Used to redirect to login after sign-out
 
-     const clientId = viewer?.client?.id ?? viewer?.clientMember?.customerId ?? null; // Guard: no client => skip watcher logic
+     const customerId = viewer?.client?.id ?? viewer?.clientMember?.customerId ?? null; // Guard: no client => skip watcher logic
 
      useEffect(() => { // Core effect: sets up initial validation, realtime listener, and polling fallback
           let active = true;
@@ -75,14 +75,14 @@ export default function ClientSubscriptionWatcher() {
           let signingOut = false;
 
           async function start() { // Orchestrates the lifecycle: initial status check -> realtime -> polling
-               if (!clientId) return;
+               if (!customerId) return;
 
                // Step 0: Initial snapshot validation - if subscription missing or not allowed, force sign-out early
                try {
                     const { data: current, error: readErr } = await supabaseBrowserClient
-                         .from(TABLES.CLIENT_SUBSCRIPTION)
+                         .from(TABLES.POLAR_SUBSCRIPTIONS)
                          .select('status')
-                         .eq('customerId', clientId)
+                         .eq('customerId', customerId)
                          .single();
 
                     if (!readErr) { // Successfully read subscription row
@@ -114,7 +114,7 @@ export default function ClientSubscriptionWatcher() {
                }
 
                // Realtime listener: reacts to UPDATE / DELETE events on this client's subscription row
-               cleanup = await initClientSubscriptionRealtime(clientId, async (payload: RealtimePostgresChangesPayload<any>) => {
+               cleanup = await initClientSubscriptionRealtime(customerId, async (payload: RealtimePostgresChangesPayload<any>) => {
 
                     log(`[ClientSubscriptionWatcher] Realtime payload ${JSON.stringify({
                          eventType: (payload as any).eventType,
@@ -137,7 +137,7 @@ export default function ClientSubscriptionWatcher() {
                          const status = row.status;
                          const affectedClientId = row.customerId;
 
-                         if (affectedClientId !== clientId) return; // Ignore stray events (shouldn't happen with filter)
+                         if (affectedClientId !== customerId) return; // Ignore stray events (shouldn't happen with filter)
 
                          const isAllowed = status === 'active' || status === 'trialing'; // Allowed statuses that keep the session
                          if ((payload.eventType === "DELETE") || (payload.eventType === "UPDATE" && status && !isAllowed)) { // Any disallowed transition => sign out
@@ -159,15 +159,15 @@ export default function ClientSubscriptionWatcher() {
                     }
                });
 
-               // Additional realtime listener for tblClients status (account status gate separate from subscription)
+               // Additional realtime listener for tblCustomers status (account status gate separate from subscription)
                try {
                     clientStatusChannel = supabaseBrowserClient
-                         .channel(`client-status-${clientId}`)
+                         .channel(`customer-status-${customerId}`)
                          .on('postgres_changes', {
                               event: '*',
                               schema: 'public',
-                              table: TABLES.CLIENTS,
-                              filter: `id=eq.${clientId}`,
+                              table: TABLES.POLAR_CUSTOMERS,
+                              filter: `id=eq.${customerId}`,
                          }, async (payload: any) => {
                               if (signingOut) return;
                               try {
@@ -203,9 +203,9 @@ export default function ClientSubscriptionWatcher() {
 
                     try {
                          const { data: current, error: readErr } = await supabaseBrowserClient
-                              .from(TABLES.CLIENT_SUBSCRIPTION)
+                              .from(TABLES.POLAR_SUBSCRIPTIONS)
                               .select('status')
-                              .eq('customerId', clientId)
+                              .eq('customerId', customerId)
                               .single();
                          if (!readErr) { // Got current subscription snapshot
                               const statusNow = (current as any)?.status as string | undefined;
@@ -229,7 +229,7 @@ export default function ClientSubscriptionWatcher() {
 
           start();
 
-          return () => { // Cleanup on unmount or clientId change
+          return () => { // Cleanup on unmount or customerId change
                cancelled = true;
                if (cleanup) cleanup().catch(() => { });
                if (intervalId) clearInterval(intervalId);
@@ -237,7 +237,7 @@ export default function ClientSubscriptionWatcher() {
                     try { supabaseBrowserClient.removeChannel(clientStatusChannel); } catch { }
                }
           };
-     }, [clientId]);
+     }, [customerId]);
 
      return null; // No UI rendered; purely behavioral component
 }
