@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 
 import { getViewer } from 'src/libs/supabase/server-auth';
-import { readAllInvoices } from 'src/app/actions/client/client-payment-actions';
+import { readAllInvoices } from 'src/app/actions/customer/customer-payment-actions';
 import type { PolarOrder } from 'src/types/polar-order-types';
 import { TABLES } from 'src/libs/supabase/tables';
 import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';

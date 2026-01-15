@@ -9,9 +9,8 @@ import Link from 'next/link';
 import toast from 'react-hot-toast';
 
 import { resetTenantPassword } from 'src/app/actions/tenant/tenant-actions';
-import { resetClientMemberPassword } from 'src/app/actions/client/client-members';
 import { logout } from 'src/app/auth/actions';
-import { sendPasswordRecoveryEmail } from 'src/app/actions/client/client-actions';
+import { sendPasswordRecoveryEmail } from 'src/app/actions/customer/customer-actions';
 import log from 'src/utils/logger';
 
 export const ResetPasswordClient = () => {
@@ -56,17 +55,7 @@ export const ResetPasswordClient = () => {
       setSubmitError('');
       setSuccess(false);
       startTransition(async () => {
-        if (isClientMember) {
-          const { success, error } = await resetClientMemberPassword(values.email, values.newPassword);
-          if (success) {
-            toast.success('Password reset successfully!');
-            setSuccess(success);
-            resetForm();
-          } else {
-            toast.error(error || 'Failed to reset password.');
-            setSubmitError(error || 'Failed to reset password.');
-          }
-        } else {
+        if (hasValidToken) {
           const result = await resetTenantPassword(values.email, values.newPassword, tokenFromUrl);
           if (result.success) {
             toast.success('Password reset successfully!');

@@ -7,7 +7,7 @@ import { Suspense } from "react";
 import { DefaultPageSkeleton } from "src/sections/dashboard/skeletons/default-page-skeleton";
 import { listIncidentReports, listIncidentReportsForClient } from "src/app/actions/incident/incident-report-actions";
 import { listDashboardEvents } from "src/app/actions/calendar/calendar-actions";
-import { readAllClientPayments } from "src/app/actions/client/client-payment-actions";
+import { readAllClientPayments } from "src/app/actions/customer/customer-payment-actions";
 import type { PolarOrder } from "src/types/polar-order-types";
 import { getBuildingIDsFromUserId } from "src/app/actions/building/building-actions";
 import type { IncidentReport } from "src/types/incident-report";

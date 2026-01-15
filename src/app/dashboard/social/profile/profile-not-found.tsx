@@ -14,7 +14,7 @@ import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 
-import { createClientSocialProfile, ClientBuildingOption } from 'src/app/actions/client/client-actions';
+import { createClientSocialProfile, ClientBuildingOption } from 'src/app/actions/customer/customer-actions';
 import { tokens } from 'src/locales/tokens';
 import { Client, ClientMember } from 'src/types/client';
 

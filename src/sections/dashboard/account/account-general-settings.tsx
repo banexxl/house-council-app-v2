@@ -1,17 +1,17 @@
 import type { FC } from 'react';
 import Stack from '@mui/material/Stack';
 import { ClientForm } from 'src/sections/dashboard/client/client-form';
-import { Client } from 'src/types/client';
+import { PolarCustomer } from 'src/types/polar-customer-types';
 
 interface AccountGeneralSettingsProps {
-  client: Client
+  customer: PolarCustomer
 }
 
-export const AccountGeneralSettings: FC<AccountGeneralSettingsProps> = ({ client }) => {
+export const AccountGeneralSettings: FC<AccountGeneralSettingsProps> = ({ customer }) => {
 
   return (
     <Stack spacing={2}>
-      <ClientForm clientData={client} />
+      <ClientForm customerData={customer} />
     </Stack>
   );
 };

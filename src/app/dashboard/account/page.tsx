@@ -1,81 +1,70 @@
-import { readClientByIdAction } from 'src/app/actions/client/client-actions';
-import Account from './account';
-import { getViewer } from 'src/libs/supabase/server-auth';
-import { redirect } from 'next/navigation';
-import { ClientMember } from 'src/types/client';
-import { readAllActiveSubscriptionPlans, readSubscriptionPlanFromClientId } from 'src/app/actions/subscription-plan/subscription-plan-actions';
-import { readAllClientPayments } from 'src/app/actions/client/client-payment-actions';
-import { SubscriptionPlan } from 'src/types/subscription-plan';
-import { PolarOrder } from 'src/types/polar-order-types';
-import { readAllClientTeamMembers } from 'src/app/actions/client/client-members';
-import { getAllLogsFromEmail, ServerLog } from 'src/libs/supabase/server-logging';
+// import Account from './account';
+// import { getViewer } from 'src/libs/supabase/server-auth';
+// import { redirect } from 'next/navigation';
+// import { readAllActiveSubscriptionPlans, readSubscriptionPlanFromCustomerId } from 'src/app/actions/subscription-plan/subscription-plan-actions';
+// import { SubscriptionPlan } from 'src/types/subscription-plan';
+// import { PolarOrder } from 'src/types/polar-order-types';
+// import { getAllLogsFromEmail, ServerLog } from 'src/libs/supabase/server-logging';
+// import { readCustomerByIdAction } from 'src/app/actions/customer/customer-actions';
+// import { readAllCustomerPayments } from 'src/app/actions/customer/customer-payment-actions';
 
-const Page = async () => {
+// const Page = async () => {
 
-  let clientSubscriptionPlan: SubscriptionPlan | null = null
-  let clientInvoices: PolarOrder[] | null = null
-  let allSubscriptions: SubscriptionPlan[] | null = null;
-  let allTeamMembers: ClientMember[] | null = null;
-  let allLogsFromEmail: ServerLog[] | null = null;
+//   let customerSubscriptionPlan: SubscriptionPlan | null = null
+//   let customerInvoices: PolarOrder[] | null = null
+//   let allSubscriptions: SubscriptionPlan[] | null = null;
+//   let allLogsFromEmail: ServerLog[] | null = null;
 
-  const { client, tenant, admin, clientMember, userData } = await getViewer();
+//   const { customer, tenant, admin, userData } = await getViewer();
 
-  if (!client && !tenant && !admin && !clientMember) {
-    redirect('/auth/login');
-  }
+//   if (!customer && !tenant && !admin) {
+//     redirect('/auth/login');
+//   }
 
-  if (client) {
+//   if (customer) {
 
-    const [
-      { getClientByIdActionSuccess, getClientByIdActionData },
-      { readSubscriptionPlanFromClientIdSuccess, subscriptionPlan, readSubscriptionPlanFromClientIdError },
-      { readClientPaymentsSuccess, readClientPaymentsData, readClientPaymentsError },
-      { readAllActiveSubscriptionPlansSuccess, activeSubscriptionPlansData, readAllActiveSubscriptionPlansError },
-      { readAllClientTeamMembersSuccess, readAllClientTeamMembersError, readAllClientTeamMembersData },
-      clientLogs
-    ] = await Promise.all([
-      readClientByIdAction(client.id),
-      readSubscriptionPlanFromClientId(client.id),
-      readAllClientPayments(client.id),
-      readAllActiveSubscriptionPlans(),
-      readAllClientTeamMembers(client.id),
-      getAllLogsFromEmail(client.email)
-    ]);
+//     const [
+//       { getCustomerByIdActionSuccess, getCustomerByIdActionData },
+//       { readSubscriptionPlanFromCustomerIdSuccess, subscriptionPlan, readSubscriptionPlanFromCustomerIdError },
+//       { readCustomerPaymentsSuccess, readCustomerPaymentsData, readCustomerPaymentsError },
+//       { readAllActiveSubscriptionPlansSuccess, activeSubscriptionPlansData, readAllActiveSubscriptionPlansError },
+//       customerLogs
+//     ] = await Promise.all([
+//       readCustomerByIdAction(customer.id),
+//       readSubscriptionPlanFromCustomerId(customer.id),
+//       readAllCustomerPayments(customer.id),
+//       readAllActiveSubscriptionPlans(),
+//       getAllLogsFromEmail(customer.email)
+//     ]);
 
-    if (clientLogs) {
-      allLogsFromEmail = clientLogs;
-    }
+//     if (customerLogs) {
+//       allLogsFromEmail = customerLogs;
+//     }
 
-    if (readSubscriptionPlanFromClientIdSuccess && subscriptionPlan) {
-      clientSubscriptionPlan = subscriptionPlan;
-    }
+//     if (readSubscriptionPlanFromCustomerIdSuccess && subscriptionPlan) {
+//       customerSubscriptionPlan = subscriptionPlan;
+//     }
 
-    if (readClientPaymentsSuccess && readClientPaymentsData) {
-      clientInvoices = readClientPaymentsData;
-    }
+//     if (readCustomerPaymentsSuccess && readCustomerPaymentsData) {
+//       customerInvoices = readCustomerPaymentsData;
+//     }
 
-    if (readAllActiveSubscriptionPlansSuccess && activeSubscriptionPlansData) {
-      allSubscriptions = activeSubscriptionPlansData;
-    }
+//     if (readAllActiveSubscriptionPlansSuccess && activeSubscriptionPlansData) {
+//       allSubscriptions = activeSubscriptionPlansData;
+//     }
 
-    if (readAllClientTeamMembersSuccess && readAllClientTeamMembersData) {
-      allTeamMembers = readAllClientTeamMembersData;
-    }
-  } else if (clientMember) {
-    redirect('/dashboard');
-  } else if (tenant) {
-    redirect('/dashboard/social/profile');
-  }
+//   } else if (tenant) {
+//     redirect('/dashboard/social/profile');
+//   }
 
-  return <Account
-    client={client!}
-    userData={userData!}
-    clientSubscriptionPlan={clientSubscriptionPlan!}
-    clientInvoices={clientInvoices}
-    subscriptionPlans={allSubscriptions!}
-    allTeamMembers={allTeamMembers!}
-    clientLogs={allLogsFromEmail! || []}
-  />;
-};
+//   return <Account
+//     customer={customer!}
+//     userData={userData!}
+//     customerSubscriptionPlan={customerSubscriptionPlan!}
+//     customerInvoices={customerInvoices}
+//     subscriptionPlans={allSubscriptions!}
+//     customerLogs={allLogsFromEmail! || []}
+//   />;
+// };
 
-export default Page;
+// export default Page;

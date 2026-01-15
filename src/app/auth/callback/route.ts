@@ -2,8 +2,8 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { TABLES } from "src/libs/supabase/tables";
 import { useServerSideSupabaseServiceRoleClient } from "src/libs/supabase/sb-server";
-import { getClientIdFromTenantBuilding } from "src/app/actions/tenant/tenant-actions";
-import { checkClientSubscriptionStatus } from "src/app/actions/subscription-plan/subscription-plan-actions";
+import { getCustomerIdFromTenantBuilding } from "src/app/actions/tenant/tenant-actions";
+import { checkCustomerSubscriptionStatus } from "src/app/actions/subscription-plan/subscription-plan-actions";
 import log from "src/utils/logger";
 
 export async function GET(request: Request) {
@@ -62,14 +62,14 @@ export async function GET(request: Request) {
   }
 
   // Client
-  const { data: clientData, error: clientError } = await fetchByEmail(TABLES.CLIENTS, "id, user_id");
+  const { data: customerData, error: clientError } = await fetchByEmail(TABLES.POLAR_CUSTOMERS, "id, externalId");
   if (clientError && clientError.code !== "PGRST116") {
     log(`Error fetching client by email: ${clientError.message}`, 'error');
     return cleanAndRedirect(clientError.message);
   }
-  if (clientData && typeof clientData === "object" && "user_id" in clientData) {
+  if (customerData && typeof customerData === "object" && "externalId" in customerData) {
     role = "client";
-    userId = (clientData as { user_id: string }).user_id;
+    userId = (customerData as { externalId: string }).externalId;
   }
 
   // Tenant
@@ -85,19 +85,6 @@ export async function GET(request: Request) {
     }
   }
 
-  // Client member
-  if (!role) {
-    const { data: clientMemberRow, error: clientMemberError } = await fetchByEmail(TABLES.CLIENT_MEMBERS, "id, user_id");
-    if (clientMemberError && clientMemberError.code !== "PGRST116") {
-      log(`Error fetching client member by email: ${clientMemberError.message}`, 'error');
-      return cleanAndRedirect(clientMemberError.message);
-    }
-    if (clientMemberRow && typeof clientMemberRow === "object" && "user_id" in clientMemberRow) {
-      role = "clientMember";
-      userId = (clientMemberRow as { user_id: string }).user_id;
-    }
-  }
-
   // No matching role -> delete auth user
   if (!role) {
     await supabase.auth.signOut();
@@ -109,38 +96,22 @@ export async function GET(request: Request) {
   }
 
   if (role === "client") {
-    const clientId = (clientData && typeof clientData === "object" && "id" in clientData) ? (clientData as { id: string }).id : undefined;
-    if (!clientId) {
+    const customerId = (customerData && typeof customerData === "object" && "id" in customerData) ? (customerData as { id: string }).id : undefined;
+    if (!customerId) {
       log(`Client data missing 'id' property`, 'error');
       await supabase.auth.signOut();
       cookieStore.getAll().forEach((c) => cookieStore.delete(c.name));
       return NextResponse.redirect(`${requestUrl.origin}/auth/error?error_code=client_id_missing`);
     }
     const { data: subscription, error: subscriptionError } = await supabase
-      .from(TABLES.CLIENT_SUBSCRIPTION)
+      .from(TABLES.POLAR_SUBSCRIPTIONS)
       .select("*")
-      .eq("customerId", clientId)
+      .eq("customerId", customerId)
       .in("status", ["active", "trialing"])
       .single();
 
     if (subscriptionError || !subscription) {
-      log(`No active subscription found for client ID ${clientId}`, 'info');
-      await supabase.auth.signOut();
-      cookieStore.getAll().forEach((c) => cookieStore.delete(c.name));
-      return NextResponse.redirect(`${requestUrl.origin}/auth/error?error_code=no_subscription`);
-    }
-  }
-
-  if (role === "clientMember") {
-    const { data: subscription, error: subscriptionError } = await supabase
-      .from(TABLES.CLIENT_SUBSCRIPTION)
-      .select("*")
-      .eq("customerId", clientData && typeof clientData === "object" && "id" in clientData ? (clientData as { id: string }).id : '')
-      .in("status", ["active", "trialing"])
-      .single();
-
-    if (subscriptionError || !subscription) {
-      log(`No active subscription found for client member ID ${clientData && typeof clientData === "object" && "id" in clientData ? (clientData as { id: string }).id : ''}`, 'info');
+      log(`No active subscription found for client ID ${customerId}`, 'info');
       await supabase.auth.signOut();
       cookieStore.getAll().forEach((c) => cookieStore.delete(c.name));
       return NextResponse.redirect(`${requestUrl.origin}/auth/error?error_code=no_subscription`);
@@ -150,17 +121,17 @@ export async function GET(request: Request) {
   if (role === "tenant") {
     try {
       // Get client ID from tenant's building
-      const { data: customerId, success: clientIdSuccess, error: clientIdError } = await getClientIdFromTenantBuilding(userId!);
+      const { data: customerId, success: customerIdSuccess, error: customerIdError } = await getCustomerIdFromTenantBuilding(userId!);
 
-      if (!clientIdSuccess || !customerId) {
-        log(`Failed to get client ID from tenant's building: ${clientIdError}`, 'error');
+      if (!customerIdSuccess || !customerId) {
+        log(`Failed to get client ID from tenant's building: ${customerIdError}`, 'error');
         await supabase.auth.signOut();
         cookieStore.getAll().forEach((c) => cookieStore.delete(c.name));
-        return NextResponse.redirect(`${requestUrl.origin}/auth/error?error_code=building_association_failed&error=${encodeURIComponent(clientIdError || 'Failed to get client ID')}`);
+        return NextResponse.redirect(`${requestUrl.origin}/auth/error?error_code=building_association_failed&error=${encodeURIComponent(customerIdError || 'Failed to get client ID')}`);
       }
 
       // Check client subscription status
-      const { success: subscriptionSuccess, isActive, error: subscriptionError } = await checkClientSubscriptionStatus(customerId);
+      const { success: subscriptionSuccess, isActive, error: subscriptionError } = await checkCustomerSubscriptionStatus(customerId);
 
       if (!subscriptionSuccess) {
         log(`Subscription check failed for client ID ${customerId}: ${subscriptionError}`, 'error');

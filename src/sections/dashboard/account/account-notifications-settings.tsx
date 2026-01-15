@@ -12,7 +12,7 @@ import Typography from '@mui/material/Typography';
 import { Client } from 'src/types/client';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { createOrUpdateClientAction } from 'src/app/actions/client/client-actions';
+import { createOrUpdateClientAction } from 'src/app/actions/customer/customer-actions';
 
 interface AccountNotificationsSettingsProps {
   client: Client;

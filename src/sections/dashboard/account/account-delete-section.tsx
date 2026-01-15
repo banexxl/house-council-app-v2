@@ -1,6 +1,6 @@
 import type { FC } from 'react';
 import { useState } from 'react';
-import { deleteClientByIDsAction } from 'src/app/actions/client/client-actions';
+import { deleteClientByIDsAction } from 'src/app/actions/customer/customer-actions';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';

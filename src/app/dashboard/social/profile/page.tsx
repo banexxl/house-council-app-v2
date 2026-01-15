@@ -5,7 +5,7 @@ import { getActivePostsPaginatedByProfileId } from 'src/app/actions/social/post-
 import { ClientProfileWrapper } from './client-wrapper';
 import { getBuildingIdFromTenantId } from 'src/app/actions/tenant/tenant-actions';
 import { getViewer } from 'src/libs/supabase/server-auth';
-import { getClientBuildingsForSocialProfile, type ClientBuildingOption } from 'src/app/actions/client/client-actions';
+import { getClientBuildingsForSocialProfile, type ClientBuildingOption } from 'src/app/actions/customer/customer-actions';
 import type { TenantProfile } from 'src/types/social';
 import log from 'src/utils/logger';
 

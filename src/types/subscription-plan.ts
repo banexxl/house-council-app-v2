@@ -20,22 +20,22 @@ export type SubscriptionPlan = PolarProduct;
 
 export const subscriptionPlanInitialValues: PolarProduct = {
      id: '',
-     created_at: new Date().toISOString(),
-     modified_at: new Date().toISOString(),
-     trial_interval: 'day',
-     trial_interval_count: 0,
+     createdAt: new Date(),
+     modifiedAt: new Date(),
+     trialInterval: 'day',
+     trialIntervalCount: 0,
      name: '',
      description: '',
-     recurring_interval: 'month',
-     recurring_interval_count: 1,
-     is_recurring: true,
-     is_archived: false,
-     organization_id: '',
+     recurringInterval: 'month',
+     recurringIntervalCount: 1,
+     isRecurring: true,
+     isArchived: false,
+     organizationId: '',
      metadata: {},
      prices: [],
      benefits: [],
      medias: [],
-     attached_custom_fields: []
+     attachedCustomFields: []
 };
 
 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

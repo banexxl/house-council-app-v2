@@ -5,10 +5,9 @@ import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { User } from '@supabase/supabase-js';
-import { readClientFromClientMemberID } from '../actions/client/client-members';
 import { TABLES } from 'src/libs/supabase/tables';
-import { checkClientSubscriptionStatus } from '../actions/subscription-plan/subscription-plan-actions';
-import { getClientIdFromTenantBuilding } from '../actions/tenant/tenant-actions';
+import { checkCustomerSubscriptionStatus } from '../actions/subscription-plan/subscription-plan-actions';
+import { getCustomerIdFromTenantBuilding } from '../actions/tenant/tenant-actions';
 
 const AUTH_COOKIES = [
      'sb-sorklznvftjmhkaejkej-auth-token',
@@ -32,7 +31,7 @@ export const magicLinkLogin = async (email: string, ipAddress: string): Promise<
 
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
-     // Check tblSuperAdmins, tblClients, tblTenants for user existence
+     // Check tblSuperAdmins, tblCustomers, tblTenants for user existence
      let userType: 'client' | 'tenant' | 'admin' | null = null;
      let userId: string | null = null;
      let userFound = false;
@@ -50,29 +49,29 @@ export const magicLinkLogin = async (email: string, ipAddress: string): Promise<
           userFound = true;
      }
 
-     // 2. If not found, check tblClients
+     // 2. If not found, check tblCustomers
      if (!userFound) {
-          const { data: client, error: clientError } = await supabase
-               .from(TABLES.CLIENTS)
+          const { data: Customer, error: CustomerError } = await supabase
+               .from(TABLES.POLAR_CUSTOMERS)
                .select('id')
                .eq('email', email)
                .single();
 
-          if (client) {
+          if (Customer) {
                userType = 'client';
-               userId = client.id;
+               userId = Customer.id;
                userFound = true;
-          } else if (clientError && clientError.code !== 'PGRST116') {
+          } else if (CustomerError && CustomerError.code !== 'PGRST116') {
                await logServerAction({
                     user_id: null,
-                    action: 'NLA - Magic link client lookup failed',
+                    action: 'NLA - Magic link Customer lookup failed',
                     payload: { email },
                     status: 'fail',
-                    error: clientError.message,
+                    error: CustomerError.message,
                     duration_ms: 0,
                     type: 'auth',
                });
-               return { error: clientError.message };
+               return { error: CustomerError.message };
           }
      }
 
@@ -104,30 +103,30 @@ export const magicLinkLogin = async (email: string, ipAddress: string): Promise<
                          return { error: 'Account data is invalid. Please contact support.' };
                     }
 
-                    // Get client ID from tenant's building
-                    const { data: customerId, success: clientIdSuccess, error: clientIdError } = await getClientIdFromTenantBuilding(userId);
+                    // Get Customer ID from tenant's building
+                    const { data: customerId, success: CustomerIdSuccess, error: CustomerIdError } = await getCustomerIdFromTenantBuilding(userId);
 
-                    if (!clientIdSuccess || !customerId) {
+                    if (!CustomerIdSuccess || !customerId) {
                          await logServerAction({
                               user_id: userId,
-                              action: 'NLA - Magic link failed - could not get client ID from tenant building',
-                              payload: { email, tenantId: userId, error: clientIdError },
+                              action: 'NLA - Magic link failed - could not get Customer ID from tenant building',
+                              payload: { email, tenantId: userId, error: CustomerIdError },
                               status: 'fail',
-                              error: clientIdError || 'Failed to get client ID',
+                              error: CustomerIdError || 'Failed to get Customer ID',
                               duration_ms: 0,
                               type: 'auth'
                          });
                          return { error: 'Unable to verify your building association. Please contact support.' };
                     }
 
-                    // Check client subscription status
-                    const { success: subscriptionSuccess, isActive, error: subscriptionError } = await checkClientSubscriptionStatus(customerId);
+                    // Check Customer subscription status
+                    const { success: subscriptionSuccess, isActive, error: subscriptionError } = await checkCustomerSubscriptionStatus(customerId);
 
                     if (!subscriptionSuccess) {
                          await logServerAction({
                               user_id: userId,
                               action: 'NLA - Magic link failed - subscription check failed',
-                              payload: { email, tenantId: userId, clientId: customerId, error: subscriptionError },
+                              payload: { email, tenantId: userId, CustomerId: customerId, error: subscriptionError },
                               status: 'fail',
                               error: subscriptionError || 'Subscription check failed',
                               duration_ms: 0,
@@ -140,9 +139,9 @@ export const magicLinkLogin = async (email: string, ipAddress: string): Promise<
                          await logServerAction({
                               user_id: userId,
                               action: 'NLA - Magic link blocked - no active subscription for tenant building',
-                              payload: { email, tenantId: userId, clientId: customerId },
+                              payload: { email, tenantId: userId, CustomerId: customerId },
                               status: 'fail',
-                              error: 'No active subscription found for building client',
+                              error: 'No active subscription found for building Customer',
                               duration_ms: 0,
                               type: 'auth'
                          });
@@ -173,32 +172,6 @@ export const magicLinkLogin = async (email: string, ipAddress: string): Promise<
                     type: 'auth',
                });
                return { error: tenantError.message };
-          }
-     }
-
-     // 4. If not found, check tblClientMembers
-     if (!userFound) {
-          const { data: clientMember, error: clientMemberError } = await supabase
-               .from(TABLES.CLIENT_MEMBERS)
-               .select('id')
-               .eq('email', email)
-               .single();
-
-          if (clientMember) {
-               userType = 'client';
-               userId = clientMember.id;
-               userFound = true;
-          } else if (clientMemberError && clientMemberError.code !== 'PGRST116') {
-               await logServerAction({
-                    user_id: null,
-                    action: 'NLA - Magic link client member lookup failed',
-                    payload: { email },
-                    status: 'fail',
-                    error: clientMemberError.message,
-                    duration_ms: 0,
-                    type: 'auth',
-               });
-               return { error: clientMemberError.message };
           }
      }
 
@@ -292,7 +265,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
      const cookieStore = await cookies();
      const supabase = await useServerSideSupabaseServiceRoleClient();
 
-     let userType: 'client' | 'client_member' | 'tenant' | 'admin' | null = null;
+     let userType: 'client' | 'tenant' | 'admin' | null = null;
      let userId: string | null = null;
      let userFound = false;
 
@@ -318,50 +291,59 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
           });
      }
 
-     // 2. If not found, check tblClients (and enforce status gate)
+     // 2. If not found, check tblCustomers (and enforce status gate)
      if (!userFound) {
-          const { data: clientRow, error: clientError } = await supabase
-               .from(TABLES.CLIENTS)
-               .select('id,client_status')
+          const { data: CustomerRow, error: CustomerError } = await supabase
+               .from(TABLES.POLAR_CUSTOMERS)
+               .select('id,externalId')
                .eq('email', values.email)
                .single();
 
-          if (clientRow) {
-               if (clientRow.client_status !== 'active') {
+          if (CustomerRow) {
+               const { data, error } = await supabase.auth.admin.getUserById(CustomerRow.externalId);
+               if (error) {
                     await logServerAction({
                          user_id: null,
-                         action: 'Signing in blocked - client status not active',
-                         payload: { email: values.email, status: clientRow.client_status },
+                         action: 'Signing in with email and password - failed to get auth user for Customer',
+                         payload: { values, externalId: CustomerRow.externalId },
                          status: 'fail',
-                         error: 'Client status not active',
+                         error: error.message,
                          duration_ms: Date.now() - start,
                          type: 'auth'
                     });
-                    return { success: false, error: { code: 'client_inactive', details: `Client status is non active`, message: 'Your account is not active. Please contact support.' } };
+                    return { success: false, error: { code: error.code!, details: error.message } };
                }
-               userType = 'client';
-               userId = clientRow.id;
-               userFound = true;
+               //If customer external id located in auth.users, check if the iser is banned
+               if (data.user?.user_metadata.banned_until) {
+                    await logServerAction({
+                         user_id: null,
+                         action: 'Signing in with email and password - Customer is banned',
+                         payload: { values, banned_until: data.user.user_metadata.banned_until },
+                         status: 'fail',
+                         error: 'User is banned',
+                         duration_ms: Date.now() - start,
+                         type: 'auth'
+                    });
+                    return { success: false, error: { code: 'user_banned', details: 'User is banned', message: `Your account is banned until ${data.user.user_metadata.banned_until}.` } };
+               }
+
+          } else if (CustomerError && CustomerError.code !== 'PGRST116') {
                await logServerAction({
                     user_id: null,
-                    action: 'Signing in with email and password - active client found',
-                    payload: values.email,
-                    status: 'success',
-                    error: '',
-                    duration_ms: Date.now() - start,
-                    type: 'auth'
-               });
-          } else if (clientError && clientError.code !== 'PGRST116') {
-               await logServerAction({
-                    user_id: null,
-                    action: 'Signing in with email and password client lookup failed',
+                    action: 'Signing in with email and password Customer lookup failed',
                     payload: values,
                     status: 'fail',
-                    error: clientError.message,
+                    error: CustomerError.message,
                     duration_ms: Date.now() - start,
                     type: 'auth'
                });
-               return { success: false, error: { code: clientError.code, details: clientError.details, hint: clientError.hint, message: clientError.message } };
+               return { success: false, error: { code: CustomerError.code, details: CustomerError.details, hint: CustomerError.hint, message: CustomerError.message } };
+          }
+
+          if (CustomerRow) {
+               userType = 'client';
+               userId = CustomerRow.id;
+               userFound = true;
           }
      }
 
@@ -393,30 +375,30 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
                          return { success: false, error: { code: 'invalid_tenant', details: 'Invalid tenant data', message: 'Account data is invalid. Please contact support.' } };
                     }
 
-                    // Get client ID from tenant's building
-                    const { data: customerId, success: clientIdSuccess, error: clientIdError } = await getClientIdFromTenantBuilding(userId);
+                    // Get Customer ID from tenant's building
+                    const { data: customerId, success: CustomerIdSuccess, error: CustomerIdError } = await getCustomerIdFromTenantBuilding(userId);
 
-                    if (!clientIdSuccess || !customerId) {
+                    if (!CustomerIdSuccess || !customerId) {
                          await logServerAction({
                               user_id: userId,
-                              action: 'Signing in failed - could not get client ID from tenant building',
-                              payload: { email: values.email, tenantId: userId, error: clientIdError },
+                              action: 'Signing in failed - could not get Customer ID from tenant building',
+                              payload: { email: values.email, tenantId: userId, error: CustomerIdError },
                               status: 'fail',
-                              error: clientIdError || 'Failed to get client ID',
+                              error: CustomerIdError || 'Failed to get Customer ID',
                               duration_ms: Date.now() - start,
                               type: 'auth'
                          });
-                         return { success: false, error: { code: 'client_lookup_failed', details: 'Could not determine building client', message: 'Unable to verify your building association. Please contact support.' } };
+                         return { success: false, error: { code: 'Customer_lookup_failed', details: 'Could not determine building Customer', message: 'Unable to verify your building association. Please contact support.' } };
                     }
 
-                    // Check client subscription status
-                    const { success: subscriptionSuccess, isActive, error: subscriptionError } = await checkClientSubscriptionStatus(customerId);
+                    // Check Customer subscription status
+                    const { success: subscriptionSuccess, isActive, error: subscriptionError } = await checkCustomerSubscriptionStatus(customerId);
 
                     if (!subscriptionSuccess) {
                          await logServerAction({
                               user_id: userId,
                               action: 'Signing in failed - subscription check failed',
-                              payload: { email: values.email, tenantId: userId, clientId: customerId, error: subscriptionError },
+                              payload: { email: values.email, tenantId: userId, CustomerId: customerId, error: subscriptionError },
                               status: 'fail',
                               error: subscriptionError || 'Subscription check failed',
                               duration_ms: Date.now() - start,
@@ -429,9 +411,9 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
                          await logServerAction({
                               user_id: userId,
                               action: 'Signing in blocked - no active subscription for tenant building',
-                              payload: { email: values.email, tenantId: userId, clientId: customerId },
+                              payload: { email: values.email, tenantId: userId, CustomerId: customerId },
                               status: 'fail',
-                              error: 'No active subscription found for building client',
+                              error: 'No active subscription found for building Customer',
                               duration_ms: Date.now() - start,
                               type: 'auth'
                          });
@@ -474,66 +456,6 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
           }
      }
 
-     // 1. Check tblClientMembers
-     if (!userFound) {
-          const { data: clientMember, error: clientMemberError } = await supabase
-               .from(TABLES.CLIENT_MEMBERS)
-               .select('id')
-               .eq('email', values.email)
-               .single();
-          if (clientMember) {
-
-               const { success, data } = await readClientFromClientMemberID(clientMember?.id!);
-
-               // Check if client has an active subscription
-               const { data: subscriptionData, error: subscriptionError } = await supabase
-                    .from(TABLES.CLIENT_SUBSCRIPTION)
-                    .select('*')
-                    .eq('customerId', data?.id)
-                    .in('status', ['active', 'trialing'])
-                    .single();
-
-               if (subscriptionError || !subscriptionData) {
-                    supabase.auth.signOut();
-                    // Remove cookies
-                    cookieStore.getAll().forEach(cookie => cookieStore.delete(cookie.name));
-                    await logServerAction({
-                         user_id: null,
-                         action: 'Signing in with email and password - no active subscription found',
-                         payload: values,
-                         status: 'fail',
-                         error: subscriptionError ? subscriptionError.message : 'No active subscription found',
-                         duration_ms: Date.now() - start,
-                         type: 'auth'
-                    });
-                    return { success: false, error: { code: 'no_subscription', details: 'No active subscription found', message: 'No active subscription found. Please subscribe to continue.' } };
-               }
-               userType = 'client_member';
-               userId = clientMember.id;
-               userFound = true;
-               await logServerAction({
-                    user_id: null,
-                    action: 'Signing in with email and password - user found in tblClientMembers',
-                    payload: values.email,
-                    status: 'success',
-                    error: '',
-                    duration_ms: Date.now() - start,
-                    type: 'auth'
-               });
-          } else if (clientMemberError && clientMemberError.code !== 'PGRST116') {
-               await logServerAction({
-                    user_id: null,
-                    action: 'Signing in with email and password client member lookup failed',
-                    payload: values,
-                    status: 'fail',
-                    error: clientMemberError.message,
-                    duration_ms: Date.now() - start,
-                    type: 'auth'
-               });
-               return { success: false, error: { code: clientMemberError.code, details: clientMemberError.details, hint: clientMemberError.hint, message: clientMemberError.message } };
-          }
-     }
-
      if (!userFound || !userId) {
           await logServerAction({
                user_id: null,
@@ -548,9 +470,9 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
      }
 
      if (userType === 'client') {
-          // Check if client has an active subscription
+          // Check if Customer has an active subscription
           const { data: subscriptionData, error: subscriptionError } = await supabase
-               .from(TABLES.CLIENT_SUBSCRIPTION)
+               .from(TABLES.POLAR_SUBSCRIPTIONS)
                .select('*')
                .eq('customerId', userId)
                .in('status', ['active', 'trialing'])

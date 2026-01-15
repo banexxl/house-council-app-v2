@@ -22,7 +22,7 @@ import { useTranslation } from 'react-i18next';
 import { tokens } from 'src/locales/tokens';
 import toast from 'react-hot-toast';
 import { GenericTable } from 'src/components/generic-table';
-import { sendPasswordRecoveryEmail } from 'src/app/actions/client/client-actions';
+import { sendPasswordRecoveryEmail } from 'src/app/actions/customer/customer-actions';
 import { SubscriptionPlan } from 'src/types/subscription-plan';
 
 interface AccountTeamSettingsProps {

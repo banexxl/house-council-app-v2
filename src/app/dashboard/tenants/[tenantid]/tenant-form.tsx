@@ -31,7 +31,7 @@ import { createOrUpdateTenantAction } from 'src/app/actions/tenant/tenant-action
 import { Tenant, tenantInitialValues, tenantValidationSchema, tenantTypeOptions } from 'src/types/tenant';
 import dayjs from 'dayjs';
 import { PopupModal } from 'src/components/modal-dialog';
-import { banUser, removeAllMfaFactors, sendMagicLink, sendPasswordRecoveryEmail, unbanUser } from 'src/app/actions/client/client-actions';
+import { banUser, removeAllMfaFactors, sendMagicLink, sendPasswordRecoveryEmail, unbanUser } from 'src/app/actions/customer/customer-actions';
 import { EntityFormHeader } from 'src/components/entity-form-header';
 
 interface TenantFormProps {

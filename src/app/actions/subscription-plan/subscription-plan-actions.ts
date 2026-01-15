@@ -3,9 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { logServerAction } from "src/libs/supabase/server-logging";
 import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
-import { ClientSubscription, PolarRecurringInterval } from "src/types/subscription-plan";
+import { PolarRecurringInterval } from "src/types/subscription-plan";
 import { PolarProduct, PolarProductPrice } from "src/types/polar-product-types";
 import { TABLES } from "src/libs/supabase/tables";
+import { PolarSubscription } from "src/types/polar-subscription-types";
 
 /**
  * Creates a new Polar product in the database.
@@ -413,12 +414,12 @@ export const readAllActiveSubscriptionPlans = async (): Promise<{
 /**
  * Reads a Polar product from a client ID via POLAR_SUBSCRIPTIONS table.
  * @param {string} customerId The client ID.
- * @returns {Promise<{readSubscriptionPlanFromClientIdSuccess: boolean, subscriptionPlan?: PolarProduct, readSubscriptionPlanFromClientIdError?: string}>}
+ * @returns {Promise<{readSubscriptionPlanFromCustomerIdSuccess: boolean, subscriptionPlan?: PolarProduct, readSubscriptionPlanFromCustomerIdError?: string}>}
  */
-export const readSubscriptionPlanFromClientId = async (customerId: string): Promise<{
-     readSubscriptionPlanFromClientIdSuccess: boolean;
+export const readSubscriptionPlanFromCustomerId = async (customerId: string): Promise<{
+     readSubscriptionPlanFromCustomerIdSuccess: boolean;
      subscriptionPlan?: PolarProduct;
-     readSubscriptionPlanFromClientIdError?: string;
+     readSubscriptionPlanFromCustomerIdError?: string;
 }> => {
 
      const supabase = await useServerSideSupabaseAnonClient();
@@ -432,8 +433,8 @@ export const readSubscriptionPlanFromClientId = async (customerId: string): Prom
 
      if (clientSubscriptionError || !clientSubscription || !clientSubscription.id) {
           return {
-               readSubscriptionPlanFromClientIdSuccess: false,
-               readSubscriptionPlanFromClientIdError: clientSubscriptionError?.message || "Client subscription not found."
+               readSubscriptionPlanFromCustomerIdSuccess: false,
+               readSubscriptionPlanFromCustomerIdError: clientSubscriptionError?.message || "Customer subscription not found."
           };
      }
 
@@ -455,13 +456,13 @@ export const readSubscriptionPlanFromClientId = async (customerId: string): Prom
 
      if (productError) {
           return {
-               readSubscriptionPlanFromClientIdSuccess: false,
-               readSubscriptionPlanFromClientIdError: productError.message
+               readSubscriptionPlanFromCustomerIdSuccess: false,
+               readSubscriptionPlanFromCustomerIdError: productError.message
           };
      }
 
      return {
-          readSubscriptionPlanFromClientIdSuccess: true,
+          readSubscriptionPlanFromCustomerIdSuccess: true,
           subscriptionPlan: product
      };
 };
@@ -473,7 +474,7 @@ export const readSubscriptionPlanFromClientId = async (customerId: string): Prom
  * @param {PolarRecurringInterval} renewal_period The renewal period.
  * @returns {Promise<{success: boolean; error?: string}>}
  */
-export const subscribeClientAction = async (
+export const subscribeCustomerAction = async (
      customerId: string,
      productId: string,
      renewal_period: PolarRecurringInterval
@@ -502,7 +503,7 @@ export const subscribeClientAction = async (
      if (error) {
           await logServerAction({
                user_id: userId ?? '',
-               action: "Subscribe Client Action Error",
+               action: "Subscribe Customer Action Error",
                payload: { customerId, productId, error },
                status: "fail",
                error: error.message,
@@ -514,7 +515,7 @@ export const subscribeClientAction = async (
 
      await logServerAction({
           user_id: userId ?? '',
-          action: "Subscribe Client Action Successful",
+          action: "Subscribe Customer Action Successful",
           payload: { customerId, productId },
           status: "success",
           error: "",
@@ -530,7 +531,7 @@ export const subscribeClientAction = async (
  * @param {string} customerId The client ID.
  * @returns {Promise<{success: boolean; error?: string}>}
  */
-export const unsubscribeClientAction = async (
+export const unsubscribeCustomerAction = async (
      customerId: string
 ): Promise<{ success: boolean; error?: string }> => {
      const supabase = await useServerSideSupabaseAnonClient();
@@ -549,7 +550,7 @@ export const unsubscribeClientAction = async (
      if (error) {
           await logServerAction({
                user_id: userId ?? '',
-               action: "Unsubscribe Client Action",
+               action: "Unsubscribe Customer Action",
                payload: { customerId, error },
                status: "fail",
                error: error.message,
@@ -561,7 +562,7 @@ export const unsubscribeClientAction = async (
 
      await logServerAction({
           user_id: userId ?? '',
-          action: "Unsubscribe Client Action",
+          action: "Unsubscribe Customer Action",
           payload: { customerId },
           status: "success",
           error: "",
@@ -575,25 +576,25 @@ export const unsubscribeClientAction = async (
 /**
  * Read a client's subscription details with the associated Polar product.
  * @param {string} customerId The client ID.
- * @returns {Promise<{success: boolean, clientSubscriptionPlanData?: ClientSubscription & { product: PolarProduct } | null, error?: string}>}
+ * @returns {Promise<{success: boolean, clientSubscriptionPlanData?: CustomerSubscription & { product: PolarProduct } | null, error?: string}>}
  */
-export const readClientSubscriptionPlanFromClientId = async (customerId: string): Promise<{
+export const readCustomerSubscriptionPlanFromCustomerId = async (customerId: string): Promise<{
      success: boolean,
-     clientSubscriptionPlanData?: ClientSubscription & { product: PolarProduct } | null,
+     clientSubscriptionPlanData?: PolarSubscription & { product: PolarProduct } | null,
      error?: string
 }> => {
 
      if (!customerId) {
           await logServerAction({
                user_id: null,
-               action: 'Read Client Subscription Plan',
+               action: 'Read Customer Subscription Plan',
                payload: { customerId },
                status: 'fail',
-               error: "Client ID is required",
+               error: "Customer ID is required",
                duration_ms: 0,
                type: 'db'
           });
-          return { success: false, error: "Client ID is required" };
+          return { success: false, error: "Customer ID is required" };
      }
 
      const supabase = await useServerSideSupabaseAnonClient();
@@ -626,7 +627,7 @@ export const readClientSubscriptionPlanFromClientId = async (customerId: string)
      if (clientSubscriptionDataError) {
           await logServerAction({
                user_id: null,
-               action: 'Read Client Subscription Plan',
+               action: 'Read Customer Subscription Plan',
                payload: { customerId },
                status: 'fail',
                error: clientSubscriptionDataError.message,
@@ -639,19 +640,19 @@ export const readClientSubscriptionPlanFromClientId = async (customerId: string)
      if (!clientSubscriptionPlanData) {
           await logServerAction({
                user_id: null,
-               action: 'Read Client Subscription Plan',
+               action: 'Read Customer Subscription Plan',
                payload: { customerId, clientSubscriptionDataError },
                status: 'fail',
-               error: "Client subscription data not found",
+               error: "Customer subscription data not found",
                duration_ms: 0,
                type: 'db'
           });
-          return { success: false, error: "Client subscription data not found", clientSubscriptionPlanData: null };
+          return { success: false, error: "Customer subscription data not found", clientSubscriptionPlanData: null };
      }
 
      await logServerAction({
           user_id: null,
-          action: 'Read Client Subscription Plan',
+          action: 'Read Customer Subscription Plan',
           payload: { customerId },
           status: 'success',
           error: '',
@@ -669,7 +670,7 @@ export const readClientSubscriptionPlanFromClientId = async (customerId: string)
  * @param {object} opts Optional parameters like status, apartment_count, etc.
  * @returns {Promise<{success: boolean; error?: string}>}
  */
-export const updateClientSubscriptionForClient = async (
+export const updateCustomerSubscriptionForCustomer = async (
      customerId: string,
      productId: string,
      opts?: {
@@ -681,7 +682,7 @@ export const updateClientSubscriptionForClient = async (
 ): Promise<{ success: boolean; error?: string }> => {
 
      if (!customerId || !productId) {
-          return { success: false, error: 'Client ID and Product ID are required' };
+          return { success: false, error: 'Customer ID and Product ID are required' };
      }
 
      const supabase = await useServerSideSupabaseAnonClient();
@@ -697,7 +698,7 @@ export const updateClientSubscriptionForClient = async (
      if (readErr && readErr.code !== 'PGRST116') {
           await logServerAction({
                user_id: userId ?? '',
-               action: 'Read Client Subscription (for update)',
+               action: 'Read Customer Subscription (for update)',
                payload: { customerId, readErr },
                status: 'fail',
                error: readErr.message,
@@ -729,7 +730,7 @@ export const updateClientSubscriptionForClient = async (
           if (updErr) {
                await logServerAction({
                     user_id: userId ?? '',
-                    action: 'Update Client Subscription',
+                    action: 'Update Customer Subscription',
                     payload: { customerId, productId, error: updErr.message },
                     status: 'fail',
                     error: updErr.message,
@@ -741,7 +742,7 @@ export const updateClientSubscriptionForClient = async (
 
           await logServerAction({
                user_id: userId ?? '',
-               action: 'Update Client Subscription',
+               action: 'Update Customer Subscription',
                payload: { customerId, productId },
                status: 'success',
                error: '',
@@ -774,7 +775,7 @@ export const updateClientSubscriptionForClient = async (
      if (insErr) {
           await logServerAction({
                user_id: userId ?? '',
-               action: 'Insert Client Subscription',
+               action: 'Insert Customer Subscription',
                payload: { customerId, productId, error: insErr.message },
                status: 'fail',
                error: insErr.message,
@@ -786,7 +787,7 @@ export const updateClientSubscriptionForClient = async (
 
      await logServerAction({
           user_id: userId ?? '',
-          action: 'Insert Client Subscription',
+          action: 'Insert Customer Subscription',
           payload: { customerId, productId },
           status: 'success',
           error: '',
@@ -802,7 +803,7 @@ export const updateClientSubscriptionForClient = async (
  * @param {string} customerId The client ID.
  * @returns {Promise<{success: boolean; isActive?: boolean; error?: string}>}
  */
-export const checkClientSubscriptionStatus = async (
+export const checkCustomerSubscriptionStatus = async (
      customerId: string
 ): Promise<{ success: boolean; isActive?: boolean; error?: string }> => {
 
@@ -816,7 +817,7 @@ export const checkClientSubscriptionStatus = async (
      if (error) {
           await logServerAction({
                user_id: customerId ?? '',
-               action: 'Check Client Subscription Status',
+               action: 'Check Customer Subscription Status',
                payload: { customerId, error },
                status: 'fail',
                error: error.message,
@@ -834,7 +835,7 @@ export const checkClientSubscriptionStatus = async (
  * @param {string} customerId The client ID.
  * @returns {Promise<{success: boolean; error?: string}>}
  */
-export const deleteClientSubscription = async (
+export const deleteCustomerSubscription = async (
      customerId: string
 ): Promise<{ success: boolean; error?: string }> => {
      const supabase = await useServerSideSupabaseAnonClient();
@@ -846,7 +847,7 @@ export const deleteClientSubscription = async (
      if (error) {
           await logServerAction({
                user_id: customerId ?? '',
-               action: 'Delete Client Subscription',
+               action: 'Delete Customer Subscription',
                payload: { customerId, error },
                status: 'fail',
                error: error.message,
@@ -858,7 +859,7 @@ export const deleteClientSubscription = async (
 
      await logServerAction({
           user_id: customerId ?? '',
-          action: 'Delete Client Subscription',
+          action: 'Delete Customer Subscription',
           payload: { customerId },
           status: 'success',
           error: '',

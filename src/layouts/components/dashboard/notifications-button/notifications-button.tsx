@@ -17,7 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { tokens } from 'src/locales/tokens';
 import { markAllNotificationsRead, markNotificationRead } from 'src/app/actions/notification/notification-actions';
 import toast from 'react-hot-toast';
-import { isCustomerUserId } from 'src/app/actions/client/client-actions';
+import { isCustomerUserId } from 'src/app/actions/customer/customer-actions';
 import { TABLES } from 'src/libs/supabase/tables';
 
 const MAX_DISPLAY = 10;
