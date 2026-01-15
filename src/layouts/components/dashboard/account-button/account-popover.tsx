@@ -94,41 +94,29 @@ export const AccountPopover: FC<AccountPopoverProps> = (props) => {
       {...other}
     >
       <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-        {user?.clientMember && (
+        {user?.customer && (
           <SignedAvatar
-            value={user.clientFromMember?.avatar}
+            value={user.customer?.avatarUrl}
             sx={{ width: 40, height: 40 }}
           />
         )}
         <Box sx={{ minWidth: 0 }}>
           <Typography variant="body1">{
-            user?.clientMember ? <strong>{user.clientMember.name}</strong>
+            user?.customer ? <strong>{user.customer.name}</strong>
               : user?.admin ? <strong>{user.admin.first_name}</strong>
-                : user?.client ? <strong>{user.client.name}</strong>
-                  : user?.tenant ? <strong>{user.tenant.first_name + ' ' + user.tenant.last_name}</strong>
-                    : <strong>User</strong>
+                : user?.tenant ? <strong>{user.tenant.first_name + ' ' + user.tenant.last_name}</strong>
+                  : <strong>User</strong>
           }</Typography>
-          <Tooltip title={user?.clientMember?.email || user?.userData?.email || 'No email available'}>
-            <Typography
-              color="text.secondary"
-              variant="body2"
-              noWrap
-              sx={{ maxWidth: 200 }}
-            >
-              {(user?.clientMember?.email || user?.userData?.email || '')?.slice(0, 24)}
-              {(user?.clientMember?.email || user?.userData?.email || '').length > 24 ? '...' : ''}
-            </Typography>
-          </Tooltip>
         </Box>
       </Box>
-      {!user?.clientMember && (
+      {!user?.customer && (
         <>
           <Divider />
           <Box sx={{ p: 1 }}>
             <ListItemButton
               component={RouterLink}
               href={user?.admin ? paths.dashboard.index
-                : user?.client ? paths.dashboard.account
+                : user?.customer ? paths.dashboard.account
                   : user?.tenant ? paths.dashboard.social.profile
                     : paths.dashboard.index
               }

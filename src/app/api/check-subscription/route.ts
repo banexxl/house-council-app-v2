@@ -183,16 +183,16 @@ export async function POST(req: NextRequest) {
                               });
                               // continue processing others; do not abort entire job
                          } else {
-                              const clientEmail = clientData?.email;
+                              const customerEmail = clientData?.email;
 
                               let sendExpirationEmailToClientResponse: any = null;
                               try {
-                                   sendExpirationEmailToClientResponse = await sendTrialEndingEmailToClient({ to: clientEmail, daysRemaining: daysUntilExpiration });
+                                   sendExpirationEmailToClientResponse = await sendTrialEndingEmailToClient({ to: customerEmail, daysRemaining: daysUntilExpiration });
                               } catch (e: any) {
                                    await logServerAction({
                                         user_id: null,
                                         action: 'sendTrialEndingEmailToClient failed',
-                                        payload: { clientId: sub.customerId, subscriptionId: sub.id, clientEmail, daysUntilExpiration },
+                                        payload: { customerId: sub.customerId, subscriptionId: sub.id, customerEmail, daysUntilExpiration },
                                         status: 'fail',
                                         error: e?.message || 'unknown',
                                         duration_ms: 0,
@@ -204,14 +204,14 @@ export async function POST(req: NextRequest) {
                               try {
                                    sendSubscriptionEndingNotificationToSupportResponse = await sendSubscriptionEndingNotificationToSupport({
                                         daysRemaining: daysUntilExpiration,
-                                        clientEmail,
-                                        clientId: sub.customerId,
+                                        customerEmail: customerEmail,
+                                        customerId: sub.customerId,
                                    });
                               } catch (e: any) {
                                    await logServerAction({
                                         user_id: null,
                                         action: 'sendSubscriptionEndingNotificationToSupport failed',
-                                        payload: { clientId: sub.customerId, subscriptionId: sub.id, clientEmail, daysUntilExpiration },
+                                        payload: { customerId: sub.customerId, subscriptionId: sub.id, customerEmail, daysUntilExpiration },
                                         status: 'fail',
                                         error: e?.message || 'unknown',
                                         duration_ms: 0,

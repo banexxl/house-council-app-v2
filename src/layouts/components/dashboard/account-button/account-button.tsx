@@ -27,7 +27,7 @@ export const AccountButton: FC = () => {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const { customer, clientFromMember, tenant, admin, userData } = await getViewer();
+      const { customer, tenant, admin, userData } = await getViewer();
 
       // Tenant view: prefer direct Supabase avatar URL, fall back to initials
       if (tenant) {
@@ -46,24 +46,13 @@ export const AccountButton: FC = () => {
         return;
       }
 
-      if (client) {
+      if (customer) {
         setUser({
           role: 'client',
-          id: client.id,
-          email: client.email ?? userData?.email ?? undefined,
-          avatar: client.avatar,
-          name: client.name,
-        });
-        return;
-      }
-
-      if (clientMember) {
-        setUser({
-          role: 'clientMember',
-          id: clientMember.id,
-          email: clientMember.email ?? userData?.email ?? undefined,
-          avatar: clientFromMember?.avatar,
-          name: clientMember.name,
+          id: customer.id,
+          email: customer.email ?? userData?.email ?? undefined,
+          avatar: customer.avatarUrl,
+          name: customer.name || '',
         });
         return;
       }

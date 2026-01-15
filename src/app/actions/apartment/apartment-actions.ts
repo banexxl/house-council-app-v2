@@ -320,9 +320,9 @@ export async function createOrUpdateApartment(payload: Apartment) {
           // You must know the clientId here.
           // If apartmentPayload has customerId, use it.
           // Otherwise derive clientId from the building.
-          const clientId = building.customerId
+          const customerId = building.customerId
 
-          const sync = await syncPolarSeatsForClient({ clientId });
+          const sync = await syncPolarSeatsForClient({ customerId });
 
           if (!sync.success) {
                // rollback the apartment creation
@@ -392,18 +392,18 @@ export async function deleteApartment(id: string) {
           return { success: false, error: "Failed to resolve client for apartment." };
      }
 
-     const clientId = (building as any)?.customerId as string | undefined;
-     if (!clientId) {
+     const customerId = (building as any)?.customerId as string | undefined;
+     if (!customerId) {
           await logServerAction({
-               action: "deleteApartment - clientId missing",
+               action: "deleteApartment - customerId missing",
                duration_ms: Date.now() - t0,
-               error: "clientId is null",
+               error: "customerId is null",
                payload: { id, buildingId },
                status: "fail",
                type: "db",
                user_id: null,
           });
-          return { success: false, error: "Client could not be resolved for this apartment." };
+          return { success: false, error: "Customer could not be resolved for this apartment." };
      }
 
      // 1) fetch image refs
@@ -478,14 +478,14 @@ export async function deleteApartment(id: string) {
      }
 
      // 5) ✅ sync Polar seats AFTER delete
-     const sync = await syncPolarSeatsForClient({ clientId });
+     const sync = await syncPolarSeatsForClient({ customerId });
 
      if (!sync.success) {
           await logServerAction({
                action: "deleteApartment - polar seat sync failed",
                duration_ms: Date.now() - t0,
                error: sync.error ?? "Unknown Polar sync error",
-               payload: { id, clientId },
+               payload: { id, customerId },
                status: "fail",
                type: "api",
                user_id: null,
@@ -503,7 +503,7 @@ export async function deleteApartment(id: string) {
           action: "deleteApartment",
           duration_ms: Date.now() - t0,
           error: "",
-          payload: { id, clientId, newQuantity: sync.usage },
+          payload: { id, customerId, newQuantity: sync.usage },
           status: "success",
           type: "db",
           user_id: null,

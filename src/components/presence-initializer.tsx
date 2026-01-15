@@ -2,16 +2,15 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
-import type { Client, ClientMember } from 'src/types/client';
 import type { Tenant } from 'src/types/tenant';
 import type { Admin } from 'src/types/admin';
 import { supabaseBrowserClient } from 'src/libs/supabase/sb-client';
 import { subscribeToBuildingPresence, unsubscribeFromBuildingPresence, PresenceUser } from 'src/realtime/user-presence';
 import log from 'src/utils/logger';
+import { PolarCustomer } from 'src/types/polar-customer-types';
 
 type ViewerData = {
-     client: Client | null;
-     clientMember: ClientMember | null;
+     customer: PolarCustomer | null;
      tenant: Tenant | null;
      admin: Admin | null;
      userData: User | null;
@@ -102,11 +101,8 @@ export const PresenceInitializer = () => {
                          last_name: viewer.tenant.last_name,
                          apartment_number: apartment ? String((apartment as any)?.apartment_number || '') : undefined,
                     };
-               } else if (viewer.client) {
-                    log('[PresenceInitializer] Client user detected, skipping automatic presence setup', 'info');
-                    return;
-               } else if (viewer.clientMember) {
-                    log('[PresenceInitializer] Client member detected, skipping automatic presence setup', 'info');
+               } else if (viewer.customer) {
+                    log('[PresenceInitializer] Customer user detected, skipping automatic presence setup', 'info');
                     return;
                }
 
@@ -141,7 +137,7 @@ export const PresenceInitializer = () => {
           return () => {
                mounted = false;
           };
-     }, [viewer?.userData?.id, viewer?.tenant?.id, viewer?.client?.id, viewer?.clientMember?.id]);
+     }, [viewer?.userData?.id, viewer?.tenant?.id, viewer?.customer?.id]);
 
      // This component doesn't render anything
      return null;
