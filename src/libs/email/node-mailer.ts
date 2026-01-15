@@ -10,7 +10,7 @@ import { buildSuccessfulRegistrationEmail, buildClientContactMessageEmail } from
 import { buildNotificationGenericHtml } from './messages/notification-generic';
 import { buildAccessRequestClientEmail } from './messages/access-request-client';
 import { buildAccessDeniedEmail, buildAccessRequestApprovedEmail } from './messages/access-request-approved';
-import { readClientSubscriptionPlanFromClientId } from 'src/app/actions/subscription-plan/subscription-plan-actions';
+import { getProductFromCustomerSubscription, readCustomerSubscriptionPlanFromCustomerId } from 'src/app/actions/subscription-plan/subscription-plan-actions';
 
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_SMTP_HOST!,
@@ -27,8 +27,8 @@ const transporter = nodemailer.createTransport({
 
 type SendEndingSubscriptionEmail = {
   daysRemaining: number,
-  clientEmail: string,
-  clientId: string
+  customerEmail: string,
+  customerId: string
 }
 
 interface SendTrialEndingEmail {
@@ -79,22 +79,25 @@ export const sendTrialEndingEmailToClient = async ({ to, daysRemaining, locale =
   return sendEmailToClientResponse
 }
 
-export const sendSubscriptionEndingNotificationToSupport = async ({ daysRemaining, clientEmail, clientId }: SendEndingSubscriptionEmail): Promise<SentMessageInfo> => {
+export const sendSubscriptionEndingNotificationToSupport =
+  async ({ daysRemaining, customerEmail, customerId }:
+    SendEndingSubscriptionEmail): Promise<SentMessageInfo> => {
 
-  const { clientSubscriptionPlanData } = await readClientSubscriptionPlanFromClientId(clientId)
+    const customersProduct = await getProductFromCustomerSubscription(customerId)
+    const { customerSubscriptionPlanData } = await readCustomerSubscriptionPlanFromCustomerId(customerId)
 
-  const { subject, injectedHtml } = await buildSubscriptionEndingSupportEmail('rs', clientSubscriptionPlanData?.subscription_plan.name, clientEmail, daysRemaining);
-  const htmlContent = buildNotificationGenericHtml(injectedHtml, subject);
+    const { subject, injectedHtml } = await buildSubscriptionEndingSupportEmail('rs', customersProduct?.name, customerEmail, daysRemaining);
+    const htmlContent = buildNotificationGenericHtml(injectedHtml, subject);
 
-  const sendEmailToSupport = await transporter.sendMail({
-    from: 'Nest Link <support@nest-link.app>',
-    to: 'support@nest-link.app',
-    subject,
-    html: htmlContent
-  });
+    const sendEmailToSupport = await transporter.sendMail({
+      from: 'Nest Link <support@nest-link.app>',
+      to: 'support@nest-link.app',
+      subject,
+      html: htmlContent
+    });
 
-  return sendEmailToSupport
-}
+    return sendEmailToSupport
+  }
 
 export const sendSuccessfullClientRegistrationToSupport = async (clientEmail: string, contactPerson: string, locale: string = 'rs'): Promise<SentMessageInfo> => {
   const { subject, injectedHtml } = await buildSuccessfulRegistrationEmail(locale, clientEmail, contactPerson);

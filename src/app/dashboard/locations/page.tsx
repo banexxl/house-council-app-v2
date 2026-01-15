@@ -10,7 +10,7 @@ import { BuildingLocation } from 'src/types/location';
 const Page = async () => {
 
   const { customer, tenant, admin } = await getViewer();
-  if (!client && !clientMember && !tenant && !admin) {
+  if (!customer && !tenant && !admin) {
     redirect('/auth/login');
   }
 
@@ -18,12 +18,9 @@ const Page = async () => {
   if (admin) {
     const { success, data } = await getAllLocations();
     locations = success && data ? data : [];
-  } else if (client) {
-    const { data } = await getAllAddedLocationsByClientId(client.id);
+  } else if (customer) {
+    const { data } = await getAllAddedLocationsByClientId(customer.id);
     locations = data ?? [];
-  } else if (clientMember) {
-    const { success, data } = await getAllAddedLocationsByClientId(clientMember.id);
-    locations = success && data ? data : [];
   } else if (tenant) {
     locations = [];
     redirect('/dashboard/social/profile');

@@ -136,7 +136,7 @@ export async function getAllApartmentsFromCustomersBuildings(customerId: string)
      return { success: true, data: { apartments: apartmentsWithImages, building_images: [] } };
 }
 
-export async function getApartmentsFromClientsBuilding(clientid: string, buildingid: string): Promise<{ success: boolean; error?: string; data?: Apartment[] }> {
+export async function getApartmentsFromCustomerBuilding(customerid: string, buildingid: string): Promise<{ success: boolean; error?: string; data?: Apartment[] }> {
      const t0 = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
 
@@ -156,11 +156,11 @@ export async function getApartmentsFromClientsBuilding(clientid: string, buildin
           .eq("building_id", buildingid);
 
      if (error) {
-          await logServerAction({ action: "getApartmentsFromClientsBuilding", duration_ms: Date.now() - t0, error: error.message, payload: { clientid, buildingid }, status: "fail", type: "db", user_id: clientid, id: buildingid });
+          await logServerAction({ action: "getApartmentsFromCustomersBuilding", duration_ms: Date.now() - t0, error: error.message, payload: { customerid, buildingid }, status: "fail", type: "db", user_id: customerid, id: buildingid });
           return { success: false, error: error.message };
      }
 
-     await logServerAction({ action: "getApartmentsFromClientsBuilding", duration_ms: Date.now() - t0, error: "", payload: { clientid, buildingid }, status: "success", type: "db", user_id: clientid, id: buildingid });
+     await logServerAction({ action: "getApartmentsFromCustomersBuilding", duration_ms: Date.now() - t0, error: "", payload: { customerid, buildingid }, status: "success", type: "db", user_id: customerid, id: buildingid });
      return { success: true, data };
 }
 

@@ -9,9 +9,9 @@ import { TABLES } from 'src/libs/supabase/tables';
 // Server component: lists published announcements for the tenant's building(s)
 export default async function TenantAnnouncementsPage() {
 
-     const { admin, tenant, client, clientMember } = await getViewer();
+     const { admin, tenant, customer } = await getViewer();
 
-     if (!admin && !client && !tenant && !clientMember) {
+     if (!admin && !customer && !tenant) {
           redirect('/auth/login');
      }
 

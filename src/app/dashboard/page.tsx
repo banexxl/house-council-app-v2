@@ -7,15 +7,15 @@ import { Suspense } from "react";
 import { DefaultPageSkeleton } from "src/sections/dashboard/skeletons/default-page-skeleton";
 import { listIncidentReports, listIncidentReportsForClient } from "src/app/actions/incident/incident-report-actions";
 import { listDashboardEvents } from "src/app/actions/calendar/calendar-actions";
-import { readAllClientPayments } from "src/app/actions/customer/customer-payment-actions";
+import { readAllCustomerPayments } from "src/app/actions/customer/customer-payment-actions";
 import type { PolarOrder } from "src/types/polar-order-types";
 import { getBuildingIDsFromUserId } from "src/app/actions/building/building-actions";
 import type { IncidentReport } from "src/types/incident-report";
 
 const Page = async () => {
 
-  const { client, tenant, admin, clientMember, userData } = await getViewer();
-  if (!client && !tenant && !admin && !clientMember) {
+  const { customer, tenant, admin, userData } = await getViewer();
+  if (!customer && !tenant && !admin) {
     try {
     } catch (err) {
       console.warn('Logout failed, redirecting anyway', err);
@@ -23,7 +23,7 @@ const Page = async () => {
     redirect('/auth/login');
   }
 
-  const clientId = client?.id || clientMember?.customerId || null;
+  const customerId = customer?.id ?? null;
   let tenantBuildingIds: string[] = [];
   if (tenant && userData?.id) {
     const buildingRes = await getBuildingIDsFromUserId(userData.id);
@@ -33,8 +33,8 @@ const Page = async () => {
   }
 
   let incidents: IncidentReport[] = [];
-  if (clientId) {
-    const incidentsRes = await listIncidentReportsForClient(clientId);
+  if (customerId) {
+    const incidentsRes = await listIncidentReportsForClient(customerId);
     incidents = incidentsRes.success && Array.isArray(incidentsRes.data) ? incidentsRes.data : [];
   } else if (tenantBuildingIds.length) {
     const incidentsRes = await listIncidentReports({ buildingIds: tenantBuildingIds });
@@ -44,11 +44,11 @@ const Page = async () => {
   const eventsRes = await listDashboardEvents({ upcomingLimit: 5, pastLimit: 5, upcomingDaysWindow: 10, buildingIds: tenantBuildingIds });
   const events = eventsRes.success ? eventsRes.data : { upcoming: [], past: [] };
   let invoices: PolarOrder[] = [];
-  const showTransactions = !!clientId;
-  if (clientId) {
-    const paymentsRes = await readAllClientPayments(clientId);
-    if (paymentsRes.readClientPaymentsSuccess && Array.isArray(paymentsRes.readClientPaymentsData)) {
-      invoices = paymentsRes.readClientPaymentsData as PolarOrder[];
+  const showTransactions = !!customerId;
+  if (customerId) {
+    const paymentsRes = await readAllCustomerPayments(customerId);
+    if (paymentsRes.readCustomerPaymentsSuccess && Array.isArray(paymentsRes.readCustomerPaymentsData)) {
+      invoices = paymentsRes.readCustomerPaymentsData as PolarOrder[];
     }
   }
 

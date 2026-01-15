@@ -11,13 +11,13 @@ import { useTranslation } from 'react-i18next';
 
 import type { TenantPostWithAuthor, TenantProfile, EmojiReaction } from 'src/types/social';
 import { SocialPostCard } from 'src/sections/dashboard/social/social-post-card';
-import { Client, ClientMember } from 'src/types/client';
 import { tokens } from 'src/locales/tokens';
+import { PolarCustomer } from 'src/types/polar-customer-types';
 
 interface ClientFeedWrapperProps {
   posts: TenantPostWithAuthor[];
   profile: TenantProfile | null;
-  client?: Client | ClientMember | null;
+  customer: PolarCustomer | null;
   buildingId: string;
   totalCount: number;
   pageSize: number;
@@ -28,7 +28,7 @@ type FeedResponse = {
   total?: number;
 };
 
-export const ClientFeedWrapper = ({ posts, profile, client, buildingId, totalCount, pageSize }: ClientFeedWrapperProps) => {
+export const ClientFeedWrapper = ({ posts, profile, customer, buildingId, totalCount, pageSize }: ClientFeedWrapperProps) => {
   const { t } = useTranslation();
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const [feedPosts, setFeedPosts] = useState<TenantPostWithAuthor[]>(posts);
@@ -185,7 +185,7 @@ export const ClientFeedWrapper = ({ posts, profile, client, buildingId, totalCou
           }}
         />
         {
-          !client && (
+          !customer && (
             <Box sx={{}}>
               <a href="/dashboard/social/profile" style={{ textDecoration: 'none' }}>
                 <Box

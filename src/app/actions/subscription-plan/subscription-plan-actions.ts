@@ -580,7 +580,7 @@ export const unsubscribeCustomerAction = async (
  */
 export const readCustomerSubscriptionPlanFromCustomerId = async (customerId: string): Promise<{
      success: boolean,
-     clientSubscriptionPlanData?: PolarSubscription & { product: PolarProduct } | null,
+     customerSubscriptionPlanData?: PolarSubscription & { product: PolarProduct } | null,
      error?: string
 }> => {
 
@@ -599,18 +599,18 @@ export const readCustomerSubscriptionPlanFromCustomerId = async (customerId: str
 
      const supabase = await useServerSideSupabaseAnonClient();
 
-     const { data: clientSubscriptionPlanData, error: clientSubscriptionDataError } = await supabase
+     const { data: customerSubscriptionPlanData, error: customerSubscriptionPlanDataError } = await supabase
           .from(TABLES.POLAR_SUBSCRIPTIONS)
           .select('*')
           .eq("customerId", customerId)
           .single();
 
-     if (!clientSubscriptionDataError && clientSubscriptionPlanData && clientSubscriptionPlanData.product_id) {
+     if (!customerSubscriptionPlanDataError && customerSubscriptionPlanData && customerSubscriptionPlanData.product_id) {
           // Fetch the product separately
           const { data: product } = await supabase
                .from(TABLES.POLAR_PRODUCTS)
                .select('*')
-               .eq('id', clientSubscriptionPlanData.product_id)
+               .eq('id', customerSubscriptionPlanData.product_id)
                .single();
 
           if (product) {
@@ -620,34 +620,34 @@ export const readCustomerSubscriptionPlanFromCustomerId = async (customerId: str
                ]);
                product.prices = pricesResult.data || [];
                product.benefits = benefitsResult.data || [];
-               (clientSubscriptionPlanData as any).product = product;
+               (customerSubscriptionPlanData as any).product = product;
           }
      }
 
-     if (clientSubscriptionDataError) {
+     if (customerSubscriptionPlanDataError) {
           await logServerAction({
                user_id: null,
                action: 'Read Customer Subscription Plan',
                payload: { customerId },
                status: 'fail',
-               error: clientSubscriptionDataError.message,
+               error: customerSubscriptionPlanDataError.message,
                duration_ms: 0,
                type: 'db'
           });
-          return { success: false, error: clientSubscriptionDataError.message, clientSubscriptionPlanData: null };
+          return { success: false, error: customerSubscriptionPlanDataError.message, customerSubscriptionPlanData: null };
      }
 
-     if (!clientSubscriptionPlanData) {
+     if (!customerSubscriptionPlanData) {
           await logServerAction({
                user_id: null,
                action: 'Read Customer Subscription Plan',
-               payload: { customerId, clientSubscriptionDataError },
+               payload: { customerId, customerSubscriptionPlanDataError },
                status: 'fail',
                error: "Customer subscription data not found",
                duration_ms: 0,
                type: 'db'
           });
-          return { success: false, error: "Customer subscription data not found", clientSubscriptionPlanData: null };
+          return { success: false, error: "Customer subscription data not found", customerSubscriptionPlanData: null };
      }
 
      await logServerAction({
@@ -660,7 +660,7 @@ export const readCustomerSubscriptionPlanFromCustomerId = async (customerId: str
           type: 'db'
      });
 
-     return { success: true, clientSubscriptionPlanData };
+     return { success: true, customerSubscriptionPlanData };
 };
 
 /**
@@ -869,3 +869,29 @@ export const deleteCustomerSubscription = async (
      revalidatePath(`/dashboard/clients/${customerId}`);
      return { success: true };
 };
+
+export const getProductFromCustomerSubscription = async (customerId: string): Promise<PolarProduct | null> => {
+
+     const supabase = await useServerSideSupabaseAnonClient();
+
+     const { data: subscription, error: subscriptionError } = await supabase
+          .from(TABLES.POLAR_SUBSCRIPTIONS)
+          .select('productId')
+          .eq('customerId', customerId)
+          .single();
+     if (subscriptionError || !subscription || !subscription.productId) {
+          return null;
+     }
+
+     const { data: product, error: productError } = await supabase
+          .from(TABLES.POLAR_PRODUCTS)
+          .select('*')
+          .eq('id', subscription.productId)
+          .single();
+
+     if (productError || !product) {
+          return null;
+     }
+
+     return product;
+}

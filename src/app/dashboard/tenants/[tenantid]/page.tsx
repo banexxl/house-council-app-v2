@@ -13,8 +13,8 @@ export default async function Page({ params }: {
 }) {
 
   const { customer, tenant, admin } = await getViewer();
-  const customerId = client ? client.id : clientMember ? clientMember.customerId : null;
-  if (!client && !clientMember && !tenant && !admin) {
+  const customerId = customer?.id ?? null;
+  if (!customer && !tenant && !admin) {
     redirect('/auth/login');
   }
 

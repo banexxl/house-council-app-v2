@@ -1,9 +1,9 @@
 import { getIncidentReportById } from 'src/app/actions/incident/incident-report-actions';
 import {
   getAllBuildingsWithApartmentsForClient,
-  getAllTenantsFromClientsBuildings,
+  getAllTenantsFromCustomersBuildings,
   getBuildingIdFromTenantId,
-  getClientIdFromTenantBuilding,
+  getCustomerIdFromTenantBuilding,
 } from 'src/app/actions/tenant/tenant-actions';
 import { getBuildingIDsFromUserId } from 'src/app/actions/building/building-actions';
 import { getCurrentUserProfile, getTenantProfileByTenantId } from 'src/app/actions/social/profile-actions';
@@ -23,21 +23,12 @@ const resolveReporterName = async (id: string | null | undefined): Promise<strin
     const supabase = await useServerSideSupabaseAnonClient();
 
     const { data: clientRow } = await supabase
-      .from(TABLES.CLIENTS)
-      .select('contact_person, email, id, user_id')
-      .or(`id.eq.${id},user_id.eq.${id}`)
+      .from(TABLES.POLAR_CUSTOMERS)
+      .select('name, email, id, externalId')
+      .or(`id.eq.${id},externalId.eq.${id}`)
       .maybeSingle();
     if (clientRow) {
-      return (clientRow as any).contact_person || (clientRow as any).email || (clientRow as any).id || '';
-    }
-
-    const { data: memberRow } = await supabase
-      .from(TABLES.CLIENT_MEMBERS)
-      .select('name, email, id, user_id')
-      .or(`id.eq.${id},user_id.eq.${id}`)
-      .maybeSingle();
-    if (memberRow) {
-      return (memberRow as any).name || (memberRow as any).email || (memberRow as any).id || '';
+      return (clientRow as any).name || (clientRow as any).email || (clientRow as any).id || '';
     }
 
     const { data: tenantRow } = await supabase
@@ -64,7 +55,7 @@ const Page = async ({ params }: PageProps) => {
   const incidentId = resolvedParams?.requestId;
 
   const { success: found, data: incident } = incidentId ? await getIncidentReportById(incidentId) : { success: false, data: null };
-  const { tenant, client, clientMember, userData } = await getViewer();
+  const { tenant, customer, userData } = await getViewer();
   log(`Loaded incident report page for incidentId: ${incidentId}, found: ${found}, incident: ${incident ? JSON.stringify(incident) : 'null'}`);
   let defaultBuildingId: string | undefined = incident?.building_id ?? undefined;
   let defaultClientId: string | undefined = incident?.customerId ?? undefined;
@@ -81,24 +72,21 @@ const Page = async ({ params }: PageProps) => {
   log(`Current profile: ${currentProfile ? JSON.stringify(currentProfile) : profileRes.error}`);
 
   if (tenant?.id && !defaultBuildingId) {
-    const [buildingRes, clientRes] = await Promise.all([
+    const [buildingRes, customerRes] = await Promise.all([
       getBuildingIdFromTenantId(tenant.id),
-      getClientIdFromTenantBuilding(tenant.id),
+      getCustomerIdFromTenantBuilding(tenant.id),
     ]);
 
     if (buildingRes.success && buildingRes.data) {
       defaultBuildingId = buildingRes.data;
     }
-    if (clientRes.success && clientRes.data) {
-      defaultClientId = clientRes.data;
+    if (customerRes.success && customerRes.data) {
+      defaultClientId = customerRes.data;
     }
   }
 
-  if (!defaultClientId && client?.id) {
-    defaultClientId = client.id;
-  }
-  if (!defaultClientId && clientMember?.customerId) {
-    defaultClientId = clientMember.customerId;
+  if (!defaultClientId && customer?.id) {
+    defaultClientId = customer.id;
   }
 
   if (!defaultBuildingId && userData?.id) {
@@ -111,7 +99,7 @@ const Page = async ({ params }: PageProps) => {
   if (defaultClientId) {
     const [buildingsRes, tenantsRes] = await Promise.all([
       getAllBuildingsWithApartmentsForClient(defaultClientId),
-      getAllTenantsFromClientsBuildings(defaultClientId),
+      getAllTenantsFromCustomersBuildings(defaultClientId),
     ]);
     if (buildingsRes.success && buildingsRes.data?.length) {
       buildingOptions = buildingsRes.data.map((b) => ({
@@ -140,17 +128,12 @@ const Page = async ({ params }: PageProps) => {
     defaultAssigneeProfile = defaultAssigneeProfile || currentProfile.id;
     defaultReporterName = defaultReporterName || displayName;
     assigneeOptions.push({ id: currentProfile.id, label: displayName, buildingId: defaultBuildingId });
-  } else if (client) {
-    const idValue = client.user_id || client.id;
+  } else if (customer) {
+    const idValue = customer.externalId || customer.id;
     defaultAssigneeProfile = defaultAssigneeProfile || idValue;
-    defaultReporterName = defaultReporterName || client.contact_person || client.id;
+    defaultReporterName = defaultReporterName || customer.name || customer.id;
     defaultReporterId = defaultReporterId || idValue;
-    assigneeOptions.push({ id: idValue, label: client.contact_person || client.id });
-  } else if (clientMember) {
-    defaultAssigneeProfile = defaultAssigneeProfile || clientMember.id;
-    defaultReporterName = defaultReporterName || clientMember.name || clientMember.email || clientMember.id;
-    defaultReporterId = defaultReporterId || clientMember.id;
-    assigneeOptions.push({ id: clientMember.id, label: clientMember.name || clientMember.email || clientMember.id });
+    assigneeOptions.push({ id: idValue, label: customer.name || customer.id });
   } else if (tenant) {
     const label = `${tenant.first_name ?? ''} ${tenant.last_name ?? ''}`.trim() || tenant.id;
     defaultAssigneeProfile = defaultAssigneeProfile || tenant.id;

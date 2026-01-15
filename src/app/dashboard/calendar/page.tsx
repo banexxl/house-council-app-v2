@@ -14,9 +14,9 @@ import { getBuildingIdFromTenantId } from 'src/app/actions/tenant/tenant-actions
 
 const Page = async () => {
   const { customer, tenant, admin } = await getViewer();
-  const clientId = client ? client.id : clientMember ? clientMember.customerId : null;
+  const clientId = customer ? customer.id : null;
   let events: CalendarEvent[] = [];
-  if (client || clientMember || admin) {
+  if (customer || admin) {
     const result = await getCalendarEvents();
     events = result.success ? result.data : [];
   } else if (tenant) {

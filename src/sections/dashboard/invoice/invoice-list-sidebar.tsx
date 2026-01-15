@@ -1,354 +1,354 @@
-import type { ChangeEvent, FC, FormEvent } from 'react';
-import { useCallback, useRef } from 'react';
-import dayjs from 'dayjs';
-import PropTypes from 'prop-types';
-import SearchIcon from '@mui/icons-material/Search';
-import XIcon from '@untitled-ui/icons-react/build/esm/X';
-import Box from '@mui/material/Box';
-import Checkbox from '@mui/material/Checkbox';
-import Drawer from '@mui/material/Drawer';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormGroup from '@mui/material/FormGroup';
-import FormLabel from '@mui/material/FormLabel';
-import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
-import OutlinedInput from '@mui/material/OutlinedInput';
-import Stack from '@mui/material/Stack';
-import SvgIcon from '@mui/material/SvgIcon';
-import Switch from '@mui/material/Switch';
-import Typography from '@mui/material/Typography';
-import useMediaQuery from '@mui/material/useMediaQuery';
-import type { Theme } from '@mui/material/styles/createTheme';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+// import type { ChangeEvent, FC, FormEvent } from 'react';
+// import { useCallback, useRef } from 'react';
+// import dayjs from 'dayjs';
+// import PropTypes from 'prop-types';
+// import SearchIcon from '@mui/icons-material/Search';
+// import XIcon from '@untitled-ui/icons-react/build/esm/X';
+// import Box from '@mui/material/Box';
+// import Checkbox from '@mui/material/Checkbox';
+// import Drawer from '@mui/material/Drawer';
+// import FormControlLabel from '@mui/material/FormControlLabel';
+// import FormGroup from '@mui/material/FormGroup';
+// import FormLabel from '@mui/material/FormLabel';
+// import IconButton from '@mui/material/IconButton';
+// import InputAdornment from '@mui/material/InputAdornment';
+// import OutlinedInput from '@mui/material/OutlinedInput';
+// import Stack from '@mui/material/Stack';
+// import SvgIcon from '@mui/material/SvgIcon';
+// import Switch from '@mui/material/Switch';
+// import Typography from '@mui/material/Typography';
+// import useMediaQuery from '@mui/material/useMediaQuery';
+// import type { Theme } from '@mui/material/styles/createTheme';
+// import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
-import { Scrollbar } from 'src/components/scrollbar';
-import type { InvoiceStatus } from 'src/types/polar-order-types';
+// import { Scrollbar } from 'src/components/scrollbar';
+// import type { InvoiceStatus } from 'src/types/polar-order-types';
 
-export interface Filters {
-  query?: string;
-  startDate?: Date;
-  endDate?: Date;
-  clients?: string[];
-  status?: InvoiceStatus;
-}
+// export interface Filters {
+//   query?: string;
+//   startDate?: Date;
+//   endDate?: Date;
+//   clients?: string[];
+//   status?: InvoiceStatus;
+// }
 
-interface InvoiceListSidebarProps {
-  container?: HTMLDivElement | null;
-  clients?: { id: string; name: string }[];
-  filters?: Filters;
-  group?: boolean;
-  onClose?: () => void;
-  onFiltersChange?: (filters: Filters) => void;
-  onGroupChange?: (event: ChangeEvent<HTMLInputElement>) => void;
-  open?: boolean;
-}
+// interface InvoiceListSidebarProps {
+//   container?: HTMLDivElement | null;
+//   clients?: { id: string; name: string }[];
+//   filters?: Filters;
+//   group?: boolean;
+//   onClose?: () => void;
+//   onFiltersChange?: (filters: Filters) => void;
+//   onGroupChange?: (event: ChangeEvent<HTMLInputElement>) => void;
+//   open?: boolean;
+// }
 
-export const InvoiceListSidebar: FC<InvoiceListSidebarProps> = (props) => {
-  const {
-    container,
-    clients = [],
-    filters = {},
-    group,
-    onClose,
-    onFiltersChange,
-    onGroupChange,
-    open,
-    ...other
-  } = props;
-  const queryRef = useRef<HTMLInputElement | null>(null);
-  const lgUp = useMediaQuery((theme: Theme) => theme.breakpoints.up('lg'));
+// export const InvoiceListSidebar: FC<InvoiceListSidebarProps> = (props) => {
+//   const {
+//     container,
+//     clients = [],
+//     filters = {},
+//     group,
+//     onClose,
+//     onFiltersChange,
+//     onGroupChange,
+//     open,
+//     ...other
+//   } = props;
+//   const queryRef = useRef<HTMLInputElement | null>(null);
+//   const lgUp = useMediaQuery((theme: Theme) => theme.breakpoints.up('lg'));
 
-  const handleQueryChange = useCallback(
-    (event: FormEvent<HTMLFormElement>): void => {
-      event.preventDefault();
-      onFiltersChange?.({
-        ...filters,
-        query: queryRef.current?.value || '',
-      });
-    },
-    [filters, onFiltersChange]
-  );
+//   const handleQueryChange = useCallback(
+//     (event: FormEvent<HTMLFormElement>): void => {
+//       event.preventDefault();
+//       onFiltersChange?.({
+//         ...filters,
+//         query: queryRef.current?.value || '',
+//       });
+//     },
+//     [filters, onFiltersChange]
+//   );
 
-  const handleStartDateChange = useCallback(
-    (value: any): void => {
-      const date: Date | null = value
-        ? value instanceof Date
-          ? value
-          : typeof value?.toDate === 'function'
-            ? value.toDate()
-            : null
-        : null;
+//   const handleStartDateChange = useCallback(
+//     (value: any): void => {
+//       const date: Date | null = value
+//         ? value instanceof Date
+//           ? value
+//           : typeof value?.toDate === 'function'
+//             ? value.toDate()
+//             : null
+//         : null;
 
-      const newFilters: Filters = {
-        ...filters,
-        startDate: date || undefined,
-      };
+//       const newFilters: Filters = {
+//         ...filters,
+//         startDate: date || undefined,
+//       };
 
-      // Prevent end date to be before start date
-      if (newFilters.endDate && date && date > newFilters.endDate) {
-        newFilters.endDate = date;
-      }
+//       // Prevent end date to be before start date
+//       if (newFilters.endDate && date && date > newFilters.endDate) {
+//         newFilters.endDate = date;
+//       }
 
-      onFiltersChange?.(newFilters);
-    },
-    [filters, onFiltersChange]
-  );
+//       onFiltersChange?.(newFilters);
+//     },
+//     [filters, onFiltersChange]
+//   );
 
-  const handleEndDateChange = useCallback(
-    (value: any): void => {
-      const date: Date | null = value
-        ? value instanceof Date
-          ? value
-          : typeof value?.toDate === 'function'
-            ? value.toDate()
-            : null
-        : null;
+//   const handleEndDateChange = useCallback(
+//     (value: any): void => {
+//       const date: Date | null = value
+//         ? value instanceof Date
+//           ? value
+//           : typeof value?.toDate === 'function'
+//             ? value.toDate()
+//             : null
+//         : null;
 
-      const newFilters: Filters = {
-        ...filters,
-        endDate: date || undefined,
-      };
+//       const newFilters: Filters = {
+//         ...filters,
+//         endDate: date || undefined,
+//       };
 
-      // Prevent start date to be after end date
-      if (newFilters.startDate && date && date < newFilters.startDate) {
-        newFilters.startDate = date;
-      }
+//       // Prevent start date to be after end date
+//       if (newFilters.startDate && date && date < newFilters.startDate) {
+//         newFilters.startDate = date;
+//       }
 
-      onFiltersChange?.(newFilters);
-    },
-    [filters, onFiltersChange]
-  );
+//       onFiltersChange?.(newFilters);
+//     },
+//     [filters, onFiltersChange]
+//   );
 
-  const handleClientToggle = useCallback(
-    (event: ChangeEvent<HTMLInputElement>): void => {
-      let clients: string[];
+//   const handleClientToggle = useCallback(
+//     (event: ChangeEvent<HTMLInputElement>): void => {
+//       let clients: string[];
 
-      if (event.target.checked) {
-        clients = [...(filters.clients || []), event.target.value];
-      } else {
-        clients = (filters.clients || []).filter((client) => client !== event.target.value);
-      }
+//       if (event.target.checked) {
+//         clients = [...(filters.clients || []), event.target.value];
+//       } else {
+//         clients = (filters.clients || []).filter((client) => client !== event.target.value);
+//       }
 
-      onFiltersChange?.({
-        ...filters,
-        clients: clients,
-      });
-    },
-    [filters, onFiltersChange]
-  );
+//       onFiltersChange?.({
+//         ...filters,
+//         clients: clients,
+//       });
+//     },
+//     [filters, onFiltersChange]
+//   );
 
-  const handleStatusChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>): void => {
-      onFiltersChange?.({
-        ...filters,
-        status: event.target.checked ? 'paid' : undefined,
-      });
-    },
-    [filters, onFiltersChange]
-  );
+//   const handleStatusChange = useCallback(
+//     (event: ChangeEvent<HTMLInputElement>): void => {
+//       onFiltersChange?.({
+//         ...filters,
+//         status: event.target.checked ? 'paid' : undefined,
+//       });
+//     },
+//     [filters, onFiltersChange]
+//   );
 
-  const content = (
-    <div>
-      <Stack
-        alignItems="center"
-        justifyContent="space-between"
-        direction="row"
-        sx={{ p: 3 }}
-      >
-        <Typography variant="h5">Filters</Typography>
-        {!lgUp && (
-          <IconButton onClick={onClose}>
-            <SvgIcon>
-              <XIcon />
-            </SvgIcon>
-          </IconButton>
-        )}
-      </Stack>
-      <Stack
-        spacing={3}
-        sx={{ p: 3 }}
-      >
-        <form onSubmit={handleQueryChange}>
-          <OutlinedInput
-            defaultValue=""
-            fullWidth
-            inputProps={{ ref: queryRef }}
-            placeholder="Invoice number"
-            startAdornment={
-              <InputAdornment position="start">
-                <SvgIcon>
-                  <SearchIcon />
-                </SvgIcon>
-              </InputAdornment>
-            }
-          />
-        </form>
-        <div>
-          <FormLabel
-            sx={{
-              display: 'block',
-              mb: 2,
-            }}
-          >
-            Issue date
-          </FormLabel>
-          <Stack spacing={2}>
-            <DatePicker
-              format="DD/MM/YYYY"
-              label="From"
-              onChange={handleStartDateChange}
-              value={filters.startDate ? dayjs(filters.startDate) : null}
-            />
-            <DatePicker
-              format="DD/MM/YYYY"
-              label="To"
-              onChange={handleEndDateChange}
-              value={filters.endDate ? dayjs(filters.endDate) : null}
-            />
-          </Stack>
-        </div>
-        <div>
-          <FormLabel
-            sx={{
-              display: 'block',
-              mb: 2,
-            }}
-          >
-            From client
-          </FormLabel>
-          <Box
-            sx={{
-              backgroundColor: (theme) =>
-                theme.palette.mode === 'dark' ? 'neutral.800' : 'neutral.50',
-              borderColor: 'divider',
-              borderRadius: 1,
-              borderStyle: 'solid',
-              borderWidth: 1,
-            }}
-          >
-            <Scrollbar sx={{ maxHeight: 200 }}>
-              <FormGroup
-                sx={{
-                  py: 1,
-                  px: 1.5,
-                }}
-              >
-                {clients.map((client) => {
-                  const isChecked = filters.clients?.includes(client.id);
+//   const content = (
+//     <div>
+//       <Stack
+//         alignItems="center"
+//         justifyContent="space-between"
+//         direction="row"
+//         sx={{ p: 3 }}
+//       >
+//         <Typography variant="h5">Filters</Typography>
+//         {!lgUp && (
+//           <IconButton onClick={onClose}>
+//             <SvgIcon>
+//               <XIcon />
+//             </SvgIcon>
+//           </IconButton>
+//         )}
+//       </Stack>
+//       <Stack
+//         spacing={3}
+//         sx={{ p: 3 }}
+//       >
+//         <form onSubmit={handleQueryChange}>
+//           <OutlinedInput
+//             defaultValue=""
+//             fullWidth
+//             inputProps={{ ref: queryRef }}
+//             placeholder="Invoice number"
+//             startAdornment={
+//               <InputAdornment position="start">
+//                 <SvgIcon>
+//                   <SearchIcon />
+//                 </SvgIcon>
+//               </InputAdornment>
+//             }
+//           />
+//         </form>
+//         <div>
+//           <FormLabel
+//             sx={{
+//               display: 'block',
+//               mb: 2,
+//             }}
+//           >
+//             Issue date
+//           </FormLabel>
+//           <Stack spacing={2}>
+//             <DatePicker
+//               format="DD/MM/YYYY"
+//               label="From"
+//               onChange={handleStartDateChange}
+//               value={filters.startDate ? dayjs(filters.startDate) : null}
+//             />
+//             <DatePicker
+//               format="DD/MM/YYYY"
+//               label="To"
+//               onChange={handleEndDateChange}
+//               value={filters.endDate ? dayjs(filters.endDate) : null}
+//             />
+//           </Stack>
+//         </div>
+//         <div>
+//           <FormLabel
+//             sx={{
+//               display: 'block',
+//               mb: 2,
+//             }}
+//           >
+//             From client
+//           </FormLabel>
+//           <Box
+//             sx={{
+//               backgroundColor: (theme) =>
+//                 theme.palette.mode === 'dark' ? 'neutral.800' : 'neutral.50',
+//               borderColor: 'divider',
+//               borderRadius: 1,
+//               borderStyle: 'solid',
+//               borderWidth: 1,
+//             }}
+//           >
+//             <Scrollbar sx={{ maxHeight: 200 }}>
+//               <FormGroup
+//                 sx={{
+//                   py: 1,
+//                   px: 1.5,
+//                 }}
+//               >
+//                 {clients.map((client) => {
+//                   const isChecked = filters.clients?.includes(client.id);
 
-                  return (
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={isChecked}
-                          onChange={handleClientToggle}
-                        />
-                      }
-                      key={client.id}
-                      label={client.name}
-                      value={client.id}
-                    />
-                  );
-                })}
-              </FormGroup>
-            </Scrollbar>
-          </Box>
-        </div>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={filters.status === 'paid'}
-              onChange={handleStatusChange}
-            />
-          }
-          label="Paid only"
-        />
-        <FormControlLabel
-          control={
-            <Switch
-              checked={group}
-              onChange={onGroupChange}
-            />
-          }
-          label="Group by status"
-        />
-      </Stack>
-    </div>
-  );
+//                   return (
+//                     <FormControlLabel
+//                       control={
+//                         <Checkbox
+//                           checked={isChecked}
+//                           onChange={handleClientToggle}
+//                         />
+//                       }
+//                       key={client.id}
+//                       label={client.name}
+//                       value={client.id}
+//                     />
+//                   );
+//                 })}
+//               </FormGroup>
+//             </Scrollbar>
+//           </Box>
+//         </div>
+//         <FormControlLabel
+//           control={
+//             <Switch
+//               checked={filters.status === 'paid'}
+//               onChange={handleStatusChange}
+//             />
+//           }
+//           label="Paid only"
+//         />
+//         <FormControlLabel
+//           control={
+//             <Switch
+//               checked={group}
+//               onChange={onGroupChange}
+//             />
+//           }
+//           label="Group by status"
+//         />
+//       </Stack>
+//     </div>
+//   );
 
-  if (lgUp) {
-    return (
-      <Drawer
-        anchor="left"
-        open={open}
-        slotProps={{
-          transition: {
-            container
-          },
-          paper: {
-            elevation: 16,
-            sx: {
-              border: 'none',
-              borderRadius: 2.5,
-              overflow: 'hidden',
-              position: 'relative',
-              width: 380,
-              height: 'calc(100% + 20px)',
-              mb: 8,
-            },
-          },
-        }}
-        variant="persistent"
-        sx={{ p: 3 }}
-        {...other}
-      >
-        {content}
-      </Drawer>
-    );
-  }
+//   if (lgUp) {
+//     return (
+//       <Drawer
+//         anchor="left"
+//         open={open}
+//         slotProps={{
+//           transition: {
+//             container
+//           },
+//           paper: {
+//             elevation: 16,
+//             sx: {
+//               border: 'none',
+//               borderRadius: 2.5,
+//               overflow: 'hidden',
+//               position: 'relative',
+//               width: 380,
+//               height: 'calc(100% + 20px)',
+//               mb: 8,
+//             },
+//           },
+//         }}
+//         variant="persistent"
+//         sx={{ p: 3 }}
+//         {...other}
+//       >
+//         {content}
+//       </Drawer>
+//     );
+//   }
 
-  return (
-    <Drawer
-      anchor="left"
-      hideBackdrop
-      ModalProps={{
-        container,
-        sx: {
-          pointerEvents: 'none',
-          position: 'absolute',
-        },
-      }}
-      onClose={onClose}
-      open={open}
-      slotProps={{
-        paper: {
-          sx: {
-            maxWidth: '100%',
-            width: 380,
-            pointerEvents: 'auto',
-            position: 'absolute',
-          },
-        },
-        transition: {
-          container
-        }
-      }}
-      variant="temporary"
-      {...other}
-    >
-      {content}
-    </Drawer>
-  );
-};
+//   return (
+//     <Drawer
+//       anchor="left"
+//       hideBackdrop
+//       ModalProps={{
+//         container,
+//         sx: {
+//           pointerEvents: 'none',
+//           position: 'absolute',
+//         },
+//       }}
+//       onClose={onClose}
+//       open={open}
+//       slotProps={{
+//         paper: {
+//           sx: {
+//             maxWidth: '100%',
+//             width: 380,
+//             pointerEvents: 'auto',
+//             position: 'absolute',
+//           },
+//         },
+//         transition: {
+//           container
+//         }
+//       }}
+//       variant="temporary"
+//       {...other}
+//     >
+//       {content}
+//     </Drawer>
+//   );
+// };
 
-InvoiceListSidebar.propTypes = {
-  container: PropTypes.any,
-  clients: PropTypes.array,
-  // @ts-ignore
-  filters: PropTypes.object,
-  group: PropTypes.bool,
-  onClose: PropTypes.func,
-  onFiltersChange: PropTypes.func,
-  onGroupChange: PropTypes.func,
-  open: PropTypes.bool,
-};
+// InvoiceListSidebar.propTypes = {
+//   container: PropTypes.any,
+//   clients: PropTypes.array,
+//   // @ts-ignore
+//   filters: PropTypes.object,
+//   group: PropTypes.bool,
+//   onClose: PropTypes.func,
+//   onFiltersChange: PropTypes.func,
+//   onGroupChange: PropTypes.func,
+//   open: PropTypes.bool,
+// };

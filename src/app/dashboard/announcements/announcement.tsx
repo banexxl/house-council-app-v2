@@ -47,8 +47,21 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import QuillEditor from 'src/components/quill-editor';
 import { PopupModal } from 'src/components/modal-dialog';
 import { useFormik } from 'formik';
-import { announcementInitialValues, buildAnnouncementValidationSchema, ANNOUNCEMENT_CATEGORIES, Announcement } from 'src/types/announcement';
-import { upsertAnnouncement, getAnnouncementById, deleteAnnouncement, togglePinAction, publishAnnouncement, revertToDraft, toggleArchiveAction } from 'src/app/actions/announcement/announcement-actions';
+import {
+     announcementInitialValues,
+     buildAnnouncementValidationSchema,
+     ANNOUNCEMENT_CATEGORIES,
+     Announcement
+} from 'src/types/announcement';
+import {
+     upsertAnnouncement,
+     getAnnouncementById,
+     deleteAnnouncement,
+     togglePinAction,
+     publishAnnouncement,
+     revertToDraft,
+     toggleArchiveAction
+} from 'src/app/actions/announcement/announcement-actions';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
@@ -56,18 +69,18 @@ import { tokens } from 'src/locales/tokens';
 import { DatePicker, TimePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs, { Dayjs } from 'dayjs';
-import { Client } from 'src/types/client';
 import { Building } from 'src/types/building';
 import { EntityFormHeader } from 'src/components/entity-form-header';
 import { paths } from 'src/paths';
+import { PolarCustomer } from 'src/types/polar-customer-types';
 
 interface AnnouncementProps {
      announcements: Announcement[];
-     client: Client
+     customer: PolarCustomer
      buildings: Building[]
 }
 
-export default function Announcements({ client, announcements, buildings }: AnnouncementProps) {
+export default function Announcements({ customer, announcements, buildings }: AnnouncementProps) {
 
      // Using server-provided announcements directly; any mutations trigger a router refresh.
      const [editingEntity, setEditingEntity] = useState<Announcement | null>(null);
@@ -88,7 +101,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
      const [scheduledTime, setScheduledTime] = useState<Dayjs | null>(null);
 
      const formik = useFormik({
-          initialValues: { ...announcementInitialValues, customerId: client.id },
+          initialValues: { ...announcementInitialValues, customerId: customer.id },
           validationSchema: buildAnnouncementValidationSchema(t),
           // Do not validate on mount; defer validation feedback until user interaction or submit
           validateOnMount: false,
@@ -102,7 +115,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                     subcategory: values.subcategory || null,
                     buildings: values.buildings || [],
                     pinned: values.pinned,
-                    customerId: client.id,
+                    customerId: customer.id,
                     schedule_enabled: values.schedule_enabled,
                     scheduled_at: values.schedule_enabled ? values.scheduled_at : null,
                     scheduled_timezone: values.schedule_enabled ? values.scheduled_timezone || Intl.DateTimeFormat().resolvedOptions().timeZone : null,
@@ -150,7 +163,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                               user_id: updated.user_id,
                               images: (updated.images && updated.images.length ? updated.images : []),
                               documents: (updated.documents && updated.documents.length ? updated.documents : []),
-                              customerId: client.id,
+                              customerId: customer.id,
                          }
                     });
                     // Make sure the list/table reflects latest changes
@@ -163,10 +176,10 @@ export default function Announcements({ client, announcements, buildings }: Anno
      const showFieldError = (name: string) => !!(formik.touched as any)[name] || formik.submitCount > 0;
      // Ensure customerId is always set and never surfaces as an error
      useEffect(() => {
-          if (formik.values.customerId !== client.id) {
-               formik.setFieldValue('customerId', client.id, false);
+          if (formik.values.customerId !== customer.id) {
+               formik.setFieldValue('customerId', customer.id, false);
           }
-     }, [client.id]);
+     }, [customer.id]);
 
      const isDraft = formik.values.status === 'draft';
      const hasErrors = Object.keys(formik.errors).length > 0;
@@ -486,13 +499,13 @@ export default function Announcements({ client, announcements, buildings }: Anno
                toast.success(t(tokens.announcements.toasts.deleted));
                if (editingEntity!.id === id!) {
                     formik.resetForm({
-                         values: { ...announcementInitialValues, created_at: new Date(), customerId: client.id }
+                         values: { ...announcementInitialValues, created_at: new Date(), customerId: customer.id }
                     });
                     setEditingEntity(null);
                }
           }
           formik.resetForm({
-               values: { ...announcementInitialValues, customerId: client.id }
+               values: { ...announcementInitialValues, customerId: customer.id }
           });
           formik.setSubmitting(false);
           setRowBusy(null);
@@ -545,7 +558,7 @@ export default function Announcements({ client, announcements, buildings }: Anno
                                                   setIsStartingNew(true);
                                                   setEditingEntity(null);
                                                   formik.resetForm({
-                                                       values: { ...announcementInitialValues, created_at: new Date(), customerId: client.id }
+                                                       values: { ...announcementInitialValues, created_at: new Date(), customerId: customer.id }
                                                   });
                                                   setIsStartingNew(false);
                                              }}

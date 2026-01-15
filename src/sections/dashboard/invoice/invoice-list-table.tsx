@@ -1,266 +1,266 @@
-import type { ChangeEvent, FC, MouseEvent } from 'react';
-import { format } from 'date-fns';
-import numeral from 'numeral';
-import PropTypes from 'prop-types';
-import ArrowRightIcon from '@untitled-ui/icons-react/build/esm/ArrowRight';
-import Avatar from '@mui/material/Avatar';
-import Card from '@mui/material/Card';
-import IconButton from '@mui/material/IconButton';
-import Stack from '@mui/material/Stack';
-import SvgIcon from '@mui/material/SvgIcon';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TablePagination from '@mui/material/TablePagination';
-import TableRow from '@mui/material/TableRow';
-import Typography from '@mui/material/Typography';
+// import type { ChangeEvent, FC, MouseEvent } from 'react';
+// import { format } from 'date-fns';
+// import numeral from 'numeral';
+// import PropTypes from 'prop-types';
+// import ArrowRightIcon from '@untitled-ui/icons-react/build/esm/ArrowRight';
+// import Avatar from '@mui/material/Avatar';
+// import Card from '@mui/material/Card';
+// import IconButton from '@mui/material/IconButton';
+// import Stack from '@mui/material/Stack';
+// import SvgIcon from '@mui/material/SvgIcon';
+// import Table from '@mui/material/Table';
+// import TableBody from '@mui/material/TableBody';
+// import TableCell from '@mui/material/TableCell';
+// import TablePagination from '@mui/material/TablePagination';
+// import TableRow from '@mui/material/TableRow';
+// import Typography from '@mui/material/Typography';
 
-import { RouterLink } from 'src/components/router-link';
-import { Scrollbar } from 'src/components/scrollbar';
-import type { SeverityPillColor } from 'src/components/severity-pill';
-import { SeverityPill } from 'src/components/severity-pill';
-import { paths } from 'src/paths';
-import type { PolarOrder, InvoiceStatus } from 'src/types/polar-order-types';
-import { getInitials } from 'src/utils/get-initials';
+// import { RouterLink } from 'src/components/router-link';
+// import { Scrollbar } from 'src/components/scrollbar';
+// import type { SeverityPillColor } from 'src/components/severity-pill';
+// import { SeverityPill } from 'src/components/severity-pill';
+// import { paths } from 'src/paths';
+// import type { PolarOrder, InvoiceStatus } from 'src/types/polar-order-types';
+// import { getInitials } from 'src/utils/get-initials';
 
-type GroupedInvoices = {
-  [key in InvoiceStatus]: PolarOrder[];
-};
+// type GroupedInvoices = {
+//   [key in InvoiceStatus]: PolarOrder[];
+// };
 
-const groupInvoices = (invoices: PolarOrder[]): GroupedInvoices => {
-  return invoices.reduce(
-    (acc, invoice) => {
-      const { status } = invoice;
+// const groupInvoices = (invoices: PolarOrder[]): GroupedInvoices => {
+//   return invoices.reduce(
+//     (acc, invoice) => {
+//       const { status } = invoice;
 
-      return {
-        ...acc,
-        [status]: [...acc[status], invoice],
-      };
-    },
-    {
-      pending: [],
-      paid: [],
-      refunded: [],
-      partially_refunded: [],
-    }
-  );
-};
+//       return {
+//         ...acc,
+//         [status]: [...acc[status], invoice],
+//       };
+//     },
+//     {
+//       pending: [],
+//       paid: [],
+//       refunded: [],
+//       partially_refunded: [],
+//     }
+//   );
+// };
 
-const statusColorsMap: Record<InvoiceStatus, SeverityPillColor> = {
-  pending: 'warning',
-  paid: 'success',
-  refunded: 'primary',
-  partially_refunded: 'info',
-};
+// const statusColorsMap: Record<InvoiceStatus, SeverityPillColor> = {
+//   pending: 'warning',
+//   paid: 'success',
+//   refunded: 'primary',
+//   partially_refunded: 'info',
+// };
 
-interface InvoiceRowProps {
-  invoice: PolarOrder;
-}
+// interface InvoiceRowProps {
+//   invoice: PolarOrder;
+// }
 
-const InvoiceRow: FC<InvoiceRowProps> = (props) => {
-  const { invoice, ...other } = props;
-  const statusColor = statusColorsMap[invoice.status];
-  const totalAmount = numeral(invoice.total_amount).format('0,0.00');
-  const issueDate = invoice.created_at ? format(new Date(invoice.created_at), 'dd/MM/yyyy') : '';
-  const issueTime = invoice.created_at ? format(new Date(invoice.created_at), 'HH:mm') : '';
-  const dueDate = ''; // PolarOrder does not currently expose a due date field
+// const InvoiceRow: FC<InvoiceRowProps> = (props) => {
+//   const { invoice, ...other } = props;
+//   const statusColor = statusColorsMap[invoice.status];
+//   const totalAmount = numeral(invoice.total_amount).format('0,0.00');
+//   const issueDate = invoice.created_at ? format(new Date(invoice.created_at), 'dd/MM/yyyy') : '';
+//   const issueTime = invoice.created_at ? format(new Date(invoice.created_at), 'HH:mm') : '';
+//   const dueDate = ''; // PolarOrder does not currently expose a due date field
 
-  return (
-    <TableRow
-      sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-      {...other}
-    >
-      <TableCell width="25%">
-        <Stack
-          alignItems="center"
-          direction="row"
-          spacing={2}
-          component={RouterLink}
-          href={paths.dashboard.invoices.details}
-          sx={{
-            display: 'inline-flex',
-            textDecoration: 'none',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          <Avatar
-            sx={{
-              height: 42,
-              width: 42,
-            }}
-          >
-            {getInitials(invoice.customer?.name || invoice.customer?.email || '')}
-          </Avatar>
-          <div>
-            <Typography
-              color="text.primary"
-              variant="subtitle2"
-            >
-              {invoice.invoice_number}
-            </Typography>
-            <Typography
-              color="text.secondary"
-              variant="body2"
-            >
-              {invoice.customer?.name || invoice.customer?.email}
-            </Typography>
-          </div>
-        </Stack>
-      </TableCell>
-      <TableCell>
-        <Typography variant="subtitle2">
-          {invoice.currency.toUpperCase()} {totalAmount}
-        </Typography>
-      </TableCell>
-      <TableCell>
-        <Typography variant="subtitle2">Issued</Typography>
-        <Typography
-          color="text.secondary"
-          variant="body2"
-        >
-          {issueDate}{issueTime ? ` • ${issueTime}` : ''}
-        </Typography>
-      </TableCell>
-      <TableCell>
-        <Typography variant="subtitle2">Due</Typography>
-        <Typography
-          color="text.secondary"
-          variant="body2"
-        >
-          {dueDate}
-        </Typography>
-      </TableCell>
-      <TableCell align="right">
-        <SeverityPill color={statusColor}>{invoice.status}</SeverityPill>
-      </TableCell>
-      <TableCell align="right">
-        <IconButton
-          component={RouterLink}
-          href={paths.dashboard.invoices.details + invoice.id}
-        >
-          <SvgIcon>
-            <ArrowRightIcon />
-          </SvgIcon>
-        </IconButton>
-      </TableCell>
-    </TableRow>
-  );
-};
+//   return (
+//     <TableRow
+//       sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+//       {...other}
+//     >
+//       <TableCell width="25%">
+//         <Stack
+//           alignItems="center"
+//           direction="row"
+//           spacing={2}
+//           component={RouterLink}
+//           href={paths.dashboard.invoices.details}
+//           sx={{
+//             display: 'inline-flex',
+//             textDecoration: 'none',
+//             whiteSpace: 'nowrap',
+//           }}
+//         >
+//           <Avatar
+//             sx={{
+//               height: 42,
+//               width: 42,
+//             }}
+//           >
+//             {getInitials(invoice.customer?.name || invoice.customer?.email || '')}
+//           </Avatar>
+//           <div>
+//             <Typography
+//               color="text.primary"
+//               variant="subtitle2"
+//             >
+//               {invoice.invoice_number}
+//             </Typography>
+//             <Typography
+//               color="text.secondary"
+//               variant="body2"
+//             >
+//               {invoice.customer?.name || invoice.customer?.email}
+//             </Typography>
+//           </div>
+//         </Stack>
+//       </TableCell>
+//       <TableCell>
+//         <Typography variant="subtitle2">
+//           {invoice.currency.toUpperCase()} {totalAmount}
+//         </Typography>
+//       </TableCell>
+//       <TableCell>
+//         <Typography variant="subtitle2">Issued</Typography>
+//         <Typography
+//           color="text.secondary"
+//           variant="body2"
+//         >
+//           {issueDate}{issueTime ? ` • ${issueTime}` : ''}
+//         </Typography>
+//       </TableCell>
+//       <TableCell>
+//         <Typography variant="subtitle2">Due</Typography>
+//         <Typography
+//           color="text.secondary"
+//           variant="body2"
+//         >
+//           {dueDate}
+//         </Typography>
+//       </TableCell>
+//       <TableCell align="right">
+//         <SeverityPill color={statusColor}>{invoice.status}</SeverityPill>
+//       </TableCell>
+//       <TableCell align="right">
+//         <IconButton
+//           component={RouterLink}
+//           href={paths.dashboard.invoices.details + invoice.id}
+//         >
+//           <SvgIcon>
+//             <ArrowRightIcon />
+//           </SvgIcon>
+//         </IconButton>
+//       </TableCell>
+//     </TableRow>
+//   );
+// };
 
-InvoiceRow.propTypes = {
-  // @ts-ignore
-  invoice: PropTypes.object.isRequired,
-};
+// InvoiceRow.propTypes = {
+//   // @ts-ignore
+//   invoice: PropTypes.object.isRequired,
+// };
 
-interface InvoiceListTableProps {
-  count?: number;
-  group?: boolean;
-  items?: PolarOrder[];
-  onPageChange?: (event: MouseEvent<HTMLButtonElement> | null, newPage: number) => void;
-  onRowsPerPageChange?: (event: ChangeEvent<HTMLInputElement>) => void;
-  page?: number;
-  rowsPerPage?: number;
-}
+// interface InvoiceListTableProps {
+//   count?: number;
+//   group?: boolean;
+//   items?: PolarOrder[];
+//   onPageChange?: (event: MouseEvent<HTMLButtonElement> | null, newPage: number) => void;
+//   onRowsPerPageChange?: (event: ChangeEvent<HTMLInputElement>) => void;
+//   page?: number;
+//   rowsPerPage?: number;
+// }
 
-export const InvoiceListTable: FC<InvoiceListTableProps> = (props) => {
-  const {
-    group = false,
-    items = [],
-    count = 0,
-    onPageChange = () => { },
-    onRowsPerPageChange,
-    page = 0,
-    rowsPerPage = 0,
-  } = props;
+// export const InvoiceListTable: FC<InvoiceListTableProps> = (props) => {
+//   const {
+//     group = false,
+//     items = [],
+//     count = 0,
+//     onPageChange = () => { },
+//     onRowsPerPageChange,
+//     page = 0,
+//     rowsPerPage = 0,
+//   } = props;
 
-  let content: React.ReactElement;
+//   let content: React.ReactElement;
 
-  if (group) {
-    const groupedInvoices = groupInvoices(items);
-    const statuses = Object.keys(groupedInvoices) as InvoiceStatus[];
+//   if (group) {
+//     const groupedInvoices = groupInvoices(items);
+//     const statuses = Object.keys(groupedInvoices) as InvoiceStatus[];
 
-    content = (
-      <Stack spacing={6}>
-        {statuses.map((status) => {
-          const groupTitle = status
-            .split('_')
-            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ');
-          const count = groupedInvoices[status].length;
-          const invoices = groupedInvoices[status];
-          const hasInvoices = invoices.length > 0;
+//     content = (
+//       <Stack spacing={6}>
+//         {statuses.map((status) => {
+//           const groupTitle = status
+//             .split('_')
+//             .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+//             .join(' ');
+//           const count = groupedInvoices[status].length;
+//           const invoices = groupedInvoices[status];
+//           const hasInvoices = invoices.length > 0;
 
-          return (
-            <Stack
-              key={groupTitle}
-              spacing={2}
-            >
-              <Typography
-                color="text.secondary"
-                variant="h6"
-              >
-                {groupTitle} ({count})
-              </Typography>
-              {hasInvoices && (
-                <Card>
-                  <Scrollbar>
-                    <Table sx={{ minWidth: 600 }}>
-                      <TableBody>
-                        {invoices.map((invoice) => (
-                          <InvoiceRow
-                            key={invoice.id}
-                            invoice={invoice}
-                          />
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </Scrollbar>
-                </Card>
-              )}
-            </Stack>
-          );
-        })}
-      </Stack>
-    );
-  } else {
-    content = (
-      <Card>
-        <Table>
-          <TableBody>
-            {items.map((invoice) => (
-              <InvoiceRow
-                key={invoice.id}
-                invoice={invoice}
-              />
-            ))}
-          </TableBody>
-        </Table>
-      </Card>
-    );
-  }
+//           return (
+//             <Stack
+//               key={groupTitle}
+//               spacing={2}
+//             >
+//               <Typography
+//                 color="text.secondary"
+//                 variant="h6"
+//               >
+//                 {groupTitle} ({count})
+//               </Typography>
+//               {hasInvoices && (
+//                 <Card>
+//                   <Scrollbar>
+//                     <Table sx={{ minWidth: 600 }}>
+//                       <TableBody>
+//                         {invoices.map((invoice) => (
+//                           <InvoiceRow
+//                             key={invoice.id}
+//                             invoice={invoice}
+//                           />
+//                         ))}
+//                       </TableBody>
+//                     </Table>
+//                   </Scrollbar>
+//                 </Card>
+//               )}
+//             </Stack>
+//           );
+//         })}
+//       </Stack>
+//     );
+//   } else {
+//     content = (
+//       <Card>
+//         <Table>
+//           <TableBody>
+//             {items.map((invoice) => (
+//               <InvoiceRow
+//                 key={invoice.id}
+//                 invoice={invoice}
+//               />
+//             ))}
+//           </TableBody>
+//         </Table>
+//       </Card>
+//     );
+//   }
 
-  return (
-    <Stack spacing={4}>
-      {content}
-      <TablePagination
-        component="div"
-        count={count}
-        onPageChange={onPageChange}
-        onRowsPerPageChange={onRowsPerPageChange}
-        page={page}
-        rowsPerPage={rowsPerPage}
-        rowsPerPageOptions={[5, 10, 25]}
-      />
-    </Stack>
-  );
-};
+//   return (
+//     <Stack spacing={4}>
+//       {content}
+//       <TablePagination
+//         component="div"
+//         count={count}
+//         onPageChange={onPageChange}
+//         onRowsPerPageChange={onRowsPerPageChange}
+//         page={page}
+//         rowsPerPage={rowsPerPage}
+//         rowsPerPageOptions={[5, 10, 25]}
+//       />
+//     </Stack>
+//   );
+// };
 
-InvoiceListTable.propTypes = {
-  count: PropTypes.number,
-  group: PropTypes.bool,
-  items: PropTypes.array,
-  onPageChange: PropTypes.func,
-  onRowsPerPageChange: PropTypes.func,
-  page: PropTypes.number,
-  rowsPerPage: PropTypes.number,
-};
+// InvoiceListTable.propTypes = {
+//   count: PropTypes.number,
+//   group: PropTypes.bool,
+//   items: PropTypes.array,
+//   onPageChange: PropTypes.func,
+//   onRowsPerPageChange: PropTypes.func,
+//   page: PropTypes.number,
+//   rowsPerPage: PropTypes.number,
+// };

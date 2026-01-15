@@ -21,10 +21,10 @@ const Page = async () => {
     getViewer(),
   ]);
   const profile = profileResult.success ? profileResult.data : null;
-  if (!viewer.client && !viewer.clientMember && !viewer.tenant && !viewer.admin) {
+  if (!viewer.customer && !viewer.tenant && !viewer.admin) {
     redirect('/auth/login');
   }
-  if (!profile && !viewer.admin && !viewer.client && !viewer.clientMember) {
+  if (!profile && !viewer.admin && !viewer.customer) {
     return (
       <>
         <Box
@@ -78,7 +78,7 @@ const Page = async () => {
               <ClientFeedWrapper
                 posts={posts}
                 profile={profile ? profile : null}
-                client={viewer.client ? viewer.client : viewer.clientMember ? viewer.clientMember : null}
+                customer={viewer.customer}
                 buildingId={buildingId ?? ''}
                 totalCount={totalCount}
                 pageSize={FEED_PAGE_SIZE}

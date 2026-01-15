@@ -8,14 +8,14 @@ const Page = async () => {
 
   const { customer, tenant, admin, userData } = await getViewer();
 
-  if (!client && !clientMember && !tenant && !admin) {
+  if (!customer && !tenant && !admin) {
     redirect('/auth/login');
   }
 
   let incidents: any[] = [];
 
-  if (client || clientMember) {
-    const customerId = client?.id || clientMember?.customerId;
+  if (customer) {
+    const customerId = customer.id;
     const result = await listIncidentReportsForClient(customerId!);
     incidents = result.success && Array.isArray(result.data) ? result.data : [];
   } else if (tenant) {

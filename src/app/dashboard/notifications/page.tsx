@@ -7,7 +7,7 @@ import { redirect } from 'next/navigation';
 
 export default async function NotificationsPage() {
      const { customer, tenant, admin } = await getViewer();
-     if (!client && !clientMember && !tenant && !admin) {
+     if (!customer && !tenant && !admin) {
           redirect('/auth/login');
      }
      const { success, data } = await getNotificationsForClient();

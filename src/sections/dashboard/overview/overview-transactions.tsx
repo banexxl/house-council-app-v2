@@ -10,10 +10,9 @@ import { useTranslation } from 'react-i18next';
 import type { SeverityPillColor } from 'src/components/severity-pill';
 import { SeverityPill } from 'src/components/severity-pill';
 import { GenericTable } from 'src/components/generic-table';
-import type { PolarOrder, InvoiceStatus } from 'src/types/polar-order-types';
-import { invoiceStatusTokenMap } from 'src/types/polar-order-types';
+import type { PolarOrder, PolarOrderStatus } from 'src/types/polar-order-types';
 
-const statusColorMap: Record<InvoiceStatus, SeverityPillColor> = {
+const statusColorMap: Record<PolarOrderStatus, SeverityPillColor> = {
   pending: 'warning',
   paid: 'success',
   refunded: 'secondary',
@@ -26,7 +25,7 @@ interface OverviewTransactionsProps {
 
 export const OverviewTransactions: FC<OverviewTransactionsProps> = ({ invoices }) => {
   const rows = Array.isArray(invoices) ? invoices : [];
-  const [statusFilter, setStatusFilter] = useState<'all' | InvoiceStatus>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | PolarOrderStatus>('all');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const { t } = useTranslation();
@@ -41,7 +40,7 @@ export const OverviewTransactions: FC<OverviewTransactionsProps> = ({ invoices }
     [filtered, page, rowsPerPage]
   );
 
-  const handleChangeStatus = (_: unknown, value: 'all' | InvoiceStatus) => {
+  const handleChangeStatus = (_: unknown, value: 'all' | PolarOrderStatus) => {
     setStatusFilter(value);
     setPage(0);
   };
@@ -76,10 +75,10 @@ export const OverviewTransactions: FC<OverviewTransactionsProps> = ({ invoices }
         variant="scrollable"
       >
         <Tab label={t('common.all', 'All')} value="all" />
-        <Tab label={t(invoiceStatusTokenMap.paid, 'Paid')} value="paid" />
+        {/* <Tab label={t(invoiceStatusTokenMap.paid, 'Paid')} value="paid" />
         <Tab label={t(invoiceStatusTokenMap.pending, 'Pending')} value="pending" />
         <Tab label={t(invoiceStatusTokenMap.refunded, 'Refunded')} value="refunded" />
-        <Tab label={t(invoiceStatusTokenMap.partially_refunded, 'Partially Refunded')} value="partially_refunded" />
+        <Tab label={t(invoiceStatusTokenMap.partially_refunded, 'Partially Refunded')} value="partially_refunded" /> */}
       </Tabs>
       <Box sx={{ mt: 2 }}>
         <GenericTable<PolarOrder>
@@ -94,7 +93,7 @@ export const OverviewTransactions: FC<OverviewTransactionsProps> = ({ invoices }
           dense
           columns={[
             {
-              key: 'created_at',
+              key: 'createdAt',
               label: t('invoice.table.date', 'Date'),
               render: (value) => {
                 const issuedAt = new Date(value as string);
@@ -134,7 +133,7 @@ export const OverviewTransactions: FC<OverviewTransactionsProps> = ({ invoices }
               label: t('invoice.table.client', 'Client'),
               render: (_value, invoice) => {
                 const clientName = invoice.customer?.name || invoice.customer?.email || '-';
-                const description = invoice.invoice_number ? `#${invoice.invoice_number}` : '';
+                const description = invoice.invoiceNumber ? `#${invoice.invoiceNumber}` : '';
                 return (
                   <Box>
                     <Typography variant="subtitle2" noWrap>{clientName}</Typography>
@@ -152,15 +151,15 @@ export const OverviewTransactions: FC<OverviewTransactionsProps> = ({ invoices }
             {
               key: 'status',
               label: t('invoice.table.status', 'Status'),
-              render: (value) => {
-                const status = (value || 'pending') as InvoiceStatus;
-                const statusColor = statusColorMap[status] ?? 'info';
-                const statusLabel = t(invoiceStatusTokenMap[status], status);
-                return <SeverityPill color={statusColor}>{statusLabel}</SeverityPill>;
-              },
+              // render: (value) => {
+              //   const status = (value || 'pending') as PolarOrderStatus;
+              //   const statusColor = statusColorMap[status] ?? 'info';
+              //   const statusLabel = t(invoiceStatusTokenMap[status], status);
+              //   return <SeverityPill color={statusColor}>{statusLabel}</SeverityPill>;
+              // },
             },
             {
-              key: 'total_amount',
+              key: 'totalAmount',
               label: t('invoice.table.amount', 'Amount'),
               render: (value, invoice) => {
                 const amount = numeral((value as number) || 0).format('0,0.00');

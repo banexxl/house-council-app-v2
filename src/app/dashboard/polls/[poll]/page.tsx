@@ -11,9 +11,7 @@ type Props = { params: Promise<{ poll: string }> };
 export default async function PollCreatePage({ params }: Props) {
   const { poll: idOrCreate } = await params;
   const { customer, tenant, admin } = await getViewer();
-  const customerId = client ? client.id : clientMember ? clientMember.customerId : null;
-
-  if (!client && !clientMember && !tenant && !admin) {
+  if (!customer && !tenant && !admin) {
     try {
     } catch (err) {
       console.warn('Logout failed, continuing anyway', err);
@@ -26,15 +24,15 @@ export default async function PollCreatePage({ params }: Props) {
   if (admin) {
     const { data } = await getAllBuildings();
     buildings = Array.isArray(data) ? data : [];
-  } else if (client || clientMember) {
-    const { data } = await getAllBuildingsFromClient(customerId!);
+  } else if (customer) {
+    const { data } = await getAllBuildingsFromClient(customer.id);
     buildings = Array.isArray(data) ? data : [];
   } else if (tenant) {
     redirect('/dashboard/social/profile');
   }
 
   if (idOrCreate === 'create' || idOrCreate === 'new') {
-    return <PollCreate buildings={buildings} clientId={customerId || ''} />;
+    return <PollCreate buildings={buildings} clientId={customer?.id || ''} />;
   }
 
   // Edit existing poll
@@ -54,7 +52,7 @@ export default async function PollCreatePage({ params }: Props) {
   return (
     <PollCreate
       buildings={buildings}
-      clientId={customerId || ''}
+      clientId={customer?.id || ''}
       poll={normalizedPoll}
     />
   );

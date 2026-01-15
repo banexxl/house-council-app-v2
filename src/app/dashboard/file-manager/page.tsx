@@ -4,9 +4,9 @@ import { redirect } from 'next/navigation';
 
 const Page = async () => {
 
-  const { client, tenant, admin, clientMember, userData } = await getViewer();
+  const { customer, tenant, admin, userData } = await getViewer();
 
-  if (!client && !tenant && !admin && !clientMember) {
+  if (!customer && !tenant && !admin) {
     redirect('/auth/login');
   }
 

@@ -11,9 +11,9 @@ export default async function Page({ params }: {
 
   const { buildingid } = await params
 
-  const { admin, client, tenant, clientMember, userData, error } = await getViewer();
-  const customerId = client ? client.id : clientMember ? clientMember.customerId : null;
-  if (!admin && !client && !clientMember && !tenant) {
+  const { admin, customer, tenant, userData, error } = await getViewer();
+  const customerId = customer ? customer.id : null;
+  if (!admin && !customer && !tenant) {
     redirect('/auth/login');
   }
 
@@ -38,7 +38,7 @@ export default async function Page({ params }: {
         <Stack spacing={4}>
           <BuildingCreateForm
             buildingData={buildingData.success ? buildingData.data : undefined}
-            userData={{ client, clientMember, tenant, admin, userData, error }}
+            userData={{ customer, tenant, admin, userData, error }}
             locationData={locationData.success ? locationData.data ?? [] : []}
           />
         </Stack>

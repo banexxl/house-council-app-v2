@@ -5,7 +5,7 @@ import { getActivePostsPaginatedByProfileId } from 'src/app/actions/social/post-
 import { ClientProfileWrapper } from './client-wrapper';
 import { getBuildingIdFromTenantId } from 'src/app/actions/tenant/tenant-actions';
 import { getViewer } from 'src/libs/supabase/server-auth';
-import { getClientBuildingsForSocialProfile, type ClientBuildingOption } from 'src/app/actions/customer/customer-actions';
+import { getCustomerBuildingsForSocialProfile, type CustomerBuildingOption } from 'src/app/actions/customer/customer-actions';
 import type { TenantProfile } from 'src/types/social';
 import log from 'src/utils/logger';
 
@@ -16,16 +16,16 @@ export async function ProfilePageContent({ profileId }: { profileId?: string }) 
      const { customer, tenant, admin } = await getViewer();
      // const customerId = client ? client.id : clientMember ? clientMember.customerId : null;
      const viewerTenantId = tenant?.id ?? null;
-     const viewerClientId = client?.id ?? clientMember?.customerId ?? null;
+     const viewerCustomerId = customer?.id ?? null;
 
-     if (!client && !clientMember && !tenant && !admin) {
+     if (!customer && !tenant && !admin) {
           return null;
      }
 
-     let clientBuildings: ClientBuildingOption[] = [];
-     if (viewerClientId) {
-          const buildingsResult = await getClientBuildingsForSocialProfile(viewerClientId);
-          clientBuildings = buildingsResult.success ? buildingsResult.data ?? [] : [];
+     let customerBuildings: CustomerBuildingOption[] = [];
+     if (viewerCustomerId) {
+          const buildingsResult = await getCustomerBuildingsForSocialProfile(viewerCustomerId);
+          customerBuildings = buildingsResult.success ? buildingsResult.data ?? [] : [];
      }
 
      let profile: TenantProfile | null = null;
@@ -48,18 +48,18 @@ export async function ProfilePageContent({ profileId }: { profileId?: string }) 
      const viewerProfileResult = await getCurrentUserProfile();
      const viewerProfile = viewerProfileResult.success ? viewerProfileResult.data : null;
 
-     // Build a read-only profile for clients/client members if none exists in tenant profiles
-     if (!profile && (client || clientMember) && viewerClientId) {
+     // Build a read-only profile for customers if none exists in tenant profiles
+     if (!profile && customer && viewerCustomerId) {
           const now = new Date().toISOString();
           profile = {
-               id: viewerClientId,
+               id: viewerCustomerId,
                tenant_id: null,
-               first_name: client?.contact_person || client?.name || clientMember?.name || '',
+               first_name: customer?.name || '',
                last_name: '',
-               email: client?.email || clientMember?.email || '',
-               phone_number: client?.phone || client?.mobile_phone || '',
+               email: customer?.email || '',
+               phone_number: customer?.metadata || customer?.metadata || '',
                bio: '',
-               avatar_url: client?.avatar || '',
+               avatar_url: customer?.avatarUrl || '',
                cover_image_url: '',
                current_city: '',
                current_job_title: '',
@@ -70,7 +70,7 @@ export async function ProfilePageContent({ profileId }: { profileId?: string }) 
                quote: '',
                created_at: now,
                updated_at: now,
-               customerId: viewerClientId,
+               customerId: viewerCustomerId,
           } as unknown as TenantProfile;
      }
 
@@ -88,7 +88,7 @@ export async function ProfilePageContent({ profileId }: { profileId?: string }) 
      }
 
      const { data: buildingId } = profile.tenant_id ? await getBuildingIdFromTenantId(profile.tenant_id) : { data: null as string | null };
-     const resolvedBuildingId = buildingId ?? clientBuildings[0]?.id ?? '';
+     const resolvedBuildingId = buildingId ?? customerBuildings[0]?.id ?? '';
      const postsResult = await getActivePostsPaginatedByProfileId({
           profileId: profile.id,
           limit: PROFILE_FEED_PAGE_SIZE,
