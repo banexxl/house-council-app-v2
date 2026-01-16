@@ -21,7 +21,7 @@ import ConnectWithoutContactIcon from '@mui/icons-material/ConnectWithoutContact
 import { tokens } from "src/locales/tokens";
 import { paths } from "src/paths";
 
-export type Role = "admin" | "client" | "clientMember" | "tenant";
+export type Role = "admin" | "client" | "tenant";
 
 export const useSections = (role: Role | null, featureSlugs?: string[] | null) => {
   const { t } = useTranslation();
@@ -129,12 +129,12 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
   // CLIENT / CLIENT MEMBER / TENANT
   {
     subheader: t(tokens.nav.clientDashboard),
-    roles: ["admin", "client", "clientMember", "tenant"],
+    roles: ["admin", "client", "tenant"],
     items: [
       {
         title: t(tokens.nav.overview),
         path: paths.dashboard.index,
-        roles: ["admin", "client", "clientMember", "tenant"],
+        roles: ["admin", "client", "tenant"],
         icon: (
           <SvgIcon fontSize="small">
             <HomeSmileIcon />
@@ -154,77 +154,77 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
       {
         title: t(tokens.nav.locations),
         featureKey: 'locations',
-        roles: ["admin", "client", "clientMember"],
+        roles: ["admin", "client"],
         icon: (
           <SvgIcon fontSize="small">
             <LocationOnIcon />
           </SvgIcon>
         ),
         items: [
-          { title: t(tokens.nav.list), path: paths.dashboard.locations.index, roles: ["admin", "client", "clientMember"], featureKey: 'geo-location-management' },
-          { title: t(tokens.nav.locationAdd), path: paths.dashboard.locations.new, roles: ["admin", "client", "clientMember"], featureKey: 'geo-location-management' },
+          { title: t(tokens.nav.list), path: paths.dashboard.locations.index, roles: ["admin", "client"], featureKey: 'geo-location-management' },
+          { title: t(tokens.nav.locationAdd), path: paths.dashboard.locations.new, roles: ["admin", "client"], featureKey: 'geo-location-management' },
         ],
       },
       {
         title: t(tokens.nav.buildings),
         featureKey: 'buildings',
-        roles: ["admin", "client", "clientMember"],
+        roles: ["admin", "client"],
         icon: (
           <SvgIcon fontSize="small">
             <ApartmentIcon />
           </SvgIcon>
         ),
         items: [
-          { title: t(tokens.nav.list), path: paths.dashboard.buildings.index, roles: ["admin", "client", "clientMember"], featureKey: 'geo-location-management' },
-          { title: t(tokens.nav.buildingAdd), path: paths.dashboard.buildings.new, roles: ["admin", "client", "clientMember"], featureKey: 'geo-location-management' },
+          { title: t(tokens.nav.list), path: paths.dashboard.buildings.index, roles: ["admin", "client"], featureKey: 'geo-location-management' },
+          { title: t(tokens.nav.buildingAdd), path: paths.dashboard.buildings.new, roles: ["admin", "client"], featureKey: 'geo-location-management' },
         ],
       },
       {
         title: t(tokens.nav.apartments),
         featureKey: 'apartments',
-        roles: ["admin", "client", "clientMember"],
+        roles: ["admin", "client"],
         icon: (
           <SvgIcon fontSize="small">
             <MeetingRoomIcon />
           </SvgIcon>
         ),
         items: [
-          { title: t(tokens.nav.list), path: paths.dashboard.apartments.index, roles: ["admin", "client", "clientMember"], featureKey: 'geo-location-management' },
-          { title: t(tokens.nav.apartmentAdd), path: paths.dashboard.apartments.new, roles: ["admin", "client", "clientMember"], featureKey: 'geo-location-management' },
+          { title: t(tokens.nav.list), path: paths.dashboard.apartments.index, roles: ["admin", "client"], featureKey: 'geo-location-management' },
+          { title: t(tokens.nav.apartmentAdd), path: paths.dashboard.apartments.new, roles: ["admin", "client"], featureKey: 'geo-location-management' },
         ],
       },
       {
         title: t(tokens.nav.tenants),
         featureKey: 'tenants',
-        roles: ["admin", "client", "clientMember"],
+        roles: ["admin", "client"],
         icon: (
           <SvgIcon fontSize="small">
             <Users03Icon />
           </SvgIcon>
         ),
         items: [
-          { title: t(tokens.nav.list), path: paths.dashboard.tenants.index, roles: ["admin", "client", "clientMember"], featureKey: 'geo-location-management' },
-          { title: t(tokens.nav.tenantAdd), path: paths.dashboard.tenants.new, roles: ["admin", "client", "clientMember"], featureKey: 'geo-location-management' },
+          { title: t(tokens.nav.list), path: paths.dashboard.tenants.index, roles: ["admin", "client"], featureKey: 'geo-location-management' },
+          { title: t(tokens.nav.tenantAdd), path: paths.dashboard.tenants.new, roles: ["admin", "client"], featureKey: 'geo-location-management' },
         ],
       },
       {
         title: t(tokens.nav.socialMedia),
         featureKey: 'social',
-        roles: ["client", "clientMember", "admin", "tenant"],
+        roles: ["client", "admin", "tenant"],
         icon: (
           <SvgIcon fontSize="small">
             <ConnectWithoutContactIcon />
           </SvgIcon>
         ),
         items: [
-          { title: t(tokens.nav.feed), path: paths.dashboard.social.feed, roles: ["client", "clientMember", "admin", "tenant"], featureKey: 'social' },
-          { title: t(tokens.nav.profile), path: paths.dashboard.social.profile, roles: ["clientMember", "admin", "tenant"], featureKey: 'social' },
+          { title: t(tokens.nav.feed), path: paths.dashboard.social.feed, roles: ["client", "admin", "tenant"], featureKey: 'social' },
+          { title: t(tokens.nav.profile), path: paths.dashboard.social.profile, roles: ["admin", "tenant"], featureKey: 'social' },
         ]
       },
       {
         title: t(tokens.nav.announcements),
         featureKey: 'announcements',
-        roles: ["admin", "client", "clientMember"],
+        roles: ["admin", "client"],
         path: paths.dashboard.announcements.index,
         icon: (
           <SvgIcon fontSize="small">
@@ -247,7 +247,7 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
         title: t(tokens.nav.calendar),
         featureKey: 'calendar',
         path: paths.dashboard.calendar,
-        roles: ["admin", "client", "clientMember", "tenant"],
+        roles: ["admin", "client", "tenant"],
         icon: (
           <SvgIcon fontSize="small">
             <CalendarIcon />
@@ -257,7 +257,7 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
       {
         title: t(tokens.nav.polls),
         featureKey: 'polls',
-        roles: ["admin", "client", "clientMember"],
+        roles: ["admin", "client"],
         icon: (
           <SvgIcon fontSize="small">
             <HowToVoteIcon />
@@ -267,13 +267,13 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
           {
             title: t(tokens.nav.list),
             path: paths.dashboard.polls.index,
-            roles: ["admin", "client", "clientMember"],
+            roles: ["admin", "client"],
             featureKey: 'polls',
           },
           {
             title: t(tokens.nav.create),
             path: paths.dashboard.polls.create,
-            roles: ["admin", "client", "clientMember"],
+            roles: ["admin", "client"],
             featureKey: 'polls',
           },
         ],
@@ -293,7 +293,7 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
         title: t(tokens.nav.fileManager),
         featureKey: 'file-manager',
         path: paths.dashboard.fileManager,
-        roles: ["client", "clientMember", "admin"],
+        roles: ["client", "admin"],
         icon: (
           <SvgIcon fontSize="small">
             <StorageIcon />
@@ -303,15 +303,15 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
       {
         title: t(tokens.nav.serviceRequests),
         featureKey: 'service-requests',
-        roles: ["client", "clientMember", "admin", "tenant"],
+        roles: ["client", "admin", "tenant"],
         icon: (
           <SvgIcon fontSize="small">
             <ConstructionIcon />
           </SvgIcon>
         ),
         items: [
-          { title: t(tokens.nav.list), path: paths.dashboard.serviceRequests.index, roles: ["client", "clientMember", "admin", "tenant"], featureKey: 'service-requests' },
-          { title: t(tokens.nav.create), path: paths.dashboard.serviceRequests.create, roles: ["client", "clientMember", "admin", "tenant"], featureKey: 'service-requests' },
+          { title: t(tokens.nav.list), path: paths.dashboard.serviceRequests.index, roles: ["client", "admin", "tenant"], featureKey: 'service-requests' },
+          { title: t(tokens.nav.create), path: paths.dashboard.serviceRequests.create, roles: ["client", "admin", "tenant"], featureKey: 'service-requests' },
         ]
       },
     ],
@@ -344,7 +344,6 @@ const filterItemsByFeature = (items: NavItem[], role: Role, features?: Set<strin
       const children = item.items ? filterItemsByFeature(item.items, role, features) : undefined;
       const featureAllowed = role === 'admin' || !features || !item.featureKey || isFeatureAllowed(item.featureKey, features);
       const anyChild = !!(children && children.length);
-
       if (!featureAllowed && !anyChild) return null;
 
       if (!featureAllowed && anyChild) {
