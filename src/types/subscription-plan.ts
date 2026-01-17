@@ -43,11 +43,11 @@ const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
 export const subscriptionPlanValidationSchema = (t: (key: string) => string) => Yup.object({
      name: Yup.string().required(t('subscriptionPlans.validation.required')),
      description: Yup.string(),
-     recurring_interval: Yup.string().oneOf(['day', 'week', 'month', 'year']).required(t('subscriptionPlans.validation.required')),
-     recurring_interval_count: Yup.number().min(1, t('subscriptionPlans.validation.mustBePositive')).required(t('subscriptionPlans.validation.required')),
-     is_recurring: Yup.boolean(),
-     is_archived: Yup.boolean(),
-     organization_id: Yup.string().matches(uuidRegex, { message: t('subscriptionPlans.validation.uuidInvalid'), excludeEmptyString: true }),
+     recurringInterval: Yup.string().oneOf(['day', 'week', 'month', 'year']).required(t('subscriptionPlans.validation.required')),
+     recurringIntervalCount: Yup.number().min(1, t('subscriptionPlans.validation.mustBePositive')).required(t('subscriptionPlans.validation.required')),
+     isRecurring: Yup.boolean(),
+     isArchived: Yup.boolean(),
+     organizationId: Yup.string().matches(uuidRegex, { message: t('subscriptionPlans.validation.uuidInvalid'), excludeEmptyString: true }),
 });
 
 export interface ClientSubscription {

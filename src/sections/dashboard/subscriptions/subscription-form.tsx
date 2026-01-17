@@ -1,19 +1,67 @@
 "use client"
 
 import { useFormik } from "formik"
+import * as Yup from "yup"
 import { Card, CardContent, TextField, Typography, Grid, Select, MenuItem, InputLabel, FormControl, Switch, FormControlLabel, Stack, Button, Box, Alert, IconButton } from "@mui/material"
 import SaveIcon from "@mui/icons-material/Save"
 import DeleteIcon from "@mui/icons-material/Delete"
 import AddIcon from "@mui/icons-material/Add"
-import { subscriptionPlanInitialValues, subscriptionPlanValidationSchema } from "src/types/subscription-plan"
 import { PolarProduct, PolarProductPrice, PolarProductInterval } from "src/types/polar-product-types"
-import { createSubscriptionPlan, updateSubscriptionPlan } from "src/app/actions/subscription-plan/subscription-plan-actions"
+import { createSubscriptionPlan, updateSubscriptionPlan, getPolarOrganization } from "src/app/actions/subscription-plan/subscription-plan-actions"
 import toast from "react-hot-toast"
 import { useTranslation } from "react-i18next"
 import { notFound, useRouter } from "next/navigation"
 import { SubscriptionFormHeader } from "./subscription-form-header"
 import { isUUIDv4 } from "src/utils/uuid"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+
+const subscriptionPlanInitialValues: PolarProduct = {
+     id: '',
+     name: '',
+     description: '',
+     organizationId: '',
+     isRecurring: false,
+     isArchived: false,
+     recurringInterval: 'month',
+     recurringIntervalCount: 1,
+     trialInterval: null,
+     trialIntervalCount: null,
+     createdAt: null,
+     modifiedAt: null,
+     prices: [],
+     benefits: [],
+     medias: [],
+     attachedCustomFields: [],
+     metadata: {}
+}
+
+const subscriptionPlanValidationSchema = (t: any) => Yup.object({
+     name: Yup.string()
+          .required(t("validation.required"))
+          .min(3, t("validation.minLength", { min: 3 }))
+          .max(100, t("validation.maxLength", { max: 100 })),
+     description: Yup.string()
+          .nullable()
+          .max(500, t("validation.maxLength", { max: 500 })),
+     organizationId: Yup.string()
+          .required(t("validation.required")),
+     isRecurring: Yup.boolean(),
+     isArchived: Yup.boolean(),
+     recurringInterval: Yup.string()
+          .nullable()
+          .oneOf(['day', 'week', 'month', 'year'], t("validation.invalidValue")),
+     recurringIntervalCount: Yup.number()
+          .nullable()
+          .min(1, t("validation.minValue", { min: 1 }))
+          .integer(t("validation.mustBeInteger")),
+     trialInterval: Yup.string()
+          .nullable()
+          .oneOf(['day', 'week', 'month', 'year'], t("validation.invalidValue")),
+     trialIntervalCount: Yup.number()
+          .nullable()
+          .min(0, t("validation.minValue", { min: 0 }))
+          .integer(t("validation.mustBeInteger"))
+})
 
 interface SubscriptionEditorProps {
      subscriptionPlansData?: PolarProduct
@@ -31,6 +79,28 @@ export default function SubscriptionEditor({ subscriptionPlansData }: Subscripti
           subscriptionPlansData?.prices || []
      );
 
+     const [organizationInfo, setOrganizationInfo] = useState<{
+          id: string;
+          slug: string;
+          name: string;
+     } | null>(null);
+
+     // Fetch organization on mount for new products
+     useEffect(() => {
+          const fetchOrganization = async () => {
+               if (!subscriptionPlansData?.id) {
+                    const result = await getPolarOrganization();
+                    if (result.success && result.organization) {
+                         setOrganizationInfo(result.organization);
+                         formik.setFieldValue('organizationId', result.organization.id);
+                    } else {
+                         toast.error(result.error || 'Failed to load organization');
+                    }
+               }
+          };
+          fetchOrganization();
+     }, [subscriptionPlansData?.id]);
+
      const formik = useFormik({
           initialValues: {
                ...subscriptionPlanInitialValues,
@@ -38,6 +108,13 @@ export default function SubscriptionEditor({ subscriptionPlansData }: Subscripti
           },
           validationSchema: subscriptionPlanValidationSchema(t),
           onSubmit: async (values: PolarProduct) => {
+               // Validate that at least one price exists
+               if (!prices || prices.length === 0) {
+                    toast.error("At least one price is required to create a product");
+                    formik.setSubmitting(false);
+                    return;
+               }
+
                const payload = {
                     ...values,
                     id: subscriptionPlansData?.id,
@@ -58,7 +135,7 @@ export default function SubscriptionEditor({ subscriptionPlansData }: Subscripti
                          response = await createSubscriptionPlan(payload);
                          if (response.createSubscriptionPlanSuccess) {
                               toast.success("Product created successfully!");
-                              router.push(`/dashboard/subscriptions/${response.createdSubscriptionPlan?.id}`);
+                              router.push(`/dashboard/subscriptions`);
                          } else {
                               toast.error("Failed to create product.");
                          }
@@ -70,10 +147,9 @@ export default function SubscriptionEditor({ subscriptionPlansData }: Subscripti
                }
           }
      });
-
      const handleAddPrice = () => {
           setPrices([...prices, {
-               id: crypto.randomUUID(),
+               id: '',
                createdAt: new Date(),
                modifiedAt: new Date(),
                source: 'manual',
@@ -81,7 +157,7 @@ export default function SubscriptionEditor({ subscriptionPlansData }: Subscripti
                productId: subscriptionPlansData?.id || '',
                type: 'recurring',
                recurringInterval: 'month',
-               priceCurrency: 'USD',
+               priceCurrency: 'usd',
                priceAmount: 0,
                legacy: false,
                amountType: 'fixed',
@@ -96,6 +172,13 @@ export default function SubscriptionEditor({ subscriptionPlansData }: Subscripti
           const updated = [...prices];
           updated[index] = { ...updated[index], [field]: value };
           setPrices(updated);
+     };
+     const formatPriceLabel = (price: PolarProductPrice) => {
+          const amount = price.priceAmount ? `${(price.priceAmount / 100).toFixed(2)} ${price.priceCurrency?.toUpperCase()}` : 'Free';
+          const interval = price.type === 'recurring' && price.recurringInterval
+               ? ` / ${price.recurringInterval}`
+               : price.type === 'one_time' ? ' (one-time)' : '';
+          return `${amount}${interval}`;
      };
 
      return (
@@ -143,10 +226,20 @@ export default function SubscriptionEditor({ subscriptionPlansData }: Subscripti
                                              value={formik.values.organizationId}
                                              onChange={formik.handleChange}
                                              error={formik.touched.organizationId && Boolean(formik.errors.organizationId)}
-                                             helperText={formik.touched.organizationId && formik.errors.organizationId}
+                                             helperText={
+                                                  organizationInfo
+                                                       ? `${organizationInfo.name} (${organizationInfo.slug})`
+                                                       : formik.touched.organizationId && formik.errors.organizationId
+                                             }
                                              margin="normal"
                                              onBlur={formik.handleBlur}
-                                             placeholder="your-polar-organization-id"
+                                             placeholder="Loading organization..."
+                                             disabled={true}
+                                             slotProps={{
+                                                  input: {
+                                                       readOnly: true,
+                                                  },
+                                             }}
                                         />
                                         <FormControlLabel
                                              control={
@@ -311,8 +404,8 @@ export default function SubscriptionEditor({ subscriptionPlansData }: Subscripti
                                              <FormControl fullWidth margin="dense">
                                                   <InputLabel>{t("subscriptionPlans.currency")}</InputLabel>
                                                   <Select
-                                                       value={price.priceCurrency}
-                                                       onChange={(e) => handlePriceChange(index, 'priceCurrency', e.target.value)}
+                                                       value={price.priceCurrency?.toUpperCase()}
+                                                       onChange={(e) => handlePriceChange(index, 'priceCurrency', e.target.value.toLowerCase())}
                                                        label={t("subscriptionPlans.currency")}
                                                   >
                                                        <MenuItem value="USD">USD</MenuItem>
@@ -354,7 +447,9 @@ export default function SubscriptionEditor({ subscriptionPlansData }: Subscripti
                               </CardContent>
                          </Card>
                     </Grid>
-
+                    <Typography>
+                         {JSON.stringify(formik.errors)}
+                    </Typography>
                     <Grid size={{ xs: 12 }}>
                          <Button
                               loading={formik.isSubmitting}

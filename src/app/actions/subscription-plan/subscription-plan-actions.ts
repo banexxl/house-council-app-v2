@@ -3,10 +3,60 @@
 import { revalidatePath } from "next/cache";
 import { logServerAction } from "src/libs/supabase/server-logging";
 import { useServerSideSupabaseAnonClient } from "src/libs/supabase/sb-server";
-import { PolarRecurringInterval } from "src/types/subscription-plan";
 import { PolarProduct, PolarProductPrice } from "src/types/polar-product-types";
 import { TABLES } from "src/libs/supabase/tables";
 import { PolarSubscription } from "src/types/polar-subscription-types";
+import { polar } from "src/libs/polar/polar";
+
+/**
+ * Fetches the organization details from Polar.sh
+ * @returns {Promise<{success: boolean; organization?: {id: string; slug: string; name: string}; error?: string}>}
+ */
+export const getPolarOrganization = async (): Promise<{
+     success: boolean;
+     organization?: { id: string; slug: string; name: string };
+     error?: string;
+}> => {
+     try {
+          const organizations = await polar.organizations.list({
+               slug: 'nestlink',
+               limit: 1
+          });
+
+          if (!organizations || organizations.result.items.length === 0) {
+               return {
+                    success: false,
+                    error: 'No organization found in Polar account'
+               };
+          }
+
+          const org = organizations.result.items[0];
+          return {
+               success: true,
+               organization: {
+                    id: org.id,
+                    slug: org.slug,
+                    name: org.name
+               }
+          };
+
+
+     } catch (error: any) {
+          await logServerAction({
+               user_id: null,
+               action: 'Get Polar Organization Failed',
+               payload: { error: error.message },
+               status: 'fail',
+               error: error.message,
+               duration_ms: 0,
+               type: 'api'
+          });
+          return {
+               success: false,
+               error: error.message
+          };
+     }
+};
 
 /**
  * Creates a new Polar product in the database.
@@ -20,70 +70,74 @@ export const createSubscriptionPlan = async (product: PolarProduct):
           createSubscriptionPlanError?: any;
      }> => {
 
-     const supabase = await useServerSideSupabaseAnonClient();
      const start = Date.now();
 
-     // Separate nested data
-     const { prices, benefits, medias, attachedCustomFields, ...productData } = product;
+     try {
+          // Validate that at least one price exists
+          if (!product.prices || product.prices.length === 0) {
+               throw new Error('At least one price is required to create a product');
+          }
 
-     const { data, error } = await supabase
-          .from(TABLES.POLAR_PRODUCTS)
-          .insert(productData)
-          .select()
-          .single();
+          // Fetch organization from Polar.sh
+          const orgResult = await getPolarOrganization();
+          console.log(orgResult);
 
-     if (error) {
+          if (!orgResult.success || !orgResult.organization) {
+               throw new Error(orgResult.error || 'No organization found in Polar account');
+          }
+
+          // Build the product creation payload
+          // Note: organizationId is not included because we're using an organization token
+          const createPayload: any = {
+               name: product.name,
+               description: product.description,
+               prices: product.prices.map((price: PolarProductPrice) => ({
+                    amountType: price.amountType as any,
+                    priceAmount: price.priceAmount,
+                    priceCurrency: price.priceCurrency?.toLowerCase() || 'usd',
+                    recurringInterval: price.recurringInterval as any
+               }))
+          };
+
+          // Add recurring_interval if the product is recurring
+          if (product.isRecurring && product.recurringInterval) {
+               createPayload.recurringInterval = product.recurringInterval as any;
+          }
+
+          // Create product on Polar.sh
+          let createdProduct;
+          try {
+               createdProduct = await polar.products.create(createPayload);
+               console.log('createdProduct', createdProduct);
+          } catch (createError: any) {
+               console.error('Error creating product on Polar:', createError);
+               throw new Error(`Failed to create product on Polar: ${createError.message}`);
+          }
+
+          await logServerAction({
+               user_id: null,
+               action: 'Create Polar Product Success',
+               payload: { productId: createdProduct.id },
+               status: 'success',
+               error: '',
+               duration_ms: Date.now() - start,
+               type: 'api'
+          });
+
+          revalidatePath("/dashboard/subscriptions");
+          return { createSubscriptionPlanSuccess: true, createdSubscriptionPlan: createdProduct as any };
+     } catch (error: any) {
           await logServerAction({
                user_id: null,
                action: 'Create Polar Product Failed',
-               payload: { product, error },
+               payload: { product, error: error.message },
                status: 'fail',
                error: error.message,
                duration_ms: Date.now() - start,
-               type: 'db'
+               type: 'api'
           });
           return { createSubscriptionPlanSuccess: false, createSubscriptionPlanError: error };
      }
-
-     if (!data || !data.id) {
-          return { createSubscriptionPlanSuccess: false, createSubscriptionPlanError: "Failed to create product." };
-     }
-
-     // Insert prices if provided
-     if (prices && prices.length > 0) {
-          const priceEntries = prices.map(price => ({
-               ...price,
-               product_id: data.id
-          }));
-
-          const { error: priceError } = await supabase
-               .from(TABLES.POLAR_PRODUCT_PRICES)
-               .insert(priceEntries);
-
-          if (priceError) {
-               await logServerAction({
-                    user_id: null,
-                    action: 'Insert Polar Product Prices Failed',
-                    payload: { productId: data.id, priceError },
-                    status: 'fail',
-                    error: priceError.message,
-                    duration_ms: Date.now() - start,
-                    type: 'db'
-               });
-          }
-     }
-
-     await logServerAction({
-          user_id: null,
-          action: 'Create Polar Product Success',
-          payload: { productId: data.id },
-          status: 'success',
-          error: '',
-          duration_ms: Date.now() - start,
-          type: 'db'
-     });
-
-     return { createSubscriptionPlanSuccess: true, createdSubscriptionPlan: data };
 };
 
 /**
@@ -100,79 +154,49 @@ export const updateSubscriptionPlan = async (
 }> => {
 
      const start = Date.now();
-     const supabase = await useServerSideSupabaseAnonClient();
 
-     // Separate nested data
-     const { prices, benefits, medias, attachedCustomFields, ...productData } = product;
+     try {
+          // Update product on Polar.sh
+          const updatedProduct = await polar.products.update({
+               id: product.id,
+               productUpdate: {
+                    name: product.name,
+                    description: product.description,
+                    prices: product.prices?.map((price: PolarProductPrice) => ({
+                         amountType: price.amountType as any,
+                         priceAmount: price.priceAmount,
+                         priceCurrency: price.priceCurrency,
+                         recurringInterval: price.recurringInterval as any,
+                         id: price.id
+                    }))
+               }
+          });
 
-     const { data, error } = await supabase
-          .from(TABLES.POLAR_PRODUCTS)
-          .update(productData)
-          .eq("id", product.id)
-          .select()
-          .single();
+          await logServerAction({
+               user_id: null,
+               action: 'Update Polar Product Success',
+               payload: { productId: updatedProduct.id },
+               status: 'success',
+               error: '',
+               duration_ms: Date.now() - start,
+               type: 'api'
+          });
 
-     if (error) {
+          revalidatePath(`/dashboard/subscriptions/${updatedProduct.id}`);
+          revalidatePath("/dashboard/subscriptions");
+          return { updateSubscriptionPlanSuccess: true, updatedSubscriptionPlan: updatedProduct as any };
+     } catch (error: any) {
           await logServerAction({
                user_id: null,
                action: 'Update Polar Product Failed',
-               payload: { product, error },
+               payload: { product, error: error.message },
                status: 'fail',
                error: error.message,
                duration_ms: Date.now() - start,
-               type: 'db'
+               type: 'api'
           });
           return { updateSubscriptionPlanSuccess: false, updateSubscriptionPlanError: error };
      }
-
-     if (!data || !data.id) {
-          return { updateSubscriptionPlanSuccess: false, updateSubscriptionPlanError: "Failed to update product." };
-     }
-
-     // Update prices if provided
-     if (prices && prices.length > 0) {
-          // Delete existing prices
-          await supabase
-               .from(TABLES.POLAR_PRODUCT_PRICES)
-               .delete()
-               .eq('product_id', data.id);
-
-          // Insert new prices
-          const priceEntries = prices.map(price => ({
-               ...price,
-               product_id: data.id
-          }));
-
-          const { error: priceError } = await supabase
-               .from(TABLES.POLAR_PRODUCT_PRICES)
-               .insert(priceEntries);
-
-          if (priceError) {
-               await logServerAction({
-                    user_id: null,
-                    action: 'Update Polar Product Prices Failed',
-                    payload: { productId: data.id, priceError },
-                    status: 'fail',
-                    error: priceError.message,
-                    duration_ms: Date.now() - start,
-                    type: 'db'
-               });
-          }
-     }
-
-     await logServerAction({
-          user_id: null,
-          action: 'Update Polar Product Success',
-          payload: { productId: data.id },
-          status: 'success',
-          error: '',
-          duration_ms: Date.now() - start,
-          type: 'db'
-     });
-
-     revalidatePath(`/dashboard/subscriptions/${data.id}`);
-     revalidatePath("/dashboard/subscriptions");
-     return { updateSubscriptionPlanSuccess: true, updatedSubscriptionPlan: data };
 };
 
 /**
@@ -198,9 +222,9 @@ export const readSubscriptionPlan = async (id: string): Promise<{
      if (!productError && product) {
           // Fetch related data separately
           const [pricesResult, benefitsResult, mediasResult] = await Promise.all([
-               supabase.from(TABLES.POLAR_PRODUCT_PRICES).select('*').eq('product_id', id),
-               supabase.from(TABLES.POLAR_PRODUCT_BENEFITS).select('*').eq('product_id', id),
-               supabase.from(TABLES.POLAR_PRODUCT_MEDIAS).select('*').eq('product_id', id)
+               supabase.from(TABLES.POLAR_PRODUCT_PRICES).select('*').eq('productId', id),
+               supabase.from(TABLES.POLAR_PRODUCT_BENEFITS).select('*').eq('productId', id),
+               supabase.from(TABLES.POLAR_PRODUCT_MEDIAS).select('*').eq('productId', id)
           ]);
 
           product.prices = pricesResult.data || [];
@@ -291,71 +315,43 @@ export const deleteSubscriptionPlansByIds = async (ids: string[]): Promise<{
      deleteSubscriptionPlansError?: any
 }> => {
 
-     const supabase = await useServerSideSupabaseAnonClient();
      const start = Date.now();
 
-     // Delete related prices first
-     const { error: priceError } = await supabase
-          .from(TABLES.POLAR_PRODUCT_PRICES)
-          .delete()
-          .in("product_id", ids);
+     try {
+          // Delete products from Polar.sh
+          for (const id of ids) {
+               await polar.products.update({
+                    id,
+                    productUpdate: {
+                         isArchived: true
+                    }
+               });
+          }
 
-     if (priceError) {
           await logServerAction({
                user_id: null,
-               action: 'Delete Polar Product Prices Failed',
-               payload: { ids, priceError },
-               status: 'fail',
-               error: priceError.message,
+               action: 'Archive Polar Products Success',
+               payload: { ids },
+               status: 'success',
+               error: '',
                duration_ms: Date.now() - start,
-               type: 'db'
+               type: 'api'
           });
-          return { deleteSubscriptionPlansSuccess: false, deleteSubscriptionPlansError: priceError };
-     }
 
-     // Delete related benefits
-     await supabase
-          .from(TABLES.POLAR_PRODUCT_BENEFITS)
-          .delete()
-          .in("product_id", ids);
-
-     // Delete related medias
-     await supabase
-          .from(TABLES.POLAR_PRODUCT_MEDIAS)
-          .delete()
-          .in("product_id", ids);
-
-     // Now delete the products
-     const { error } = await supabase
-          .from(TABLES.POLAR_PRODUCTS)
-          .delete()
-          .in("id", ids);
-
-     if (error) {
+          revalidatePath("/dashboard/subscriptions");
+          return { deleteSubscriptionPlansSuccess: true };
+     } catch (error: any) {
           await logServerAction({
                user_id: null,
-               action: 'Delete Polar Products Failed',
-               payload: { ids, error },
+               action: 'Archive Polar Products Failed',
+               payload: { ids, error: error.message },
                status: 'fail',
                error: error.message,
                duration_ms: Date.now() - start,
-               type: 'db'
+               type: 'api'
           });
           return { deleteSubscriptionPlansSuccess: false, deleteSubscriptionPlansError: error };
      }
-
-     await logServerAction({
-          user_id: null,
-          action: 'Delete Polar Products Success',
-          payload: { ids },
-          status: 'success',
-          error: '',
-          duration_ms: Date.now() - start,
-          type: 'db'
-     });
-
-     revalidatePath("/dashboard/subscriptions");
-     return { deleteSubscriptionPlansSuccess: true };
 };
 
 /**
@@ -372,16 +368,16 @@ export const readAllActiveSubscriptionPlans = async (): Promise<{
      const { data: products, error } = await supabase
           .from(TABLES.POLAR_PRODUCTS)
           .select('*')
-          .eq("is_archived", false)
+          .eq("isArchived", false)
           .order('createdAt', { ascending: false });
 
      // Fetch related data for all products
      if (!error && products) {
           for (const product of products) {
                const [pricesResult, benefitsResult, mediasResult] = await Promise.all([
-                    supabase.from(TABLES.POLAR_PRODUCT_PRICES).select('*').eq('product_id', product.id),
-                    supabase.from(TABLES.POLAR_PRODUCT_BENEFITS).select('*').eq('product_id', product.id),
-                    supabase.from(TABLES.POLAR_PRODUCT_MEDIAS).select('*').eq('product_id', product.id)
+                    supabase.from(TABLES.POLAR_PRODUCT_PRICES).select('*').eq('productId', product.id),
+                    supabase.from(TABLES.POLAR_PRODUCT_BENEFITS).select('*').eq('productId', product.id),
+                    supabase.from(TABLES.POLAR_PRODUCT_MEDIAS).select('*').eq('productId', product.id)
                ]);
                product.prices = pricesResult.data || [];
                product.benefits = benefitsResult.data || [];
@@ -424,7 +420,7 @@ export const readSubscriptionPlanFromCustomerId = async (customerId: string): Pr
 
      const supabase = await useServerSideSupabaseAnonClient();
 
-     // Fetch the product_id from POLAR_SUBSCRIPTIONS based on customerId
+     // Fetch the productId from POLAR_SUBSCRIPTIONS based on customerId
      const { data: clientSubscription, error: clientSubscriptionError } = await supabase
           .from(TABLES.POLAR_SUBSCRIPTIONS)
           .select("id")
@@ -438,7 +434,7 @@ export const readSubscriptionPlanFromCustomerId = async (customerId: string): Pr
           };
      }
 
-     // Now fetch the product using the product_id
+     // Now fetch the product using the productId
      const { data: product, error: productError } = await supabase
           .from(TABLES.POLAR_PRODUCTS)
           .select('*')
@@ -447,8 +443,8 @@ export const readSubscriptionPlanFromCustomerId = async (customerId: string): Pr
 
      if (!productError && product) {
           const [pricesResult, benefitsResult] = await Promise.all([
-               supabase.from(TABLES.POLAR_PRODUCT_PRICES).select('*').eq('product_id', product.id),
-               supabase.from(TABLES.POLAR_PRODUCT_BENEFITS).select('*').eq('product_id', product.id)
+               supabase.from(TABLES.POLAR_PRODUCT_PRICES).select('*').eq('productId', product.id),
+               supabase.from(TABLES.POLAR_PRODUCT_BENEFITS).select('*').eq('productId', product.id)
           ]);
           product.prices = pricesResult.data || [];
           product.benefits = benefitsResult.data || [];
@@ -477,53 +473,43 @@ export const readSubscriptionPlanFromCustomerId = async (customerId: string): Pr
 export const subscribeCustomerAction = async (
      customerId: string,
      productId: string,
-     renewal_period: PolarRecurringInterval
+     priceId: string
 ): Promise<{ success: boolean; error?: string }> => {
      const supabase = await useServerSideSupabaseAnonClient();
      const userId = (await supabase.auth.getUser()).data.user?.id;
+     const start = Date.now();
 
-     const { data, error } = await supabase
-          .from(TABLES.POLAR_SUBSCRIPTIONS)
-          .insert({
+     try {
+          // Create subscription on Polar.sh
+          const subscription = await polar.subscriptions.create({
                customerId: customerId,
-               product_id: productId,
-               status: "trialing",
-               createdAt: new Date().toISOString(),
-               updated_at: new Date().toISOString(),
-               recurring_interval: renewal_period,
-               recurring_interval_count: 1,
-               apartment_count: 0,
-               amount: 0,
-               currency: 'USD',
-               current_period_start: new Date().toISOString(),
-               current_period_end: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(),
-               cancel_at_period_end: false
+               productId: productId
           });
 
-     if (error) {
+          await logServerAction({
+               user_id: userId ?? '',
+               action: "Subscribe Customer Action Successful",
+               payload: { customerId, productId, subscriptionId: subscription.id },
+               status: "success",
+               error: "",
+               duration_ms: Date.now() - start,
+               type: "api",
+          });
+
+          revalidatePath(`/dashboard/clients/${customerId}`);
+          return { success: true };
+     } catch (error: any) {
           await logServerAction({
                user_id: userId ?? '',
                action: "Subscribe Customer Action Error",
-               payload: { customerId, productId, error },
+               payload: { customerId, productId, error: error.message },
                status: "fail",
                error: error.message,
-               duration_ms: 0,
-               type: "action",
+               duration_ms: Date.now() - start,
+               type: "api",
           });
           return { success: false, error: error.message };
      }
-
-     await logServerAction({
-          user_id: userId ?? '',
-          action: "Subscribe Customer Action Successful",
-          payload: { customerId, productId },
-          status: "success",
-          error: "",
-          duration_ms: 0,
-          type: "action",
-     });
-
-     return { success: true };
 };
 
 /**
@@ -532,45 +518,43 @@ export const subscribeCustomerAction = async (
  * @returns {Promise<{success: boolean; error?: string}>}
  */
 export const unsubscribeCustomerAction = async (
+     subscriptionId: string,
      customerId: string
 ): Promise<{ success: boolean; error?: string }> => {
      const supabase = await useServerSideSupabaseAnonClient();
      const userId = (await supabase.auth.getUser()).data.user?.id;
+     const start = Date.now();
 
-     const { data, error } = await supabase
-          .from(TABLES.POLAR_SUBSCRIPTIONS)
-          .update({
-               status: "canceled",
-               cancel_at_period_end: true,
-               canceled_at: new Date().toISOString(),
-          })
-          .eq("customerId", customerId)
-          .eq("status", "active");
+     try {
+          // Cancel subscription on Polar.sh
+          await polar.subscriptions.revoke({
+               id: subscriptionId
+          });
 
-     if (error) {
           await logServerAction({
                user_id: userId ?? '',
                action: "Unsubscribe Customer Action",
-               payload: { customerId, error },
+               payload: { customerId, subscriptionId },
+               status: "success",
+               error: "",
+               duration_ms: Date.now() - start,
+               type: "api",
+          });
+
+          revalidatePath(`/dashboard/clients/${customerId}`);
+          return { success: true };
+     } catch (error: any) {
+          await logServerAction({
+               user_id: userId ?? '',
+               action: "Unsubscribe Customer Action",
+               payload: { customerId, subscriptionId, error: error.message },
                status: "fail",
                error: error.message,
-               duration_ms: 0,
-               type: "action",
+               duration_ms: Date.now() - start,
+               type: "api",
           });
           return { success: false, error: error.message };
      }
-
-     await logServerAction({
-          user_id: userId ?? '',
-          action: "Unsubscribe Customer Action",
-          payload: { customerId },
-          status: "success",
-          error: "",
-          duration_ms: 0,
-          type: "action",
-     });
-
-     return { success: true };
 };
 
 /**
@@ -605,18 +589,18 @@ export const readCustomerSubscriptionPlanFromCustomerId = async (customerId: str
           .eq("customerId", customerId)
           .single();
 
-     if (!customerSubscriptionPlanDataError && customerSubscriptionPlanData && customerSubscriptionPlanData.product_id) {
+     if (!customerSubscriptionPlanDataError && customerSubscriptionPlanData && customerSubscriptionPlanData.productId) {
           // Fetch the product separately
           const { data: product } = await supabase
                .from(TABLES.POLAR_PRODUCTS)
                .select('*')
-               .eq('id', customerSubscriptionPlanData.product_id)
+               .eq('id', customerSubscriptionPlanData.productId)
                .single();
 
           if (product) {
                const [pricesResult, benefitsResult] = await Promise.all([
-                    supabase.from(TABLES.POLAR_PRODUCT_PRICES).select('*').eq('product_id', product.id),
-                    supabase.from(TABLES.POLAR_PRODUCT_BENEFITS).select('*').eq('product_id', product.id)
+                    supabase.from(TABLES.POLAR_PRODUCT_PRICES).select('*').eq('productId', product.id),
+                    supabase.from(TABLES.POLAR_PRODUCT_BENEFITS).select('*').eq('productId', product.id)
                ]);
                product.prices = pricesResult.data || [];
                product.benefits = benefitsResult.data || [];
@@ -667,135 +651,68 @@ export const readCustomerSubscriptionPlanFromCustomerId = async (customerId: str
  * Update or create a client's subscription.
  * @param {string} customerId The client ID.
  * @param {string} productId The Polar product ID.
- * @param {object} opts Optional parameters like status, apartment_count, etc.
+ * @param {object} opts Optional parameters like status, apartmentCount, etc.
  * @returns {Promise<{success: boolean; error?: string}>}
  */
 export const updateCustomerSubscriptionForCustomer = async (
+     subscriptionId: string,
      customerId: string,
      productId: string,
      opts?: {
-          status?: 'trialing' | 'active' | 'past_due' | 'canceled',
-          apartment_count?: number,
-          amount?: number,
-          current_period_end?: string
+          apartmentCount?: number,
+          productPriceId?: string
      }
 ): Promise<{ success: boolean; error?: string }> => {
 
-     if (!customerId || !productId) {
-          return { success: false, error: 'Customer ID and Product ID are required' };
+     if (!subscriptionId || !customerId || !productId) {
+          return { success: false, error: 'Subscription ID, Customer ID and Product ID are required' };
      }
 
      const supabase = await useServerSideSupabaseAnonClient();
      const userId = (await supabase.auth.getUser()).data.user?.id;
+     const start = Date.now();
 
-     // Check if subscription exists
-     const { data: existing, error: readErr } = await supabase
-          .from(TABLES.POLAR_SUBSCRIPTIONS)
-          .select('id')
-          .eq('customerId', customerId)
-          .single();
-
-     if (readErr && readErr.code !== 'PGRST116') {
-          await logServerAction({
-               user_id: userId ?? '',
-               action: 'Read Customer Subscription (for update)',
-               payload: { customerId, readErr },
-               status: 'fail',
-               error: readErr.message,
-               duration_ms: 0,
-               type: 'db'
-          });
-          return { success: false, error: readErr.message };
-     }
-
-     const nowIso = new Date().toISOString();
-     const subscriptionStatus = opts?.status ?? 'active';
-
-     if (existing?.id) {
+     try {
+          // Update subscription on Polar.sh
           const updatePayload: any = {
-               product_id: productId,
-               updated_at: nowIso,
-               status: subscriptionStatus,
+               productId: productId
           };
 
-          if (opts?.apartment_count !== undefined) updatePayload.apartment_count = opts.apartment_count;
-          if (opts?.amount !== undefined) updatePayload.amount = opts.amount;
-          if (opts?.current_period_end) updatePayload.current_period_end = opts.current_period_end;
-
-          const { error: updErr } = await supabase
-               .from(TABLES.POLAR_SUBSCRIPTIONS)
-               .update(updatePayload)
-               .eq('id', existing.id);
-
-          if (updErr) {
-               await logServerAction({
-                    user_id: userId ?? '',
-                    action: 'Update Customer Subscription',
-                    payload: { customerId, productId, error: updErr.message },
-                    status: 'fail',
-                    error: updErr.message,
-                    duration_ms: 0,
-                    type: 'db'
-               });
-               return { success: false, error: updErr.message };
+          if (opts?.apartmentCount !== undefined) {
+               updatePayload.seats = opts.apartmentCount;
           }
+          if (opts?.productPriceId) {
+               updatePayload.productPriceId = opts.productPriceId;
+          }
+
+          await polar.subscriptions.update({
+               id: subscriptionId,
+               subscriptionUpdate: updatePayload
+          });
 
           await logServerAction({
                user_id: userId ?? '',
                action: 'Update Customer Subscription',
-               payload: { customerId, productId },
+               payload: { subscriptionId, customerId, productId },
                status: 'success',
                error: '',
-               duration_ms: 0,
-               type: 'db'
+               duration_ms: Date.now() - start,
+               type: 'api'
           });
           revalidatePath(`/dashboard/clients/${customerId}`);
           return { success: true };
-     }
-
-     // Insert if missing
-     const { error: insErr } = await supabase
-          .from(TABLES.POLAR_SUBSCRIPTIONS)
-          .insert({
-               customerId: customerId,
-               product_id: productId,
-               status: subscriptionStatus,
-               createdAt: nowIso,
-               updated_at: nowIso,
-               apartment_count: opts?.apartment_count ?? 0,
-               amount: opts?.amount ?? 0,
-               currency: 'USD',
-               recurring_interval: 'month',
-               recurring_interval_count: 1,
-               current_period_start: nowIso,
-               current_period_end: opts?.current_period_end ?? new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(),
-               cancel_at_period_end: false
-          });
-
-     if (insErr) {
+     } catch (error: any) {
           await logServerAction({
                user_id: userId ?? '',
-               action: 'Insert Customer Subscription',
-               payload: { customerId, productId, error: insErr.message },
+               action: 'Update Customer Subscription',
+               payload: { subscriptionId, customerId, productId, error: error.message },
                status: 'fail',
-               error: insErr.message,
-               duration_ms: 0,
-               type: 'db'
+               error: error.message,
+               duration_ms: Date.now() - start,
+               type: 'api'
           });
-          return { success: false, error: insErr.message };
+          return { success: false, error: error.message };
      }
-
-     await logServerAction({
-          user_id: userId ?? '',
-          action: 'Insert Customer Subscription',
-          payload: { customerId, productId },
-          status: 'success',
-          error: '',
-          duration_ms: 0,
-          type: 'db'
-     });
-     revalidatePath(`/dashboard/clients/${customerId}`);
-     return { success: true };
 };
 
 /**
@@ -828,46 +745,6 @@ export const checkCustomerSubscriptionStatus = async (
      }
 
      return { success: true, isActive: data?.status === 'active' || data?.status === 'trialing' };
-};
-
-/**
- * Delete a client's subscription.
- * @param {string} customerId The client ID.
- * @returns {Promise<{success: boolean; error?: string}>}
- */
-export const deleteCustomerSubscription = async (
-     customerId: string
-): Promise<{ success: boolean; error?: string }> => {
-     const supabase = await useServerSideSupabaseAnonClient();
-     const { error } = await supabase
-          .from(TABLES.POLAR_SUBSCRIPTIONS)
-          .delete()
-          .eq('customerId', customerId);
-
-     if (error) {
-          await logServerAction({
-               user_id: customerId ?? '',
-               action: 'Delete Customer Subscription',
-               payload: { customerId, error },
-               status: 'fail',
-               error: error.message,
-               duration_ms: 0,
-               type: 'db'
-          });
-          return { success: false, error: error.message };
-     }
-
-     await logServerAction({
-          user_id: customerId ?? '',
-          action: 'Delete Customer Subscription',
-          payload: { customerId },
-          status: 'success',
-          error: '',
-          duration_ms: 0,
-          type: 'db'
-     });
-     revalidatePath(`/dashboard/clients/${customerId}`);
-     return { success: true };
 };
 
 export const getProductFromCustomerSubscription = async (customerId: string): Promise<PolarProduct | null> => {
