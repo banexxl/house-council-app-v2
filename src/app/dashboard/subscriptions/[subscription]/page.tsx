@@ -1,7 +1,7 @@
 import { Box, Container, Stack } from "@mui/material";
 import { notFound } from "next/navigation";
 import { readSubscriptionPlan } from "src/app/actions/subscription-plan/subscription-plan-actions";
-// import SubscriptionEditor from "src/sections/dashboard/subscriptions/subscription-form";
+import SubscriptionEditor from "src/sections/dashboard/subscriptions/subscription-form";
 
 // Unified page: handles both existing subscription editing and new creation when param === 'new'
 export default async function SubscriptionEditorPage({ params }: { params: Promise<{ subscription: string }> }) {
@@ -20,9 +20,9 @@ export default async function SubscriptionEditorPage({ params }: { params: Promi
           <Box component="main" sx={{ flexGrow: 1, py: 8 }}>
                <Container maxWidth="xl">
                     <Stack spacing={4}>
-                         {/* <SubscriptionEditor
+                         <SubscriptionEditor
                               subscriptionPlansData={subscriptionPlan || undefined}
-                         /> */}
+                         />
                     </Stack>
                </Container>
           </Box>

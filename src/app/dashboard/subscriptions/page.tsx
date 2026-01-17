@@ -1,8 +1,7 @@
 import { Box, Container, Stack, Card } from "@mui/material";
 import { readAllSubscriptionPlans } from "src/app/actions/subscription-plan/subscription-plan-actions";
-// import { SubscriptionTable } from "src/sections/dashboard/subscriptions/subscriptions-table";
+import { SubscriptionTable } from "src/sections/dashboard/subscriptions/subscriptions-table";
 import { getViewer } from "src/libs/supabase/server-auth";
-import { logout } from "src/app/auth/actions";
 import { redirect } from "next/navigation";
 
 export default async function Page() {
@@ -25,9 +24,9 @@ export default async function Page() {
                <Container maxWidth="xl">
                     <Stack spacing={4}>
                          <Card>
-                              {/* <SubscriptionTable
+                              <SubscriptionTable
                                    subscriptionPlans={subscriptionPlans.subscriptionPlansData}
-                              /> */}
+                              />
                          </Card>
                     </Stack>
                </Container>
