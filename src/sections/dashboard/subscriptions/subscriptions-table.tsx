@@ -67,7 +67,7 @@ export const SubscriptionTable: FC<SubscriptionListTableProps> = ({ subscription
                     selects={[
                          {
                               field: 'archived',
-                              label: 'subscriptionPlans.lblInactive',
+                              label: 'subscriptionPlans.lblActive',
                               options: [
                                    { value: 'true', label: 'common.lblYes' },
                                    { value: 'false', label: 'common.lblNo' }
@@ -111,7 +111,7 @@ export const SubscriptionTable: FC<SubscriptionListTableProps> = ({ subscription
                          },
                          {
                               key: 'isArchived',
-                              label: t('subscriptionPlans.lblInactive'),
+                              label: t('common.lblActive'),
                               render: (value: any) => (
                                    value ? <Chip label={t('common.lblInactive')} color="default" size="small" /> : <Chip label={t('common.lblActive')} color="success" size="small" />
                               )
