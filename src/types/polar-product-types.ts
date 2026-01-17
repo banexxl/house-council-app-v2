@@ -47,6 +47,7 @@ export interface PolarProductPrice {
      productId: string;
      type: string;
      recurringInterval: PolarProductInterval | null;
+     recurringIntervalCount?: number | null;
      priceCurrency?: string;
      priceAmount?: number;
      legacy?: boolean;
