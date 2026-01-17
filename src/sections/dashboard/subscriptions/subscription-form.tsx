@@ -79,6 +79,8 @@ export default function SubscriptionEditor({ subscriptionPlansData }: Subscripti
           subscriptionPlansData?.prices || []
      );
 
+     const [pricesChanged, setPricesChanged] = useState(false);
+
      const [organizationInfo, setOrganizationInfo] = useState<{
           id: string;
           slug: string;
@@ -128,6 +130,7 @@ export default function SubscriptionEditor({ subscriptionPlansData }: Subscripti
                          if (response.updateSubscriptionPlanSuccess) {
                               toast.success("Product updated successfully!");
                               formik.resetForm({ values: { ...formik.values } });
+                              setPricesChanged(false);
                          } else {
                               toast.error("Failed to update product.");
                          }
@@ -162,16 +165,19 @@ export default function SubscriptionEditor({ subscriptionPlansData }: Subscripti
                legacy: false,
                amountType: 'fixed',
           }]);
+          setPricesChanged(true);
      };
 
      const handleRemovePrice = (index: number) => {
           setPrices(prices.filter((_, i) => i !== index));
+          setPricesChanged(true);
      };
 
      const handlePriceChange = (index: number, field: keyof PolarProductPrice, value: any) => {
           const updated = [...prices];
           updated[index] = { ...updated[index], [field]: value };
           setPrices(updated);
+          setPricesChanged(true);
      };
      const formatPriceLabel = (price: PolarProductPrice) => {
           const amount = price.priceAmount ? `${(price.priceAmount / 100).toFixed(2)} ${price.priceCurrency?.toUpperCase()}` : 'Free';
@@ -456,7 +462,7 @@ export default function SubscriptionEditor({ subscriptionPlansData }: Subscripti
                               type="submit"
                               variant="contained"
                               color="primary"
-                              disabled={!formik.isValid || formik.isSubmitting || !formik.dirty}
+                              disabled={!formik.isValid || formik.isSubmitting || (!formik.dirty && !pricesChanged)}
                               startIcon={<SaveIcon />}
                          >
                               {t("common.btnSave")}
