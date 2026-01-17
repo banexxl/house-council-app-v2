@@ -45,7 +45,6 @@ export const getViewer = cache(async (): Promise<UserDataCombined> => {
      const { data: { user }, error: userErr } = await authSb.auth.getUser();
 
      if (userErr || !user) {
-          console.log(`[getViewer] No authenticated user: ${userErr}`);
           return {
                customer: null,
                tenant: null,
@@ -107,10 +106,8 @@ export const getViewer = cache(async (): Promise<UserDataCombined> => {
                if (success && data) {
                     featureCustomerId = data;
                }
-               console.log('featureCustomerId via getCustomerIdFromTenantBuilding', featureCustomerId);
           }
      }
-     console.log('featureCustomerId', featureCustomerId);
 
      let allowedFeatures: Feature[] = [];
      let allowedFeatureSlugs: string[] = [];
@@ -122,11 +119,8 @@ export const getViewer = cache(async (): Promise<UserDataCombined> => {
                .select('id, productId')
                .eq('customerId', featureCustomerId)
                .single();
-          console.log('clientSubscription', subscriptionError);
           subscriptionPlanId = subscriptionError?.code === 'PGRST116' ? null : clientSubscription?.id ?? null;
           const productId = subscriptionError?.code === 'PGRST116' ? null : clientSubscription?.productId ?? null;
-          console.log('productId', productId);
-
           if (productId) {
                // Fetch product metadata from tblPolarProduct
                const { data: productData, error: productError } = await supabase
@@ -134,8 +128,6 @@ export const getViewer = cache(async (): Promise<UserDataCombined> => {
                     .select('metadata')
                     .eq('id', productId)
                     .single();
-               console.log('productdata', productData);
-
                if (!productError && productData?.metadata) {
                     const featuresMetadata = productData.metadata as Record<string, string>;
 
@@ -157,12 +149,6 @@ export const getViewer = cache(async (): Promise<UserDataCombined> => {
                }
           }
      }
-
-     console.log('allowedFeatures', allowedFeatures);
-     console.log('allowedFeatureSlugs', allowedFeatureSlugs);
-     console.log('subscriptionPlanId', allowedFeatures);
-
-
      // Tenants inherit client features except location/tenant management
      if (tenant && !customer && allowedFeatures.length > 0) {
           const tenantBlocked = new Set(['geo-location-management']);

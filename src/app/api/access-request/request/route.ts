@@ -8,8 +8,6 @@ export async function POST(req: NextRequest) {
      } catch {
           return NextResponse.json({ success: false, error: 'Invalid JSON body' }, { status: 400 });
      }
-     console.log('Requesting access with body: ', body);
-
      const {
           name,
           email,

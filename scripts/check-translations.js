@@ -49,15 +49,15 @@ function main() {
 
   let hasMissing = false;
   for (const locale of locales) {
-    const p = path.join(translationsDir, `${locale}.ts`);
+    const p = path.join(translationsDir, `${ locale }.ts`);
     const present = extractKeysFromTranslation(read(p));
     const missing = allTokenKeys.filter(k => !present.has(k));
     if (missing.length > 0) hasMissing = true;
-    console.log(`${locale}: missing ${missing.length}`);
+    console.log(`${ locale }: missing ${ missing.length }`);
     if (missing.length > 0) {
       const preview = missing.slice(0, 25);
       for (const k of preview) console.log('  - ' + k);
-      if (missing.length > preview.length) console.log(`  ... and ${missing.length - preview.length} more`);
+      if (missing.length > preview.length) console.log(`  ... and ${ missing.length - preview.length } more`);
     }
   }
 

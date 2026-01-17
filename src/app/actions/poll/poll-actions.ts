@@ -395,8 +395,6 @@ export async function activateScheduledPoll(id: string): Promise<{ success: bool
 
     // Use the generic status update function
     const result = await updatePollStatus(id, 'active');
-    console.log('result', result);
-
     // Log the specific action completion
     if (result.success) {
 
@@ -407,7 +405,6 @@ export async function activateScheduledPoll(id: string): Promise<{ success: bool
                 .from(TABLES.POLLS)
                 .select('building_id')
                 .eq('id', id);
-            console.log('activateScheduledPoll - building fetch', { bErr, bRows });
             if (!bErr && bRows && bRows.length > 0) {
                 const buildingIds = Array.from(new Set((bRows as any[]).map(r => r.building_id).filter(Boolean)));
                 if (buildingIds.length > 0) {
@@ -415,7 +412,6 @@ export async function activateScheduledPoll(id: string): Promise<{ success: bool
                     const { data: tenants } = await readAllTenantsFromBuildingIds(buildingIds);
                     // 3) Fetch announcement for title/message
                     const { data: annRow, error: annErr } = await supabase.from(TABLES.POLLS).select('title, description').eq('id', id).maybeSingle();
-                    console.log('activateScheduledPoll - tenants fetch', { annErr, annRow, tenantCount: tenants?.length || 0 });
                     const createdAtISO = new Date().toISOString();
                     const rows = (tenants || []).map((tenant) => {
                         const notification = createPollPublishNotification({
@@ -429,8 +425,6 @@ export async function activateScheduledPoll(id: string): Promise<{ success: bool
                             url: `/dashboard/polls/${id}`,
                             title: annRow?.title
                         });
-                        console.log('notification', notification);
-
                         return notification as unknown as BaseNotification[];
                     }) as any[];
 

@@ -80,8 +80,6 @@ export const createSubscriptionPlan = async (product: PolarProduct):
 
           // Fetch organization from Polar.sh
           const orgResult = await getPolarOrganization();
-          console.log(orgResult);
-
           if (!orgResult.success || !orgResult.organization) {
                throw new Error(orgResult.error || 'No organization found in Polar account');
           }
@@ -118,9 +116,7 @@ export const createSubscriptionPlan = async (product: PolarProduct):
           let createdProduct;
           try {
                createdProduct = await polar.products.create(createPayload);
-               console.log('createdProduct', createdProduct);
           } catch (createError: any) {
-               console.error('Error creating product on Polar:', createError);
                throw new Error(`Failed to create product on Polar: ${createError.message}`);
           }
 
@@ -166,8 +162,6 @@ export const updateSubscriptionPlan = async (
      const start = Date.now();
      let updatedProduct
      try {
-          console.log('Update request - Full product object:', JSON.stringify(product, null, 2));
-
           // Update product on Polar.sh
           const pricesPayload = product.prices?.map((price: PolarProductPrice) => {
                // For existing prices, only send the ID
@@ -191,8 +185,6 @@ export const updateSubscriptionPlan = async (
                return priceData;
           });
 
-          console.log('Prices payload being sent:', JSON.stringify(pricesPayload, null, 2));
-
           const updatePayload: any = {
                name: product.name,
                description: product.description,
@@ -208,7 +200,6 @@ export const updateSubscriptionPlan = async (
                id: product.id,
                productUpdate: updatePayload
           });
-          console.log('updatedProduct', updatedProduct);
           await logServerAction({
                user_id: null,
                action: 'Update Polar Product Success',
@@ -307,9 +298,6 @@ export const readAllSubscriptionPlans = async (): Promise<{
           .from(TABLES.POLAR_PRODUCTS)
           .select('*')
           .order('createdAt', { ascending: false });
-     console.log('data', products);
-     console.log('error', productError);
-
      // Fetch related data for all products
      if (!productError && products) {
           for (const product of products) {
@@ -318,10 +306,6 @@ export const readAllSubscriptionPlans = async (): Promise<{
                     supabase.from(TABLES.POLAR_PRODUCT_BENEFITS).select('*').eq('productId', product.id),
                     supabase.from(TABLES.POLAR_PRODUCT_MEDIAS).select('*').eq('productId', product.id)
                ]);
-               console.log('pricesResult', pricesResult);
-               console.log('benefitsResult', benefitsResult);
-               console.log('mediasResult', mediasResult);
-
                product.prices = pricesResult.data || [];
                product.benefits = benefitsResult.data || [];
                product.medias = mediasResult.data || [];
