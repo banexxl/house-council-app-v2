@@ -990,9 +990,9 @@ export const getCustomerBuildingsForSocialProfile = async (
 // Returns true if the provided userId corresponds to a PolarCustomer record; false if tenant or not found.
 export const isCustomerUserId = async (userId: string): Promise<boolean> => {
      const supabase = await useServerSideSupabaseAnonClient();
-     const { data: customer, error: customerError } = await supabase.from(TABLES.POLAR_CUSTOMERS).select('customerId').eq('externalId', userId).single();
+     const { data: customer, error: customerError } = await supabase.from(TABLES.POLAR_CUSTOMERS).select('id').eq('externalId', userId).single();
      if (customerError) log(`isCustomerUserId error (customer): ${customerError.message}`, 'error');
-     if (customer && isUUIDv4(customer.customerId) && !customerError) return true;
+     if (customer && isUUIDv4(customer.id) && !customerError) return true;
      const { data: tenant, error: tenantError } = await supabase.from(TABLES.TENANTS).select('id').eq('user_id', userId).single();
      if (tenantError) log(`isCustomerUserId error (tenant): ${tenantError.message}`, 'error');
      if (tenant && isUUIDv4(tenant.id) && !tenantError) return false;

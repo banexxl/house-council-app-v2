@@ -938,7 +938,7 @@ export const getBuildingTenants = async (): Promise<{
                // Check if user is a customer
                const { data: customerData } = await supabase
                     .from(TABLES.POLAR_CUSTOMERS)
-                    .select('customerId')
+                    .select('id')
                     .eq('externalId', user.id);
 
                if (customerData && customerData.length > 0) {
@@ -946,7 +946,7 @@ export const getBuildingTenants = async (): Promise<{
                     const { data: buildings } = await supabase
                          .from(TABLES.BUILDINGS)
                          .select('id')
-                         .eq('customerId', customerData[0].customerId);
+                         .eq('customerId', customerData[0].id);
 
                     buildingIds = buildings?.map(b => b.id) || [];
                }

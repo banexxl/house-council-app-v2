@@ -56,24 +56,18 @@ export const getViewer = cache(async (): Promise<UserDataCombined> => {
      }
 
      // DB lookups (you already use service role; keep it if you need to bypass RLS)
-     const db = await useServerSideSupabaseServiceRoleClient();
-
-     // Helper that returns null instead of throwing for "no rows"
-     const maybeSingle = <T,>(q: any) =>
-          q.single().then((r: any) => r.data as T).catch((e: any) => {
-               // PGRST116 = No rows found
-               if (e?.code === 'PGRST116') return null;
-               throw e;
-          });
+     const supabase = await useServerSideSupabaseServiceRoleClient();
 
      // Run in parallel
-     const [customer, tenant, admin] = await Promise.all([
-          maybeSingle(db.from(TABLES.POLAR_CUSTOMERS).select('*').eq('externalId', user.id)),
-          maybeSingle(db.from(TABLES.TENANTS).select(tenantSelect).eq('user_id', user.id)),
-          maybeSingle(db.from(TABLES.SUPER_ADMINS).select('*').eq('user_id', user.id)),
-     ]).catch((err) => {
-          return [null, null, null, null] as const;
-     });
+     const [customerRes, tenantRes, adminRes] = await Promise.all([
+          supabase.from(TABLES.POLAR_CUSTOMERS).select('*').eq('externalId', user.id).single(),
+          supabase.from(TABLES.TENANTS).select(tenantSelect).eq('user_id', user.id).single(),
+          supabase.from(TABLES.SUPER_ADMINS).select('*').eq('user_id', user.id).single(),
+     ]);
+
+     const customer: PolarCustomer | null = !customerRes.error && customerRes.data ? customerRes.data as unknown as PolarCustomer : null;
+     const tenant: Tenant | null = !tenantRes.error && tenantRes.data ? tenantRes.data as unknown as Tenant : null;
+     const admin: Admin | null = !adminRes.error && adminRes.data ? adminRes.data as unknown as Admin : null;
 
      // Choose the first matching role by your preferred priority
      const result: UserDataCombined = {
@@ -99,10 +93,12 @@ export const getViewer = cache(async (): Promise<UserDataCombined> => {
      if (!featureCustomerId && tenant) {
           // First, try to resolve via joined apartment/building (if relation is configured)
           if (tenant.apartment?.building?.id) {
-               const building = await maybeSingle<{ customerId: string | null }>(
-                    db.from(TABLES.BUILDINGS).select('customerId').eq('id', tenant.apartment.building.id),
-               );
-               featureCustomerId = building?.customerId ?? null;
+               const { data: building, error: buildingError } = await supabase
+                    .from(TABLES.BUILDINGS)
+                    .select('customerId')
+                    .eq('id', tenant.apartment.building.id)
+                    .single();
+               featureCustomerId = buildingError?.code === 'PGRST116' ? null : building?.customerId ?? null;
           }
 
           // Fallback: use robust helper that walks TENANTS -> APARTMENTS -> BUILDINGS
@@ -114,46 +110,58 @@ export const getViewer = cache(async (): Promise<UserDataCombined> => {
                console.log('featureCustomerId via getCustomerIdFromTenantBuilding', featureCustomerId);
           }
      }
+     console.log('featureCustomerId', featureCustomerId);
 
      let allowedFeatures: Feature[] = [];
      let allowedFeatureSlugs: string[] = [];
      let subscriptionPlanId: string | null = null;
 
      if (featureCustomerId) {
-          const clientSubscription = await maybeSingle<{ subscriptionId: string | null }>(
-               db.from(TABLES.POLAR_SUBSCRIPTIONS)
-                    .select('subscriptionId')
-                    .eq('customerId', featureCustomerId),
-          );
-          subscriptionPlanId = clientSubscription?.subscriptionId ?? null;
-          if (subscriptionPlanId) {
-               const { data: featureLinks, error: featureLinksError } = await db
-                    .from(TABLES.SUBSCRIPTION_PLANS_FEATURES)
-                    .select('feature_id')
-                    .eq('subscription_plan_id', subscriptionPlanId);
+          const { data: clientSubscription, error: subscriptionError } = await supabase
+               .from(TABLES.POLAR_SUBSCRIPTIONS)
+               .select('id, productId')
+               .eq('customerId', featureCustomerId)
+               .single();
+          console.log('clientSubscription', subscriptionError);
+          subscriptionPlanId = subscriptionError?.code === 'PGRST116' ? null : clientSubscription?.id ?? null;
+          const productId = subscriptionError?.code === 'PGRST116' ? null : clientSubscription?.productId ?? null;
+          console.log('productId', productId);
 
-               if (!featureLinksError) {
-                    const featureIds = (featureLinks ?? [])
-                         .map((row: any) => row?.feature_id)
-                         .filter(Boolean);
+          if (productId) {
+               // Fetch product metadata from tblPolarProduct
+               const { data: productData, error: productError } = await supabase
+                    .from(TABLES.POLAR_PRODUCTS)
+                    .select('metadata')
+                    .eq('id', productId)
+                    .single();
+               console.log('productdata', productData);
 
-                    if (featureIds.length > 0) {
-                         const { data: featuresData, error: featuresError } = await db
-                              .from(TABLES.FEATURES)
-                              .select('*')
-                              .in('id', featureIds);
+               if (!productError && productData?.metadata) {
+                    const featuresMetadata = productData.metadata as Record<string, string>;
 
-                         if (!featuresError && Array.isArray(featuresData)) {
-                              allowedFeatures = featuresData as Feature[];
+                    // Fetch all features from the features table
+                    const { data: allFeatures, error: featuresError } = await supabase
+                         .from(TABLES.FEATURES)
+                         .select('*');
 
-                              allowedFeatureSlugs = allowedFeatures
-                                   .map((f) => f.slug)
-                                   .filter(Boolean) as string[];
-                         }
+                    if (!featuresError && Array.isArray(allFeatures)) {
+                         // Filter features based on what's in the product metadata
+                         allowedFeatures = (allFeatures as Feature[]).filter((feature) =>
+                              feature.slug && featuresMetadata.hasOwnProperty(feature.slug)
+                         );
+
+                         allowedFeatureSlugs = allowedFeatures
+                              .map((f) => f.slug)
+                              .filter(Boolean) as string[];
                     }
                }
           }
      }
+
+     console.log('allowedFeatures', allowedFeatures);
+     console.log('allowedFeatureSlugs', allowedFeatureSlugs);
+     console.log('subscriptionPlanId', allowedFeatures);
+
 
      // Tenants inherit client features except location/tenant management
      if (tenant && !customer && allowedFeatures.length > 0) {
