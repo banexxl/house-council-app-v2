@@ -56,7 +56,7 @@ export const SubscriptionTable: FC<SubscriptionListTableProps> = ({ subscription
           if (!product.isRecurring) return t('subscriptionPlans.oneTime');
           const count = product.recurringIntervalCount;
           const interval = product.recurringInterval;
-          return count === 1 ? t(`subscriptionPlans.interval.${interval}`) : `${count} ${t(`subscriptionPlans.interval.${interval}s`)}`;
+          return count === 1 ? t(`subscriptionPlans.interval.${interval}`) : `${count} ${t(`subscriptionPlans.interval.${interval}`)}`;
      };
 
      return (
