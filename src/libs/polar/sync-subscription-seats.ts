@@ -46,14 +46,15 @@ export async function syncPolarSeatsForClient({ customerId }: SyncSeatsArgs) {
      let subUpdate
      // 3) Ingest the usage event into Polar
      try {
-          subUpdate = await polar.subscriptions.update({
-               id: sub.id,
-               subscriptionUpdate: {
-                    productId: product.id,
-                    prorationBehavior: 'invoice',
-                    seats: apartmentsCount * product?.prices[0]?.priceAmount! || 1,
-               }
-          })
+          subUpdate = await polar.events.ingest({
+               events: [{
+                    name: "apartments.seats", // Matches your filter
+                    customerId: sub.customerId,
+                    metadata: {
+                         apartments_count: apartmentsCount, // Value for Maximum aggregation
+                    },
+               }],
+          });
           await logServerAction({
                action: "syncPolarSeatsForClient",
                duration_ms: Date.now() - t0,
