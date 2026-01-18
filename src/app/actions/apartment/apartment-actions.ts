@@ -303,7 +303,6 @@ export async function createOrUpdateApartment(payload: Apartment) {
                .insert(apartmentPayload)
                .select()
                .single();
-
           if (error) {
                await logServerAction({ action: "createApartment", duration_ms: Date.now() - t0, error: error.message, payload, status: "fail", type: "db", user_id: null, id: "" });
                return { success: false, error: error.message };
@@ -317,12 +316,13 @@ export async function createOrUpdateApartment(payload: Apartment) {
           }
 
           // ✅ NEW: sync Polar seats
-          // You must know the clientId here.
+          // You must know the customerId here.
           // If apartmentPayload has customerId, use it.
-          // Otherwise derive clientId from the building.
+          // Otherwise derive customerId from the building.
           const customerId = building.customerId
 
           const sync = await syncPolarSeatsForClient({ customerId });
+          console.log('sync ', sync);
 
           if (!sync.success) {
                // rollback the apartment creation

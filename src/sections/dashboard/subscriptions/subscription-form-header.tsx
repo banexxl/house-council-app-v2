@@ -8,10 +8,10 @@
 // import { paths } from 'src/paths'
 // import { useTranslation } from 'react-i18next'
 // import { Box } from '@mui/system'
-// import { SubscriptionPlan } from 'src/types/subscription-plan';
+// import { PolarSubscription } from 'src/types/subscription-plan';
 
 // type ClientFormHeaderProps = {
-//      subscriptionPlan?: SubscriptionPlan
+//      subscriptionPlan?: PolarSubscription
 // }
 
 // export const SubscriptionFormHeader = (props: ClientFormHeaderProps) => {

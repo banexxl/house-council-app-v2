@@ -23,12 +23,12 @@
 // import toast from 'react-hot-toast';
 // import { GenericTable } from 'src/components/generic-table';
 // import { sendPasswordRecoveryEmail } from 'src/app/actions/customer/customer-actions';
-// import { SubscriptionPlan } from 'src/types/subscription-plan';
+// import { PolarSubscription } from 'src/types/subscription-plan';
 
 // interface AccountTeamSettingsProps {
 //   members: ClientMember[];
 //   client: Client;
-//   clientSubscriptionPlan: SubscriptionPlan | null;
+//   clientSubscriptionPlan: PolarSubscription | null;
 // }
 
 // export const AccountTeamSettings: FC<AccountTeamSettingsProps> = (props) => {

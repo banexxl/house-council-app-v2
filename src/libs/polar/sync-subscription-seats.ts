@@ -15,11 +15,10 @@ export async function syncPolarSeatsForClient({ customerId }: SyncSeatsArgs) {
      // 1) Load active subscription + Polar customer id
      const { data: sub, error: subErr } = await supabase
           .from(TABLES.POLAR_SUBSCRIPTIONS)
-          .select("id,status,customerId")
+          .select("id,status,customerId,productId")
           .eq("customerId", customerId)
           .in("status", ["trialing", "active"])
           .maybeSingle();
-
      if (subErr || !sub?.customerId || !sub?.id) {
           return { success: false as const, error: "No active Polar subscription found." };
      }
@@ -29,20 +28,20 @@ export async function syncPolarSeatsForClient({ customerId }: SyncSeatsArgs) {
           .from(TABLES.APARTMENTS)
           .select("id, tblBuildings!inner(customerId)", { count: "exact", head: true })
           .eq("tblBuildings.customerId", customerId);
-
      if (error) {
           return { success: false as const, error: "Failed to count apartments." };
      }
 
-     const { subscriptionPlan, readSubscriptionPlanSuccess, readSubscriptionPlanError } = await readSubscriptionPlan(sub.id)
+     const { subscriptionPlan, readSubscriptionPlanSuccess, readSubscriptionPlanError } = await readSubscriptionPlan(sub.productId)
      if (!readSubscriptionPlanSuccess || !subscriptionPlan) {
           return { success: false as const, error: readSubscriptionPlanError || "Failed to load subscription plan." };
      }
-
      const apartmentsCount = Math.max(0, count ?? 0);
-
      //Get the product from the subscription and then its price
      const product = await getProductFromCustomerSubscription(customerId);
+     if (!product) {
+          return { success: false as const, error: "Failed to load product from subscription." };
+     }
 
      let subUpdate
      // 3) Ingest the usage event into Polar
@@ -50,12 +49,11 @@ export async function syncPolarSeatsForClient({ customerId }: SyncSeatsArgs) {
           subUpdate = await polar.subscriptions.update({
                id: sub.id,
                subscriptionUpdate: {
-                    productId: sub.id,
+                    productId: product.id,
                     prorationBehavior: 'invoice',
                     seats: apartmentsCount * product?.prices[0]?.priceAmount! || 1,
                }
           })
-
           await logServerAction({
                action: "syncPolarSeatsForClient",
                duration_ms: Date.now() - t0,
@@ -83,7 +81,7 @@ export async function syncPolarSeatsForClient({ customerId }: SyncSeatsArgs) {
                type: "api",
                user_id: null,
           });
-
+          console.log('subUpdate', subUpdate);
           return { success: false as const, error: err?.message };
      }
 }

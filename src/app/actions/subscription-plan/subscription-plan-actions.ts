@@ -241,7 +241,6 @@ export const readSubscriptionPlan = async (id: string): Promise<{
 }> => {
 
      const supabase = await useServerSideSupabaseAnonClient();
-
      // Fetch the product with prices and benefits
      const { data: product, error: productError } = await supabase
           .from(TABLES.POLAR_PRODUCTS)
@@ -770,7 +769,8 @@ export const checkCustomerSubscriptionStatus = async (
      return { success: true, isActive: data?.status === 'active' || data?.status === 'trialing' };
 };
 
-export const getProductFromCustomerSubscription = async (customerId: string): Promise<PolarProduct | null> => {
+export const getProductFromCustomerSubscription = async (customerId: string):
+     Promise<PolarProduct & { prices: PolarProductPrice[] } | null> => {
 
      const supabase = await useServerSideSupabaseAnonClient();
 
@@ -785,7 +785,7 @@ export const getProductFromCustomerSubscription = async (customerId: string): Pr
 
      const { data: product, error: productError } = await supabase
           .from(TABLES.POLAR_PRODUCTS)
-          .select('*')
+          .select(`*, prices:${TABLES.POLAR_PRODUCT_PRICES}(*)`)
           .eq('id', subscription.productId)
           .single();
 
@@ -793,5 +793,5 @@ export const getProductFromCustomerSubscription = async (customerId: string): Pr
           return null;
      }
 
-     return product;
+     return product as any;
 }

@@ -861,11 +861,11 @@ const calculateCustomerProfileProgress = (profile: Partial<{ first_name?: string
 };
 
 export const getCustomerBuildingsForSocialProfile = async (
-     clientId?: string
+     customerId?: string
 ): Promise<{ success: boolean; data?: CustomerBuildingOption[]; error?: string }> => {
      const supabase = await useServerSideSupabaseAnonClient();
      const viewer = await getViewer();
-     const effectiveCustomerId = clientId ?? viewer.customer?.id
+     const effectiveCustomerId = customerId ?? viewer.customer?.id
 
      if (!effectiveCustomerId) {
           log('getCustomerBuildingsForSocialProfile error: PolarCustomer not found', 'error');
@@ -886,7 +886,7 @@ export const getCustomerBuildingsForSocialProfile = async (
           .order('created_at', { ascending: false });
 
      if (error) {
-          log(`getCustomerBuildingsForSocialProfile error for clientId ${effectiveCustomerId}: ${error.message}`, 'error');
+          log(`getCustomerBuildingsForSocialProfile error for customerId ${effectiveCustomerId}: ${error.message}`, 'error');
           return { success: false, error: error.message };
      }
 
@@ -905,87 +905,98 @@ export const getCustomerBuildingsForSocialProfile = async (
      return { success: true, data: options };
 };
 
-// export const createCustomerSocialProfile = async (buildingId: string): Promise<{ success: boolean; error?: string }> => {
-//      const supabase = await useServerSideSupabaseAnonClient();
-//      const viewer = await getViewer();
-//      const customer = viewer.customer ?? null;
-//      const clientId = customer?.id ?? null
+export const createCustomerSocialProfile = async (buildingId: string): Promise<{ success: boolean; error?: string }> => {
+     const supabase = await useServerSideSupabaseAnonClient();
+     const viewer = await getViewer();
+     const customer = viewer.customer ?? null;
+     const customerId = customer?.id ?? null
 
-//      if (!clientId) {
-//           log('createCustomerSocialProfile error: PolarCustomer not found', 'error');
-//           return { success: false, error: 'PolarCustomer not found' };
-//      }
+     if (!customerId) {
+          log('createCustomerSocialProfile error: PolarCustomer not found', 'error');
+          return { success: false, error: 'PolarCustomer not found' };
+     }
 
-//      if (!buildingId || !isUUID(buildingId)) {
-//           log('createCustomerSocialProfile error: Invalid building selected', 'error');
-//           return { success: false, error: 'Invalid building selected' };
-//      }
+     if (!buildingId || !isUUID(buildingId)) {
+          log('createCustomerSocialProfile error: Invalid building selected', 'error');
+          return { success: false, error: 'Invalid building selected' };
+     }
 
-//      // Ensure the selected building belongs to this customer
-//      const { data: buildingRow, error: buildingError } = await supabase
-//           .from(TABLES.BUILDINGS)
-//           .select(`
-//                id,
-//                customerId,
-//                building_location:tblBuildingLocations!tblBuildings_building_location_fkey (city)
-//           `)
-//           .eq('id', buildingId)
-//           .single();
+     // Ensure the selected building belongs to this customer
+     const { data: buildingRow, error: buildingError } = await supabase
+          .from(TABLES.BUILDINGS)
+          .select(`
+               id,
+               customerId,
+               building_location:tblBuildingLocations!tblBuildings_building_location_fkey (city)
+          `)
+          .eq('id', buildingId)
+          .single();
 
-//      if (buildingError || !buildingRow) {
-//           log(`createCustomerSocialProfile error: ${buildingError?.message ?? 'Building not found'}`, 'error');
-//           return { success: false, error: buildingError?.message ?? 'Building not found' };
-//      }
+     if (buildingError || !buildingRow) {
+          log(`createCustomerSocialProfile error: ${buildingError?.message ?? 'Building not found'}`, 'error');
+          return { success: false, error: buildingError?.message ?? 'Building not found' };
+     }
 
-//      if (buildingRow.customerId !== clientId) {
-//           log('createCustomerSocialProfile error: Building does not belong to this customer', 'error');
-//           return { success: false, error: 'Building does not belong to this customer' };
-//      }
+     if (buildingRow.customerId !== customerId) {
+          log('createCustomerSocialProfile error: Building does not belong to this customer', 'error');
+          return { success: false, error: 'Building does not belong to this customer' };
+     }
 
-//      const { data: clientRow, error: customerError } = await supabase
-//           .from(TABLES.POLAR_CUSTOMERS)
-//           .select('id, name, email')
-//           .eq('id', clientId)
-//           .single();
+     const { data: clientRow, error: customerError } = await supabase
+          .from(TABLES.POLAR_CUSTOMERS)
+          .select('id, name, email')
+          .eq('id', customerId)
+          .single();
 
-//      if (customerError || !clientRow) {
-//           log(`createCustomerSocialProfile error: ${customerError?.message ?? 'PolarCustomer not found'}`, 'error');
-//           return { success: false, error: customerError?.message ?? 'PolarCustomer not found' };
-//      }
+     if (customerError || !clientRow) {
+          log(`createCustomerSocialProfile error: ${customerError?.message ?? 'PolarCustomer not found'}`, 'error');
+          return { success: false, error: customerError?.message ?? 'PolarCustomer not found' };
+     }
 
-//      const profilePayload = {
-//           id: clientId,
-//           tenant_id: clientId,
-//           customerId: clientId,
-//           name: clientRow.name || '',
-//           email: clientRow.email || '',
-//           billingAddress: buildingRow.billingAddress.city as any || '',
-//      };
+     const profilePayload = {
+          id: customerId,
+          tenant_id: customerId,
+          customerId: customerId,
+          first_name: clientRow.name?.split(' ')[0] || '',
+          last_name: clientRow.name?.split(' ').slice(1).join(' ') || '',
+          email: clientRow.email || '',
+          phone_number: '',
+          bio: '',
+          avatar_url: '',
+          cover_image_url: '',
+          current_city: (buildingRow.building_location as any)?.city || '',
+          current_job_title: '',
+          current_job_company: '',
+          previous_job_title: '',
+          previous_job_company: '',
+          origin_city: '',
+          quote: '',
+     };
 
-//      const profile_progress = calculateCustomerProfileProgress(profilePayload);
-//      const nowIso = new Date().toISOString();
+     const profile_progress = calculateCustomerProfileProgress(profilePayload);
+     const nowIso = new Date().toISOString();
 
-//      const { error: upsertError } = await supabase
-//           .from(TABLES.TENANT_PROFILES)
-//           .upsert(
-//                {
-//                     ...profilePayload,
-//                     profile_progress,
-//                     updated_at: nowIso,
-//                     created_at: nowIso,
-//                },
-//                { onConflict: 'id' }
-//           );
+     const { error: upsertError } = await supabase
+          .from(TABLES.TENANT_PROFILES)
+          .upsert(
+               {
+                    ...profilePayload,
+                    profile_progress,
+                    updated_at: nowIso,
+                    created_at: nowIso,
+               },
+               { onConflict: 'id' }
+          );
 
-//      if (upsertError) {
-//           log(`createCustomerSocialProfile upsert error: ${upsertError.message}`, 'error');
-//           return { success: false, error: upsertError.message };
-//      }
+     if (upsertError) {
+          log(`createCustomerSocialProfile upsert error: ${upsertError.message}`, 'error');
+          return { success: false, error: upsertError.message };
+     }
 
-//      revalidatePath('/dashboard/social/profile');
-//      revalidatePath('/dashboard/social');
-//      return { success: true };
-// };
+     revalidatePath('/dashboard/social/profile');
+     revalidatePath('/dashboard/social');
+     return { success: true };
+};
 
 // Returns true if the provided userId corresponds to a PolarCustomer record; false if tenant or not found.
 export const isCustomerUserId = async (userId: string): Promise<boolean> => {

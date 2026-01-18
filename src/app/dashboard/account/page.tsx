@@ -1,18 +1,19 @@
 // import Account from './account';
 import { getViewer } from 'src/libs/supabase/server-auth';
 import { redirect } from 'next/navigation';
-import { readAllActiveSubscriptionPlans, readSubscriptionPlanFromCustomerId } from 'src/app/actions/subscription-plan/subscription-plan-actions';
-import { SubscriptionPlan } from 'src/types/subscription-plan';
+import { readAllActiveSubscriptionPlans, readCustomerSubscriptionPlanFromCustomerId } from 'src/app/actions/subscription-plan/subscription-plan-actions';
 import { PolarOrder } from 'src/types/polar-order-types';
 import { getAllLogsFromEmail, ServerLog } from 'src/libs/supabase/server-logging';
 import { readCustomerByIdAction } from 'src/app/actions/customer/customer-actions';
 import { readAllCustomerPayments } from 'src/app/actions/customer/customer-payment-actions';
+import { PolarSubscription } from 'src/types/polar-subscription-types';
+import { PolarProduct } from 'src/types/polar-product-types';
 
 const Page = async () => {
 
-     let customerSubscriptionPlan: SubscriptionPlan | null = null
+     let customerSubscriptionPlan: PolarSubscription | null = null
      let customerInvoices: PolarOrder[] | null = null
-     let allSubscriptions: SubscriptionPlan[] | null = null;
+     let allSubscriptions: PolarProduct[] | null = null;
      let allLogsFromEmail: ServerLog[] | null = null;
 
      const { customer, tenant, admin, userData } = await getViewer();
@@ -25,13 +26,13 @@ const Page = async () => {
 
           const [
                { getCustomerByIdActionSuccess, getCustomerByIdActionData },
-               { readSubscriptionPlanFromCustomerIdSuccess, subscriptionPlan, readSubscriptionPlanFromCustomerIdError },
+               { success: readSubscriptionPlanFromCustomerIdSuccess, customerSubscriptionPlanData: subscriptionPlan, error: readSubscriptionPlanFromCustomerIdError },
                { readCustomerPaymentsSuccess, readCustomerPaymentsData, readCustomerPaymentsError },
                { readAllActiveSubscriptionPlansSuccess, activeSubscriptionPlansData, readAllActiveSubscriptionPlansError },
                customerLogs
           ] = await Promise.all([
                readCustomerByIdAction(customer.id),
-               readSubscriptionPlanFromCustomerId(customer.id),
+               readCustomerSubscriptionPlanFromCustomerId(customer.id),
                readAllCustomerPayments(customer.id),
                readAllActiveSubscriptionPlans(),
                getAllLogsFromEmail(customer.email)

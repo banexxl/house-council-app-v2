@@ -12,7 +12,7 @@
 // import { AccountNotificationsSettings } from 'src/sections/dashboard/account/account-notifications-settings';
 // import { AccountTeamSettings } from 'src/sections/dashboard/account/account-team-settings';
 // import { AccountSecuritySettings } from 'src/sections/dashboard/account/account-security-settings';
-// import { SubscriptionPlan } from 'src/types/subscription-plan';
+// import { PolarSubscription } from 'src/types/subscription-plan';
 // import { PolarOrder } from 'src/types/polar-order-types';
 // import { User } from '@supabase/supabase-js';
 // import { ServerLog } from 'src/libs/supabase/server-logging';
@@ -23,9 +23,9 @@
 // export interface AccountProps {
 //      customer: PolarCustomer;
 //      userData: User;
-//      customerSubscriptionPlan: SubscriptionPlan | null;
+//      customerSubscriptionPlan: PolarSubscription | null;
 //      customerInvoices: PolarOrder[] | undefined | null;
-//      subscriptionPlans: SubscriptionPlan[] | null;
+//      subscriptionPlans: PolarSubscription[] | null;
 //      customerLogs: ServerLog[] | null;
 // }
 
