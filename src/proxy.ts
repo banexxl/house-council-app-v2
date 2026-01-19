@@ -71,9 +71,10 @@ export async function proxy(req: NextRequest) {
      }
 
      // Cron exception (keep yours)
-     if (pathname.startsWith('/api/cron/publish-scheduled')) {
+     if (pathname.startsWith('/api/cron/publish-scheduled')
+          || pathname.startsWith('/api/polar/sync-price')) {
           const provided = req.headers.get('x-cron-secret')
-          if (provided && provided === process.env.CRON_PUBLISH_SECRET) {
+          if (provided && provided === process.env.X_CRON_SECRET) {
                return NextResponse.next()
           }
      }

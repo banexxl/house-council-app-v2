@@ -322,8 +322,6 @@ export async function createOrUpdateApartment(payload: Apartment) {
           const customerId = building.customerId
 
           const sync = await syncPolarSeatsForClient({ customerId });
-          console.log('sync ', sync);
-
           if (!sync.success) {
                // rollback the apartment creation
                await supabase.from(TABLES.APARTMENTS).delete().eq("id", data.id);
