@@ -2,13 +2,13 @@ import { NextResponse } from 'next/server';
 import { syncPolarSeatsForClient } from 'src/libs/polar/sync-subscription-seats';
 import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 
-export async function POST(request: Request) {
+export async function POST() {
 
      //Get all Customer IDs from the tblPolarCustomers
      const supabase = await useServerSideSupabaseAnonClient();
      const { data: customers, error: customersError } = await supabase
           .from('tblPolarCustomers')
-          .select('customerId');
+          .select('id');
 
 
      try {
@@ -18,7 +18,7 @@ export async function POST(request: Request) {
 
           const results = [];
           for (const customer of customers) {
-               const customerId = customer.customerId;
+               const customerId = customer.id;
                if (!customerId || typeof customerId !== 'string') {
                     results.push({ customerId, success: false, error: 'Invalid or missing customerId' });
                     continue;
