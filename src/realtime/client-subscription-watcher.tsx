@@ -23,13 +23,12 @@ interface ClientSubscriptionRow {
 export default function ClientSubscriptionWatcher() {
 
      const [viewer, setViewer] = useState<{
-          client: { id: string } | null;
-          clientMember: { customerId: string | null } | null;
+          customer: { id: string } | null;
           userData: { id: string } | null;
      } | null>(null);
      const router = useRouter(); // Used to redirect to login after sign-out
 
-     const customerId = viewer?.client?.id ?? viewer?.clientMember?.customerId ?? null; // Guard: no client => skip watcher logic
+     const customerId = viewer?.customer?.id ?? null; // Guard: no client => skip watcher logic
 
      useEffect(() => { // Core effect: sets up initial validation, realtime listener, and polling fallback
           let active = true;
@@ -41,8 +40,7 @@ export default function ClientSubscriptionWatcher() {
                     const data = await res.json();
                     if (active) {
                          setViewer({
-                              client: data?.client ?? null,
-                              clientMember: data?.clientMember ?? null,
+                              customer: data?.customer ?? null,
                               userData: data?.userData ?? null,
                          });
                     }
@@ -75,6 +73,8 @@ export default function ClientSubscriptionWatcher() {
           let signingOut = false;
 
           async function start() { // Orchestrates the lifecycle: initial status check -> realtime -> polling
+               console.log('customerId', customerId);
+
                if (!customerId) return;
 
                // Step 0: Initial snapshot validation - if subscription missing or not allowed, force sign-out early
@@ -84,9 +84,12 @@ export default function ClientSubscriptionWatcher() {
                          .select('status')
                          .eq('customerId', customerId)
                          .single();
+                    console.log('error', readErr);
 
                     if (!readErr) { // Successfully read subscription row
                          const statusNow = (current as any)?.status as string | undefined;
+                         console.log('statusNow', statusNow);
+
                          if (!statusNow || (statusNow !== 'active' && statusNow !== 'trialing')) { // Disallow anything outside permitted statuses
                               if (process.env.NODE_ENV !== 'production') {
                                    console.warn('[ClientSubscriptionWatcher] Non-active/trialing status on load; signing out', { statusNow });

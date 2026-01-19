@@ -44,17 +44,28 @@ export async function syncPolarSeatsForClient({ customerId }: SyncSeatsArgs) {
      }
 
      let subUpdate
+     let customerUpdate
      // 3) Ingest the usage event into Polar
      try {
+          customerUpdate = await polar.customers.update({
+               id: sub.customerId,
+               customerUpdate: {
+                    metadata: {
+                         apartments_count: apartmentsCount,
+                    }
+               }
+          });
+
           subUpdate = await polar.events.ingest({
                events: [{
                     name: "apartments.seats", // Matches your filter
                     customerId: sub.customerId,
                     metadata: {
-                         apartments_count: apartmentsCount, // Value for Maximum aggregation
+                         apartments_count: apartmentsCount,
                     },
                }],
           });
+
           await logServerAction({
                action: "syncPolarSeatsForClient",
                duration_ms: Date.now() - t0,
@@ -83,6 +94,8 @@ export async function syncPolarSeatsForClient({ customerId }: SyncSeatsArgs) {
                user_id: null,
           });
           console.log('subUpdate', subUpdate);
+          console.log('customerUpdate', customerUpdate);
+
           return { success: false as const, error: err?.message };
      }
 }
