@@ -16,7 +16,7 @@ if (!(dayjs as any)._tzExtended) {
 }
 
 // Expect a secret in header: x-cron-secret
-const CRON_SECRET = process.env.X_CRON_SECRET_SHEDULER;
+const CRON_SECRET = process.env.X_CRON_SECRET;
 // Grace forward seconds: publish if scheduled_at is within this many seconds in the future
 const FORWARD_GRACE_SECONDS = parseInt(process.env.CRON_FORWARD_GRACE_SECONDS || '30', 10); // small clock drift allowance
 // (Optional) Lookback window minutes - mainly informational since we publish anything already past

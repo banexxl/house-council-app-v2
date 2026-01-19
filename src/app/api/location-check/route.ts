@@ -4,7 +4,7 @@ import { useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-ser
 import { logServerAction } from 'src/libs/supabase/server-logging'
 
 // Expect a secret in header: x-cron-secret
-const CRON_SECRET = process.env.X_CRON_SECRET_SHEDULER;
+const CRON_SECRET = process.env.X_CRON_SECRET;
 
 export async function POST(req: NextRequest) {
 
