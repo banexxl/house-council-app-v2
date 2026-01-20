@@ -76,6 +76,9 @@ const categories: IncidentCategory[] = [
   'parking',
   'it',
   'waste',
+  'elevator',
+  'maintenance',
+  'landscaping'
 ];
 
 const priorities: IncidentPriority[] = ['low', 'medium', 'high', 'urgent'];
