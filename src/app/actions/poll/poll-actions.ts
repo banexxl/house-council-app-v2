@@ -268,6 +268,7 @@ export async function updatePollStatus(id: string, status: PollStatus, locale: s
     } else if (status === 'active') {
         updatePayload.closed_at = null; // Clear closed_at when reopening
     }
+    console.log('updatePollPayload', updatePayload);
 
     const { data, error } = await supabase
         .from(TABLES.POLLS)
