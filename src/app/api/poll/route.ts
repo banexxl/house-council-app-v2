@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { activateAllScheduledPolls } from 'src/app/actions/poll/poll-actions';
+import { logServerAction } from 'src/libs/supabase/server-logging';
 import { isUUIDv4 } from 'src/utils/uuid';
 
 const SECURITY_KEY = process.env.X_CRON_SECRET!
@@ -21,8 +22,9 @@ export async function POST(req: NextRequest) {
           const status = result.error?.includes('not found') ? 404 :
                result.error?.includes('not scheduled') ? 400 :
                     result.error?.includes('future') ? 400 : 500;
+          await logServerAction({ action: 'activateAllScheduledPolls', duration_ms: 0, error: result.error || 'unknown error', payload: {}, status: 'fail', type: 'cron', user_id: null });
           return NextResponse.json({ success: false, error: result.error }, { status });
      }
-
+     await logServerAction({ action: 'activateAllScheduledPolls', duration_ms: 0, error: '', payload: { activated_count: result.data?.length || 0 }, status: 'success', type: 'cron', user_id: null });
      return NextResponse.json({ success: true, polls: result.data }, { status: 200 });
 }
