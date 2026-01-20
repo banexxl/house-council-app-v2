@@ -444,6 +444,7 @@ export const getAllTenantsFromCustomersBuildings = async (
           id,
           building_location:tblBuildingLocations!tblBuildings_building_location_fkey (
             street_address,
+            street_number,
             city
           )
         )
