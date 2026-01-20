@@ -365,12 +365,15 @@ export async function activateAllScheduledPolls(): Promise<{ success: boolean; e
     const t0 = Date.now();
     const supabase = await useServerSideSupabaseAnonClient();
 
+    const dateTimeNow = new Date().toISOString();
+    console.log('dateTimeNow', dateTimeNow);
+
     // First get the poll to check its status and start time
     const { data: polls, error: fetchError } = await supabase
         .from(TABLES.POLLS)
         .select('*')
         .eq('status', 'scheduled')
-        .lte('starts_at', new Date().toISOString())
+        .lte('starts_at', dateTimeNow)
         .order('starts_at', { ascending: true });
     console.log('activateAllScheduledPolls - fetched polls:', polls, fetchError);
 
