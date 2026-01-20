@@ -1655,6 +1655,10 @@ export const tokens = {
     categoryParking: 'incident.category.parking',
     categoryIt: 'incident.category.it',
     categoryWaste: 'incident.category.waste',
+    categoryElevator: 'incident.category.elevator',
+    categoryLandscaping: 'incident.category.landscaping',
+    categoryMaintenance: 'incident.category.maintenance',
+    // Incident form
     formTitle: 'incident.form.title',
     formDescription: 'incident.form.description',
     formBuilding: 'incident.form.building',

@@ -24,7 +24,10 @@ export type IncidentCategory =
      | 'administrative'
      | 'parking'
      | 'it'
-     | 'waste';
+     | 'waste'
+     | 'elevator'
+     | 'landscaping'
+     | 'maintenance';
 
 export interface IncidentReport {
      id: string;
@@ -103,6 +106,9 @@ export const INCIDENT_CATEGORY_TOKENS: Record<IncidentCategory, string> = {
      parking: 'incident.category.parking',
      it: 'incident.category.it',
      waste: 'incident.category.waste',
+     elevator: 'incident.category.elevator',
+     landscaping: 'incident.category.landscaping',
+     maintenance: 'incident.category.maintenance',
 };
 
 // Minimal incident form model used by Formik (create + edit)
