@@ -4,16 +4,14 @@
 // import { PolarCustomer } from 'src/types/polar-customer-types';
 
 // interface AccountGeneralSettingsProps {
-//   customer: PolarCustomer
+//      customer: PolarCustomer
 // }
 
 // export const AccountGeneralSettings: FC<AccountGeneralSettingsProps> = ({ customer }) => {
 
-//   return (
-//     <Stack spacing={2}>
-//       <ClientForm customerData={customer} />
-//     </Stack>
-//   );
+//      return (
+//           <Stack spacing={2}>
+//                <ClientForm customerData={customer} />
+//           </Stack>
+//      );
 // };
-
-

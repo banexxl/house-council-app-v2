@@ -1,4 +1,3 @@
-// import Account from './account';
 import { getViewer } from 'src/libs/supabase/server-auth';
 import { redirect } from 'next/navigation';
 import { readAllActiveSubscriptionPlans, readCustomerSubscriptionPlanFromCustomerId } from 'src/app/actions/subscription-plan/subscription-plan-actions';
@@ -8,6 +7,7 @@ import { readCustomerByIdAction } from 'src/app/actions/customer/customer-action
 import { readAllCustomerPayments } from 'src/app/actions/customer/customer-payment-actions';
 import { PolarSubscription } from 'src/types/polar-subscription-types';
 import { PolarProduct } from 'src/types/polar-product-types';
+import Account from './account';
 
 const Page = async () => {
 
@@ -58,16 +58,16 @@ const Page = async () => {
           redirect('/dashboard/social/profile');
      }
 
-     return
-     <></>
-     // <Account
-     //      customer={customer!}
-     //      userData={userData!}
-     //      customerSubscriptionPlan={customerSubscriptionPlan!}
-     //      customerInvoices={customerInvoices}
-     //      subscriptionPlans={allSubscriptions!}
-     //      customerLogs={allLogsFromEmail! || []}
-     // />;
+     return (
+          <Account
+               customer={customer!}
+               userData={userData!}
+               customerSubscriptionPlan={customerSubscriptionPlan!}
+               customerInvoices={customerInvoices}
+               subscriptionPlans={allSubscriptions!}
+               customerLogs={allLogsFromEmail! || []}
+          />
+     )
 };
 
 export default Page;
