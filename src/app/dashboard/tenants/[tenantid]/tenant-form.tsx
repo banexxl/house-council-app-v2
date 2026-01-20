@@ -491,7 +491,7 @@ export const TenantForm: FC<TenantFormProps> = ({ tenantData, buildings }) => {
                                                                       name="email_opt_in"
                                                                       checked={formik.values.email_opt_in}
                                                                       onChange={(e) => formik.setFieldValue('email_opt_in', e.target.checked)}
-                                                                      disabled={!apartmentSelected}
+                                                                      disabled
                                                                  />
                                                                  <Typography variant="body2">{t('tenants.tenantOptInEmail')}</Typography>
                                                             </Box>
