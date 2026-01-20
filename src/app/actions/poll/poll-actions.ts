@@ -361,92 +361,99 @@ export async function updatePollStatus(id: string, status: PollStatus, locale: s
 /**
  * Activate a scheduled poll if its start time has arrived
  */
-export async function activateScheduledPoll(id: string): Promise<{ success: boolean; error?: string; data?: Poll }> {
+export async function activateAllScheduledPolls(): Promise<{ success: boolean; error?: string; data?: Poll[] }> {
     const t0 = Date.now();
     const supabase = await useServerSideSupabaseAnonClient();
 
     // First get the poll to check its status and start time
-    const { data: poll, error: fetchError } = await supabase
+    const { data: polls, error: fetchError } = await supabase
         .from(TABLES.POLLS)
         .select('*')
-        .eq('id', id)
-        .single();
+        .eq('status', 'scheduled')
+        .lte('starts_at', new Date().toISOString())
+        .order('starts_at', { ascending: true });
 
     if (fetchError) {
-        await logServerAction({ action: 'activateScheduledPoll', duration_ms: Date.now() - t0, error: fetchError.message, payload: { id }, status: 'fail', type: 'db', user_id: null });
+        await logServerAction({ action: 'activateScheduledPoll', duration_ms: Date.now() - t0, error: fetchError.message, payload: { polls }, status: 'fail', type: 'db', user_id: null });
         return { success: false, error: fetchError.message };
     }
 
-    if (poll.status !== 'scheduled') {
-        const error = `Poll is not scheduled (current status: ${poll.status})`;
-        await logServerAction({ action: 'activateScheduledPoll', duration_ms: Date.now() - t0, error, payload: { id }, status: 'fail', type: 'db', user_id: null });
-        return { success: false, error };
-    }
+    let schedulePollsResults: Poll[] = [];
 
-    // Check if start time has arrived (using current time)
-    const now = new Date();
-    const startsAt = poll.starts_at ? new Date(poll.starts_at) : null;
+    for (const poll of polls || []) {
+        if (poll.status !== 'scheduled') {
+            const error = `Poll is not scheduled (current status: ${poll.status})`;
+            await logServerAction({ action: 'activateScheduledPoll', duration_ms: Date.now() - t0, error, payload: { id: poll.id }, status: 'fail', type: 'db', user_id: null });
+            return { success: false, error };
+        }
 
-    if (!startsAt || now < startsAt) {
-        const error = 'Poll start time is in the future';
-        await logServerAction({ action: 'activateScheduledPoll', duration_ms: Date.now() - t0, error, payload: { id }, status: 'fail', type: 'db', user_id: null });
-        return { success: false, error };
-    }
+        // Check if start time has arrived (using current time)
+        const now = new Date();
+        const startsAt = poll.starts_at ? new Date(poll.starts_at) : null;
 
-    // Use the generic status update function
-    const result = await updatePollStatus(id, 'active');
-    // Log the specific action completion
-    if (result.success) {
+        if (!startsAt || now < startsAt) {
+            const error = 'Poll start time is in the future';
+            await logServerAction({ action: 'activateScheduledPoll', duration_ms: Date.now() - t0, error, payload: { id: poll.id }, status: 'fail', type: 'db', user_id: null });
+            return { success: false, error };
+        }
 
-        // Create notifications for tenants of targeted buildings on publish (realtime INSERT consumers pick this up)
-        try {
-            // 1) Resolve targeted buildings from pivot
-            const { data: bRows, error: bErr } = await supabase
-                .from(TABLES.POLLS)
-                .select('building_id')
-                .eq('id', id);
-            if (!bErr && bRows && bRows.length > 0) {
-                const buildingIds = Array.from(new Set((bRows as any[]).map(r => r.building_id).filter(Boolean)));
-                if (buildingIds.length > 0) {
-                    // 2) Get all tenant user ids for those buildings
-                    const { data: tenants } = await readAllTenantsFromBuildingIds(buildingIds);
-                    // 3) Fetch announcement for title/message
-                    const { data: annRow, error: annErr } = await supabase.from(TABLES.POLLS).select('title, description').eq('id', id).maybeSingle();
-                    const createdAtISO = new Date().toISOString();
-                    const rows = (tenants || []).map((tenant) => {
-                        const notification = createPollPublishNotification({
-                            action_token: 'notifications.actions.notificationActionPollPublished',
-                            description: annRow?.description || '',
-                            created_at: createdAtISO,
-                            user_id: tenant.user_id!,
-                            is_read: false,
-                            poll_id: id,
-                            building_id: tenant.apartment.building.id,
-                            url: `/dashboard/polls/${id}`,
-                            title: annRow?.title
-                        });
-                        return notification as unknown as BaseNotification[];
-                    }) as any[];
 
-                    if (rows.length) {
-                        const emitted = await emitNotifications(rows);
-                        if (!emitted.success) {
-                            await logServerAction({ user_id: null, action: '', duration_ms: 0, error: emitted.error || 'emitFailed', payload: {}, status: 'fail', type: 'db' });
-                        } else {
-                            await logServerAction({ user_id: null, action: 'publishPollNotifications', duration_ms: 0, error: '', payload: {}, status: 'success', type: 'db' });
+        // Use the generic status update function
+        const result = await updatePollStatus(poll.id, 'active');
+        // Log the specific action completion
+        if (result.success) {
+            schedulePollsResults.push(result.data!);
+            // Create notifications for tenants of targeted buildings on publish (realtime INSERT consumers pick this up)
+            try {
+                // 1) Resolve targeted buildings from pivot
+                const { data: bRows, error: bErr } = await supabase
+                    .from(TABLES.POLLS)
+                    .select('building_id')
+                    .eq('id', poll.id);
+                if (!bErr && bRows && bRows.length > 0) {
+                    const buildingIds = Array.from(new Set((bRows as any[]).map(r => r.building_id).filter(Boolean)));
+                    if (buildingIds.length > 0) {
+                        // 2) Get all tenant user ids for those buildings
+                        const { data: tenants } = await readAllTenantsFromBuildingIds(buildingIds);
+                        // 3) Fetch announcement for title/message
+                        const { data: annRow, error: annErr } = await supabase.from(TABLES.POLLS).select('title, description').eq('id', poll.id).maybeSingle();
+                        const createdAtISO = new Date().toISOString();
+                        const rows = (tenants || []).map((tenant) => {
+                            const notification = createPollPublishNotification({
+                                action_token: 'notifications.actions.notificationActionPollPublished',
+                                description: annRow?.description || '',
+                                created_at: createdAtISO,
+                                user_id: tenant.user_id!,
+                                is_read: false,
+                                poll_id: poll.id,
+                                building_id: tenant.apartment.building.id,
+                                url: `/dashboard/polls/${poll.id}`,
+                                title: annRow?.title
+                            });
+                            return notification as unknown as BaseNotification[];
+                        }) as any[];
+
+                        if (rows.length) {
+                            const emitted = await emitNotifications(rows);
+                            if (!emitted.success) {
+                                await logServerAction({ user_id: null, action: '', duration_ms: 0, error: emitted.error || 'emitFailed', payload: {}, status: 'fail', type: 'db' });
+                            } else {
+                                await logServerAction({ user_id: null, action: 'publishPollNotifications', duration_ms: 0, error: '', payload: {}, status: 'success', type: 'db' });
+                            }
                         }
                     }
                 }
+            } catch (e: any) {
+                await logServerAction({ user_id: null, action: 'publishPollNotificationsUnexpected', duration_ms: 0, error: e?.message || 'unexpected', payload: {}, status: 'fail', type: 'db' });
             }
-        } catch (e: any) {
-            await logServerAction({ user_id: null, action: 'publishPollNotificationsUnexpected', duration_ms: 0, error: e?.message || 'unexpected', payload: { id }, status: 'fail', type: 'db' });
-        }
 
-        await logServerAction({ action: 'activateScheduledPoll', duration_ms: Date.now() - t0, error: '', payload: { id }, status: 'success', type: 'db', user_id: null });
-    } else {
-        await logServerAction({ action: 'activateScheduledPoll', duration_ms: Date.now() - t0, error: result.error || 'Update failed', payload: { id }, status: 'fail', type: 'db', user_id: null });
+            await logServerAction({ action: 'activateScheduledPoll', duration_ms: Date.now() - t0, error: '', payload: { id: poll.id }, status: 'success', type: 'db', user_id: null });
+        } else {
+            await logServerAction({ action: 'activateScheduledPoll', duration_ms: Date.now() - t0, error: result.error || 'Update failed', payload: { id: poll.id }, status: 'fail', type: 'db', user_id: null });
+        }
     }
 
-    return result;
+    return { success: true, data: schedulePollsResults };
+
 }
 

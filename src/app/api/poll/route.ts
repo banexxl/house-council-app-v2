@@ -1,20 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { activateScheduledPoll } from 'src/app/actions/poll/poll-actions';
+import { activateAllScheduledPolls } from 'src/app/actions/poll/poll-actions';
+import { isUUIDv4 } from 'src/utils/uuid';
 
-const SECURITY_KEY = process.env.POLL_SCHEDULE_KEY!
+const SECURITY_KEY = process.env.X_CRON_SECRET!
 
 export async function POST(req: NextRequest) {
-     const key = req.headers.get('x-api-key');
+     const key = req.headers.get('x-cron-secret');
+
      if (!key || key !== SECURITY_KEY) {
           return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
      }
 
-     const { pollId } = await req.json();
-     if (!pollId) {
-          return NextResponse.json({ success: false, error: 'Missing pollId' }, { status: 400 });
+     if (isUUIDv4(key) === false) {
+          return NextResponse.json({ success: false, error: 'Invalid security key format' }, { status: 400 });
      }
 
-     const result = await activateScheduledPoll(pollId);
+     const result = await activateAllScheduledPolls();
+
      if (!result.success) {
           const status = result.error?.includes('not found') ? 404 :
                result.error?.includes('not scheduled') ? 400 :
@@ -22,5 +24,5 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({ success: false, error: result.error }, { status });
      }
 
-     return NextResponse.json({ success: true, poll: result.data }, { status: 200 });
+     return NextResponse.json({ success: true, polls: result.data }, { status: 200 });
 }
