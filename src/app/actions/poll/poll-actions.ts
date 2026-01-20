@@ -365,7 +365,7 @@ export async function activateAllScheduledPolls(): Promise<{ success: boolean; e
     const t0 = Date.now();
     const supabase = await useServerSideSupabaseAnonClient();
 
-    const dateTimeNow = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString();
+    const dateTimeNow = new Date().toISOString();
     console.log('dateTimeNow', dateTimeNow);
 
     // First get the poll to check its status and start time
