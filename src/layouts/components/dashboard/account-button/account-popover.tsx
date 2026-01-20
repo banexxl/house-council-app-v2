@@ -107,6 +107,18 @@ export const AccountPopover: FC<AccountPopoverProps> = (props) => {
                 : user?.tenant ? <strong>{user.tenant.first_name + ' ' + user.tenant.last_name}</strong>
                   : <strong>User</strong>
           }</Typography>
+          <Typography variant="body2" color="text.secondary" noWrap>
+            <Tooltip title={user?.customer?.email || ''}>
+              <span>
+                {
+                  user?.customer ? <strong>{user.customer.email}</strong>
+                    : user?.admin ? <strong>{user.admin.email}</strong>
+                      : user?.tenant ? <strong>{user.tenant.email}</strong>
+                        : 'Email not available'
+                }
+              </span>
+            </Tooltip>
+          </Typography>
         </Box>
       </Box>
       {!user?.customer && (
