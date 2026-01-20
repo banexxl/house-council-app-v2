@@ -9,7 +9,7 @@ import log from "src/utils/logger";
 import { TABLES } from "src/libs/supabase/tables";
 import { useState } from "react";
 
-// Domain model: minimal subset of tblClient_Subscription columns needed here
+// Domain model: minimal subset of tblPolarSubscriptions columns needed here
 interface ClientSubscriptionRow {
      id: string;
      customerId: string;

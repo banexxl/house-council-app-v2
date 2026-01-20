@@ -156,7 +156,7 @@ export interface Announcement {
      images?: string[]; // existing image URLs when editing
      documents?: { url: string; name: string; mime?: string }[]; // existing document URLs when editing
      user_id: string; // FK to auth.users
-     customerId: string; // FK to tblClients
+     customerId: string; // FK to tblPolarCustomers
 }
 
 export const announcementInitialValues: Announcement = {

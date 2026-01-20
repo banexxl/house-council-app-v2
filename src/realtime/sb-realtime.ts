@@ -153,7 +153,7 @@ export const initClientSubscriptionRealtime = (customerId: string, onEvent: Init
      // Correct Postgres filter syntax requires operator (eq.)
      const filter = `customerId=eq.${customerId}`;
 
-     log(`[Realtime] Subscribing to tblClient_Subscription ${filter}`, 'info');
+     log(`[Realtime] Subscribing to tblPolarSubscriptions ${filter}`, 'info');
 
 
      return initTableRealtimeListener(TABLES.POLAR_SUBSCRIPTIONS, ["INSERT", "UPDATE", "DELETE"], {
