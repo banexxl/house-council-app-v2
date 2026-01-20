@@ -372,6 +372,7 @@ export async function activateAllScheduledPolls(): Promise<{ success: boolean; e
         .eq('status', 'scheduled')
         .lte('starts_at', new Date().toISOString())
         .order('starts_at', { ascending: true });
+    console.log('activateAllScheduledPolls - fetched polls:', polls, fetchError);
 
     if (fetchError) {
         await logServerAction({ action: 'activateScheduledPoll', duration_ms: Date.now() - t0, error: fetchError.message, payload: { polls }, status: 'fail', type: 'db', user_id: null });
