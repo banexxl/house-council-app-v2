@@ -8,6 +8,7 @@ import { supabaseBrowserClient } from 'src/libs/supabase/sb-client';
 import { subscribeToBuildingPresence, unsubscribeFromBuildingPresence, PresenceUser } from 'src/realtime/user-presence';
 import log from 'src/utils/logger';
 import { PolarCustomer } from 'src/types/polar-customer-types';
+import { getCustomerBuildingsForSocialProfile } from 'src/app/actions/customer/customer-actions';
 
 type ViewerData = {
      customer: PolarCustomer | null;
@@ -22,7 +23,7 @@ type ViewerData = {
  * This should be placed at the layout level to ensure presence is active throughout the session.
  */
 export const PresenceInitializer = () => {
-     const currentBuildingIdRef = useRef<string | null>(null);
+     const currentBuildingIdsRef = useRef<string[]>([]);
      const [viewer, setViewer] = useState<ViewerData | null>(null);
 
      useEffect(() => {
@@ -60,9 +61,9 @@ export const PresenceInitializer = () => {
           return () => {
                active = false;
                authSubscription?.unsubscribe();
-               if (currentBuildingIdRef.current) {
-                    unsubscribeFromBuildingPresence(currentBuildingIdRef.current);
-                    currentBuildingIdRef.current = null;
+               if (currentBuildingIdsRef.current.length) {
+                    void unsubscribeFromBuildingPresence(currentBuildingIdsRef.current);
+                    currentBuildingIdsRef.current = [];
                }
           };
      }, []);
@@ -71,9 +72,9 @@ export const PresenceInitializer = () => {
           let mounted = true;
 
           const setupPresence = async () => {
-               if (currentBuildingIdRef.current) {
-                    await unsubscribeFromBuildingPresence(currentBuildingIdRef.current);
-                    currentBuildingIdRef.current = null;
+               if (currentBuildingIdsRef.current.length) {
+                    await unsubscribeFromBuildingPresence(currentBuildingIdsRef.current);
+                    currentBuildingIdsRef.current = [];
                }
 
                if (!viewer) {
@@ -85,14 +86,15 @@ export const PresenceInitializer = () => {
                     return;
                }
 
-               let buildingId: string | null = null;
+               let buildingIds: string[] = [];
                let userInfo: Partial<PresenceUser> = {};
 
                if (viewer.tenant) {
                     const apartment = viewer.tenant.apartment;
                     if (apartment && typeof apartment === 'object') {
                          const apartmentData = apartment as any;
-                         buildingId = apartmentData.building_id || apartmentData.building?.id || null;
+                         const resolvedBuildingId = apartmentData.building_id || apartmentData.building?.id || null;
+                         buildingIds = resolvedBuildingId ? [resolvedBuildingId] : [];
                     }
 
                     userInfo = {
@@ -102,11 +104,26 @@ export const PresenceInitializer = () => {
                          apartment_number: apartment ? String((apartment as any)?.apartment_number || '') : undefined,
                     };
                } else if (viewer.customer) {
-                    log('[PresenceInitializer] Customer user detected, skipping automatic presence setup', 'info');
-                    return;
+                    const customer = viewer.customer;
+                    const { success, data, error } = await getCustomerBuildingsForSocialProfile(customer.id);
+                    console.log('data', data);
+
+                    if (!success) {
+                         log(`[PresenceInitializer] Unable to fetch customer buildings: ${error ?? 'unknown error'}`, 'error');
+                         return;
+                    }
+
+                    buildingIds = (data ?? [])
+                         .map((building) => building.id)
+                         .filter((id): id is string => Boolean(id));
+
+                    userInfo = {
+                         username: customer.email,
+                         first_name: customer.name!,
+                    };
                }
 
-               if (!buildingId) {
+               if (!buildingIds.length) {
                     log('[PresenceInitializer] No building ID found, skipping presence setup');
                     return;
                }
@@ -114,17 +131,17 @@ export const PresenceInitializer = () => {
                if (!mounted) return;
 
                try {
-                    log(`[PresenceInitializer] Setting up presence for building ${buildingId}, user ${viewer.userData.id}`);
+                    log(`[PresenceInitializer] Setting up presence for buildings ${buildingIds.join(', ')}, user ${viewer.userData.id}`);
 
-                    const channel = await subscribeToBuildingPresence(
-                         buildingId,
+                    const channels = await subscribeToBuildingPresence(
+                         buildingIds,
                          viewer.userData.id,
                          userInfo
                     );
 
-                    if (channel && mounted) {
-                         currentBuildingIdRef.current = buildingId;
-                         log(`[PresenceInitializer] Successfully set up presence for building ${buildingId}`);
+                    if (channels?.length && mounted) {
+                         currentBuildingIdsRef.current = buildingIds;
+                         log(`[PresenceInitializer] Successfully set up presence for buildings ${buildingIds.join(', ')}`);
                     }
                } catch (error) {
                     log('[PresenceInitializer] Error setting up presence:', 'error');

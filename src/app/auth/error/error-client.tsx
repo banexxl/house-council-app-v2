@@ -18,7 +18,7 @@ const errorMessages: Record<string, string> = {
   otp_expired: 'The email link is invalid or has expired. Please try signing in again.',
   access_denied: 'Access to this resource was denied. Please check your permissions.',
   unknown_error: 'An unknown error occurred. Please try again later.',
-  not_found_in_tblclients: 'Client not found.',
+  not_found_in_db: 'Customer not found.',
   email_not_registered: 'Email not registered. Please sign up.',
   no_subscription: 'No active subscription found. Please subscribe to continue.',
 };

@@ -42,23 +42,11 @@ const notifyCallbacks = (channelName: string): void => {
      }
 };
 
-/**
- * Subscribe to presence for a specific building
- * @param buildingId - The building ID to subscribe to
- * @param userId - The current user's ID
- * @param userInfo - Additional user information to share in presence
- * @returns Promise<RealtimeChannel | null>
- */
-export const subscribeToBuildingPresence = async (
+const subscribeToSingleBuildingPresence = async (
      buildingId: string,
      userId: string,
-     userInfo: Partial<PresenceUser> = {}
+     userInfo: Partial<PresenceUser>
 ): Promise<RealtimeChannel | null> => {
-     if (!supabaseBrowserClient) {
-          log('Supabase client not available');
-          return null;
-     }
-
      const channelName = `building:${buildingId}:presence`;
 
      // If already subscribed to this building, return existing channel
@@ -118,6 +106,41 @@ export const subscribeToBuildingPresence = async (
           log('Error setting up building presence subscription:', error);
           return null;
      }
+};
+
+/**
+ * Subscribe to presence for one or more buildings
+ * @param buildingIds - The building ID(s) to subscribe to
+ * @param userId - The current user's ID
+ * @param userInfo - Additional user information to share in presence
+ * @returns Promise<RealtimeChannel[] | null>
+ */
+export const subscribeToBuildingPresence = async (
+     buildingIds: string | string[],
+     userId: string,
+     userInfo: Partial<PresenceUser> = {}
+): Promise<RealtimeChannel[] | null> => {
+     if (!supabaseBrowserClient) {
+          log('Supabase client not available');
+          return null;
+     }
+
+     const buildingIdList = Array.isArray(buildingIds) ? buildingIds : [buildingIds];
+     const uniqueBuildingIds = Array.from(new Set(buildingIdList.filter(Boolean)));
+
+     if (uniqueBuildingIds.length === 0) {
+          log('No building IDs provided for presence subscription');
+          return null;
+     }
+
+     const channels = await Promise.all(
+          uniqueBuildingIds.map((buildingId) =>
+               subscribeToSingleBuildingPresence(buildingId, userId, userInfo)
+          )
+     );
+
+     const activeChannels = channels.filter((channel): channel is RealtimeChannel => Boolean(channel));
+     return activeChannels.length ? activeChannels : null;
 };
 
 /**
@@ -188,19 +211,26 @@ export const onBuildingPresenceChange = (
 
 /**
  * Unsubscribe from building presence
- * @param buildingId - The building ID
+ * @param buildingIds - The building ID(s)
  */
-export const unsubscribeFromBuildingPresence = async (buildingId: string): Promise<void> => {
-     const channelName = `building:${buildingId}:presence`;
-     const channel = presenceState.channels.get(channelName);
+export const unsubscribeFromBuildingPresence = async (buildingIds: string | string[]): Promise<void> => {
+     const buildingIdList = Array.isArray(buildingIds) ? buildingIds : [buildingIds];
+     const uniqueBuildingIds = Array.from(new Set(buildingIdList.filter(Boolean)));
 
-     if (channel) {
-          await supabaseBrowserClient?.removeChannel(channel);
-          presenceState.channels.delete(channelName);
-          presenceState.presenceStates.delete(channelName);
-          presenceState.callbacks.delete(channelName);
-          log(`Unsubscribed from building ${buildingId} presence`);
-     }
+     await Promise.all(
+          uniqueBuildingIds.map(async (buildingId) => {
+               const channelName = `building:${buildingId}:presence`;
+               const channel = presenceState.channels.get(channelName);
+
+               if (channel) {
+                    await supabaseBrowserClient?.removeChannel(channel);
+                    presenceState.channels.delete(channelName);
+                    presenceState.presenceStates.delete(channelName);
+                    presenceState.callbacks.delete(channelName);
+                    log(`Unsubscribed from building ${buildingId} presence`);
+               }
+          })
+     );
 };
 
 /**
@@ -261,9 +291,9 @@ export const useBuildingPresence = (buildingId: string | null, userId: string | 
           const setupPresence = async () => {
                try {
                     // Subscribe to building presence
-                    const channel = await subscribeToBuildingPresence(buildingId, userId, userInfo);
+                    const channels = await subscribeToBuildingPresence(buildingId, userId, userInfo);
 
-                    if (channel) {
+                    if (channels?.length) {
                          setIsConnected(true);
 
                          // Listen for presence changes
