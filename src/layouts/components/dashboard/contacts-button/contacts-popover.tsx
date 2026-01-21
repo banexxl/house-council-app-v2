@@ -101,7 +101,13 @@ export const ContactsPopover: FC<ContactsPopoverProps> = (props) => {
       <Divider />
       <Box sx={{ p: 2, maxHeight: 400, overflowY: 'auto' }}>
         {contacts && contacts.length > 0 ? (
-          <List disablePadding>
+          <List
+            disablePadding
+            sx={{
+              maxHeight: 240, // Approx. 5 items (adjust if needed)
+              overflowY: 'auto',
+            }}
+          >
             {/* Online users first */}
             {onlineContacts.length > 0 && (
               <>

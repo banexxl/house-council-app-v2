@@ -58,7 +58,7 @@ const useContacts = () => {
     currentUserInfo
   );
 
-  // Extract building ID from tenant/client data
+  // Extract building ID from tenant/customer data
   const extractBuildingIds = useCallback((tenants: Tenant[]): string[] => {
     const ids = new Set<string>();
 
@@ -229,14 +229,16 @@ const useContacts = () => {
           tenantList = await fetchTenantsFromSameBuilding(tenantBuildingId, viewer.tenant.id);
           resolvedBuildingIds = tenantBuildingId ? [tenantBuildingId] : [];
         } else if (viewer.customer?.id) {
-          const { success, data } = await getCustomerBuildingsForSocialProfile(viewer.customer.id);
+          const { success, data, error } = await getCustomerBuildingsForSocialProfile(viewer.customer.id);
+          if (!success) {
+            console.error('Failed to fetch customer buildings', error);
+          }
+
           const customerBuildingIds = (data ?? [])
             .map((building) => building.id)
             .filter((id): id is string => Boolean(id));
           resolvedBuildingIds = customerBuildingIds;
-          if (customerBuildingIds.length) {
-            tenantList = await fetchTenantsForClient(viewer.customer.id);
-          }
+          tenantList = await fetchTenantsForClient(viewer.customer.id);
         }
 
         if (!isMounted) return;
