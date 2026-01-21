@@ -333,7 +333,6 @@ export async function reactToComment(commentId: string, emoji: string): Promise<
                     .insert({
                          comment_id: commentId,
                          tenant_id: tenantId,
-                         building_id: buildingId,
                          emoji,
                     });
 
