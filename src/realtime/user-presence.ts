@@ -275,35 +275,78 @@ export const cleanupAllPresenceSubscriptions = async (): Promise<void> => {
 export type { PresenceUser, BuildingPresenceState };
 
 // React hook for easier integration
-export const useBuildingPresence = (buildingId: string | null, userId: string | null, userInfo?: Partial<PresenceUser>) => {
+export const useBuildingPresence = (buildingIds: string | string[] | null, userId: string | null, userInfo?: Partial<PresenceUser>) => {
      const [presenceUsers, setPresenceUsers] = React.useState<PresenceUser[]>([]);
      const [isConnected, setIsConnected] = React.useState(false);
 
+     const normalizedBuildingIds = React.useMemo(() => {
+          if (!buildingIds) {
+               return [] as string[];
+          }
+
+          const buildingIdList = Array.isArray(buildingIds) ? buildingIds : [buildingIds];
+          return Array.from(new Set(buildingIdList.filter(Boolean))).sort();
+     }, [buildingIds]);
+
+     const buildingKey = normalizedBuildingIds.join('|');
+
      React.useEffect(() => {
-          if (!buildingId || !userId) {
+          if (normalizedBuildingIds.length === 0 || !userId) {
                setPresenceUsers([]);
                setIsConnected(false);
                return;
           }
 
-          let unsubscribe: (() => void) | null = null;
+          let unsubscribeCallbacks: Array<() => void> = [];
+          let isActive = true;
+
+          const refreshPresenceUsers = () => {
+               if (!isActive) {
+                    return;
+               }
+
+               const combinedUsers = normalizedBuildingIds.flatMap((buildingId) =>
+                    getBuildingPresenceUsers(buildingId)
+               );
+               const uniqueUsers = new Map<string, PresenceUser>();
+
+               combinedUsers.forEach((user) => {
+                    const existing = uniqueUsers.get(user.user_id);
+                    if (!existing) {
+                         uniqueUsers.set(user.user_id, user);
+                         return;
+                    }
+
+                    const existingTime = new Date(existing.online_at).getTime();
+                    const currentTime = new Date(user.online_at).getTime();
+                    if (currentTime > existingTime) {
+                         uniqueUsers.set(user.user_id, user);
+                    }
+               });
+
+               const mergedUsers = Array.from(uniqueUsers.values()).sort((a, b) =>
+                    new Date(b.online_at).getTime() - new Date(a.online_at).getTime()
+               );
+               setPresenceUsers(mergedUsers);
+          };
 
           const setupPresence = async () => {
                try {
                     // Subscribe to building presence
-                    const channels = await subscribeToBuildingPresence(buildingId, userId, userInfo);
+                    const channels = await subscribeToBuildingPresence(normalizedBuildingIds, userId, userInfo);
 
                     if (channels?.length) {
                          setIsConnected(true);
 
                          // Listen for presence changes
-                         unsubscribe = onBuildingPresenceChange(buildingId, (users: PresenceUser[]) => {
-                              setPresenceUsers(users);
-                         });
+                         unsubscribeCallbacks = normalizedBuildingIds.map((buildingId) =>
+                              onBuildingPresenceChange(buildingId, refreshPresenceUsers)
+                         );
 
                          // Get initial state
-                         const initialUsers = getBuildingPresenceUsers(buildingId);
-                         setPresenceUsers(initialUsers);
+                         refreshPresenceUsers();
+                    } else {
+                         setIsConnected(false);
                     }
                } catch (error) {
                     log('Error setting up building presence:', error);
@@ -314,23 +357,26 @@ export const useBuildingPresence = (buildingId: string | null, userId: string | 
           setupPresence();
 
           return () => {
-               if (unsubscribe) {
-                    unsubscribe();
-               }
-               if (buildingId) {
-                    unsubscribeFromBuildingPresence(buildingId);
+               isActive = false;
+               unsubscribeCallbacks.forEach((unsubscribe) => unsubscribe());
+               if (normalizedBuildingIds.length) {
+                    void unsubscribeFromBuildingPresence(normalizedBuildingIds);
                }
                setIsConnected(false);
           };
-     }, [buildingId, userId]);
+     }, [buildingKey, userId]);
 
      const updateUserPresence = React.useCallback(
           async (newUserInfo: Partial<PresenceUser>) => {
-               if (buildingId && userId) {
-                    await updatePresence(buildingId, { user_id: userId, ...newUserInfo });
+               if (normalizedBuildingIds.length > 0 && userId) {
+                    await Promise.all(
+                         normalizedBuildingIds.map((buildingId) =>
+                              updatePresence(buildingId, { user_id: userId, ...newUserInfo })
+                         )
+                    );
                }
           },
-          [buildingId, userId]
+          [normalizedBuildingIds, userId]
      );
 
      return {

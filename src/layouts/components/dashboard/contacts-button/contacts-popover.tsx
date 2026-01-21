@@ -33,7 +33,7 @@ interface ContactsPopoverProps {
   contacts?: Contact[];
   onClose?: () => void;
   open?: boolean;
-  buildingId?: string | null;
+  buildingIds?: string[];
   isPresenceConnected?: boolean;
 }
 
@@ -43,7 +43,7 @@ export const ContactsPopover: FC<ContactsPopoverProps> = (props) => {
     contacts = [],
     onClose,
     open = false,
-    buildingId,
+    buildingIds = [],
     isPresenceConnected = false,
     ...other
   } = props;
@@ -88,7 +88,7 @@ export const ContactsPopover: FC<ContactsPopoverProps> = (props) => {
             />
           )}
         </Box>
-        {!isPresenceConnected && buildingId && (
+        {!isPresenceConnected && buildingIds.length > 0 && (
           <Typography
             variant="caption"
             color="text.secondary"
@@ -275,6 +275,6 @@ ContactsPopover.propTypes = {
   contacts: PropTypes.array,
   onClose: PropTypes.func,
   open: PropTypes.bool,
-  buildingId: PropTypes.string,
+  buildingIds: PropTypes.arrayOf(PropTypes.string),
   isPresenceConnected: PropTypes.bool,
 };

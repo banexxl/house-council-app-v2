@@ -9,6 +9,7 @@ import { usePopover } from 'src/hooks/use-popover';
 import { Tenant } from 'src/types/tenant';
 import { useTranslation } from 'react-i18next';
 import { useBuildingPresence, PresenceUser } from 'src/realtime/user-presence';
+import { getCustomerBuildingsForSocialProfile } from 'src/app/actions/customer/customer-actions';
 import { supabaseBrowserClient } from 'src/libs/supabase/sb-client';
 import { TABLES } from 'src/libs/supabase/tables';
 import { ContactsPopover } from './contacts-popover';
@@ -29,8 +30,7 @@ interface Contact {
 }
 
 type ViewerData = {
-  client: { id: string; email?: string | null; name?: string | null } | null;
-  clientMember: { id: string; customerId: string | null; email?: string | null } | null;
+  customer: { id: string; email?: string | null; name?: string | null } | null;
   tenant: (Tenant & { apartment?: any }) | null;
   admin: { id: string; email?: string | null; first_name?: string | null; last_name?: string | null } | null;
   userData: { id: string; email?: string | null } | null;
@@ -39,42 +39,40 @@ type ViewerData = {
 
 const useContacts = () => {
   const [baseContacts, setBaseContacts] = useState<Contact[]>([]);
-  const [buildingId, setBuildingId] = useState<string | null>(null);
+  const [buildingIds, setBuildingIds] = useState<string[]>([]);
   const [viewer, setViewer] = useState<ViewerData | null>(null);
 
   // Extract building ID and user info for presence
   const currentUserId = viewer?.userData?.id || null;
   const currentUserInfo: Partial<PresenceUser> = {
-    username: viewer?.tenant?.email || viewer?.client?.email!,
-    first_name: viewer?.tenant?.first_name || viewer?.client?.name?.split(' ')[0],
+    username: viewer?.tenant?.email || viewer?.customer?.email!,
+    first_name: viewer?.tenant?.first_name || viewer?.customer?.name?.split(' ')[0],
     last_name: viewer?.tenant?.last_name || '',
     apartment_number: viewer?.tenant?.apartment ? String((viewer.tenant.apartment as any)?.apartment_number || '') : undefined,
   };
 
   // Use building presence hook
   const { isConnected, onlineUserIds } = useBuildingPresence(
-    buildingId,
+    buildingIds,
     currentUserId,
     currentUserInfo
   );
 
   // Extract building ID from tenant/client data
-  const extractBuildingId = useCallback((tenants: Tenant[]): string | null => {
-    if (tenants.length === 0) return null;
+  const extractBuildingIds = useCallback((tenants: Tenant[]): string[] => {
+    const ids = new Set<string>();
 
-    // Get building ID from first tenant's apartment
-    const firstTenant = tenants[0];
-    if (firstTenant.apartment && typeof firstTenant.apartment === 'object') {
-      const apartment = firstTenant.apartment as any;
-      if (apartment.building_id) {
-        return apartment.building_id;
+    tenants.forEach((tenant) => {
+      const apartment = tenant.apartment as any;
+      if (apartment?.building_id) {
+        ids.add(apartment.building_id);
       }
-      if (apartment.building?.id) {
-        return apartment.building.id;
+      if (apartment?.building?.id) {
+        ids.add(apartment.building.id);
       }
-    }
+    });
 
-    return null;
+    return Array.from(ids);
   }, []);
 
   const fetchTenantsForClient = useCallback(async (clientId: string): Promise<Tenant[]> => {
@@ -214,12 +212,13 @@ const useContacts = () => {
       if (!viewer) {
         if (!isMounted) return;
         setBaseContacts([]);
-        setBuildingId(null);
+        setBuildingIds([]);
         return;
       }
 
       try {
         let tenantList: Tenant[] = [];
+        let resolvedBuildingIds: string[] = [];
 
         const tenantBuildingId =
           (viewer.tenant?.apartment as any)?.building_id ||
@@ -228,18 +227,25 @@ const useContacts = () => {
 
         if (viewer.tenant?.id && tenantBuildingId) {
           tenantList = await fetchTenantsFromSameBuilding(tenantBuildingId, viewer.tenant.id);
-        } else {
-          const clientId = viewer.client?.id || viewer.clientMember?.customerId || null;
-          if (clientId) {
-            tenantList = await fetchTenantsForClient(clientId);
+          resolvedBuildingIds = tenantBuildingId ? [tenantBuildingId] : [];
+        } else if (viewer.customer?.id) {
+          const { success, data } = await getCustomerBuildingsForSocialProfile(viewer.customer.id);
+          const customerBuildingIds = (data ?? [])
+            .map((building) => building.id)
+            .filter((id): id is string => Boolean(id));
+          resolvedBuildingIds = customerBuildingIds;
+          if (customerBuildingIds.length) {
+            tenantList = await fetchTenantsForClient(viewer.customer.id);
           }
         }
 
         if (!isMounted) return;
 
         if (tenantList.length > 0) {
-          const extractedBuildingId = tenantBuildingId || extractBuildingId(tenantList);
-          setBuildingId(extractedBuildingId);
+          const extractedBuildingIds = resolvedBuildingIds.length
+            ? resolvedBuildingIds
+            : extractBuildingIds(tenantList);
+          setBuildingIds(extractedBuildingIds);
 
           const transformedContacts: Contact[] = tenantList.map((tenant: Tenant & { last_sign_in_at?: string }) => ({
             id: tenant.id,
@@ -254,13 +260,13 @@ const useContacts = () => {
           setBaseContacts(transformedContacts);
         } else {
           setBaseContacts([]);
-          setBuildingId(null);
+          setBuildingIds([]);
         }
       } catch (error) {
         console.error('Failed to fetch contacts:', error);
         if (!isMounted) return;
         setBaseContacts([]);
-        setBuildingId(null);
+        setBuildingIds([]);
       }
     };
 
@@ -272,9 +278,8 @@ const useContacts = () => {
   }, [
     viewer?.tenant?.id,
     viewer?.tenant?.apartment,
-    viewer?.client?.id,
-    viewer?.clientMember?.customerId,
-    extractBuildingId,
+    viewer?.customer?.id,
+    extractBuildingIds,
     fetchTenantsForClient,
     fetchTenantsFromSameBuilding,
   ]);
@@ -287,13 +292,13 @@ const useContacts = () => {
     }));
   }, [baseContacts, onlineUserIds]);
 
-  return { contacts, buildingId, isConnected, onlineCount: onlineUserIds.length };
+  return { contacts, buildingIds, isConnected, onlineCount: onlineUserIds.length };
 };
 
 export const ContactsButton: FC = () => {
   const { t } = useTranslation();
   const popover = usePopover<HTMLButtonElement>();
-  const { contacts, buildingId, isConnected, onlineCount } = useContacts();
+  const { contacts, buildingIds, isConnected, onlineCount } = useContacts();
 
   return (
     <>
@@ -312,7 +317,7 @@ export const ContactsButton: FC = () => {
         contacts={contacts}
         onClose={popover.handleClose}
         open={popover.open}
-        buildingId={buildingId}
+        buildingIds={buildingIds}
         isPresenceConnected={isConnected}
       />
     </>
