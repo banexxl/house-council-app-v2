@@ -18,13 +18,14 @@ interface AutocompleteProps {
      label: string;
      initialValue?: string
      onClear?: () => void;
+     disabled?: boolean;
 }
 
 export interface AutocompleteRef {
      clearField: () => void; // Expose the clear method
 }
 
-const Autocomplete = forwardRef<AutocompleteRef, AutocompleteProps>(({ onAddressSelected, label, initialValue, onClear }, ref) => {
+const Autocomplete = forwardRef<AutocompleteRef, AutocompleteProps>(({ onAddressSelected, label, initialValue, onClear, disabled }, ref) => {
 
      const [inputValue, setInputValue] = useState(initialValue || "");
      const [suggestions, setSuggestions] = useState<any[]>([]);
@@ -63,18 +64,21 @@ const Autocomplete = forwardRef<AutocompleteRef, AutocompleteProps>(({ onAddress
      };
 
      const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+          if (disabled) return;
           const value = event.target.value;
           setInputValue(value);
           fetchSuggestions(value);
      };
 
      const handleSelect = (feature: any) => {
+          if (disabled) return;
           setInputValue(transliterateCyrillicToLatin(feature.place_name));
           setSuggestions([]);
           onAddressSelected(feature);
      };
 
      const handleClear = () => {
+          if (disabled) return;
           setInputValue("");
           setSuggestions([]);
           onClear && onClear();
@@ -88,6 +92,7 @@ const Autocomplete = forwardRef<AutocompleteRef, AutocompleteProps>(({ onAddress
                     fullWidth
                     value={inputValue}
                     onChange={handleInputChange}
+                    disabled={disabled}
                     slots={{
                          input: OutlinedInput, // ✅ use MUI input, not raw HTML input
                     }}
@@ -97,7 +102,7 @@ const Autocomplete = forwardRef<AutocompleteRef, AutocompleteProps>(({ onAddress
                                    <InputAdornment position="end">
                                         {loading && <span>Loading...</span>}
                                         {inputValue && (
-                                             <IconButton onClick={handleClear}>
+                                             <IconButton onClick={handleClear} disabled={disabled}>
                                                   <ClearIcon />
                                              </IconButton>
                                         )}
@@ -108,7 +113,7 @@ const Autocomplete = forwardRef<AutocompleteRef, AutocompleteProps>(({ onAddress
                />
 
                {
-                    suggestions.length > 0 && (
+                    !disabled && suggestions.length > 0 && (
                          <List
                               sx={{
                                    position: "absolute",

@@ -8,7 +8,7 @@ import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 
-// import { AccountGeneralSettings } from 'src/sections/dashboard/account/account-general-settings';
+import { AccountGeneralSettings } from 'src/sections/dashboard/account/account-general-settings';
 // import { AccountNotificationsSettings } from 'src/sections/dashboard/account/account-notifications-settings';
 import { AccountSecuritySettings } from 'src/sections/dashboard/account/account-security-settings';
 import { PolarOrder } from 'src/types/polar-order-types';
@@ -39,7 +39,7 @@ const Account = ({ customer, userData, customerSubscriptionPlan, customerInvoice
      }, []);
 
      const tabs = [
-          // { label: t('account.lblGeneral'), value: 'general' },
+          { label: t('account.lblGeneral'), value: 'general' },
           // { label: t('account.lblTeam'), value: 'team' },
           // { label: t('account.lblNotifications'), value: 'notifications' },
           { label: t('account.lblSecurity'), value: 'security' },
@@ -170,9 +170,9 @@ const Account = ({ customer, userData, customerSubscriptionPlan, customerInvoice
 
                                    {/* Content */}
                                    <Box sx={{ minWidth: 0 }}>
-                                        {/* {currentTab === 'general' && (
+                                        {currentTab === 'general' && (
                                              <AccountGeneralSettings customer={customer} />
-                                        )} */}
+                                        )}
                                         {/* {currentTab === 'team' && (
                                              <AccountTeamSettings
                                                   customer={customer}

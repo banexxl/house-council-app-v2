@@ -1,17 +1,17 @@
-// import type { FC } from 'react';
-// import Stack from '@mui/material/Stack';
-// import { ClientForm } from 'src/sections/dashboard/client/client-form';
-// import { PolarCustomer } from 'src/types/polar-customer-types';
+import type { FC } from 'react';
+import Stack from '@mui/material/Stack';
+import { PolarCustomer } from 'src/types/polar-customer-types';
+import { ClientForm } from '../client/client-form';
 
-// interface AccountGeneralSettingsProps {
-//      customer: PolarCustomer
-// }
+interface AccountGeneralSettingsProps {
+     customer: PolarCustomer
+}
 
-// export const AccountGeneralSettings: FC<AccountGeneralSettingsProps> = ({ customer }) => {
+export const AccountGeneralSettings: FC<AccountGeneralSettingsProps> = ({ customer }) => {
 
-//      return (
-//           <Stack spacing={2}>
-//                <ClientForm customerData={customer} />
-//           </Stack>
-//      );
-// };
+     return (
+          <Stack spacing={2}>
+               <ClientForm clientData={customer} />
+          </Stack>
+     );
+};

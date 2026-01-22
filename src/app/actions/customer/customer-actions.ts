@@ -366,8 +366,9 @@ export const createPolarCustomerAction = async ({
 
 /**
  * Update an existing PolarCustomer via Polar SDK
- * Only updates: name, avatarUrl, billingAddress, taxId
+ * Only updates: email, name, avatarUrl, billingAddress, taxId
  * @param customerId - Polar customer ID
+ * @param email - Customer email
  * @param name - Customer name
  * @param avatarUrl - Customer avatar URL
  * @param billingAddress - Customer billing address
@@ -375,12 +376,14 @@ export const createPolarCustomerAction = async ({
  */
 export const updatePolarCustomerAction = async ({
      customerId,
+     email,
      name,
      avatarUrl,
      billingAddress,
      taxId,
 }: {
      customerId: string;
+     email?: string | null;
      name?: string | null;
      avatarUrl?: string | null;
      billingAddress?: PolarCustomerAddress | null;
@@ -396,6 +399,7 @@ export const updatePolarCustomerAction = async ({
           // Build update payload with only allowed fields
           const updatePayload: any = {};
 
+          if (email !== undefined) updatePayload.email = email;
           if (name !== undefined) updatePayload.name = name;
           if (avatarUrl !== undefined) {
                updatePayload.metadata = avatarUrl ? { avatarUrl } : {};
