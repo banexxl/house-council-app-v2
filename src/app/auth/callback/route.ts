@@ -46,8 +46,9 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${requestUrl.origin}/auth/error?error=${errorParam}`);
   };
 
-  const fetchByEmail = async (table: string, select = "id") => {
-    return supabase.from(table).select(select).eq("email", userEmail).maybeSingle();
+  const fetchByEmail = async (table: string, select = "id"): Promise<{ data: any; error: any }> => {
+    const result = await supabase.from(table).select(select).eq("email", userEmail).maybeSingle();
+    return result
   };
 
   //Admin
@@ -69,7 +70,7 @@ export async function GET(request: Request) {
   }
   if (customerData && typeof customerData === "object" && "externalId" in customerData) {
     role = "client";
-    userId = (customerData as { externalId: string }).externalId;
+    userId = customerData.externalId;
   }
 
   // Tenant

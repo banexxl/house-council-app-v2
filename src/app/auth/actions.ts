@@ -352,7 +352,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
 
           const { data: tenant, error: tenantError } = await supabase
                .from(TABLES.TENANTS)
-               .select('id')
+               .select('id, user_id')
                .eq('email', values.email)
                .single();
           if (tenant) {
@@ -364,7 +364,7 @@ export const signInWithEmailAndPassword = async (values: SignInFormValues): Prom
                     // Additional null check for TypeScript
                     if (!userId) {
                          await logServerAction({
-                              user_id: null,
+                              user_id: tenant.user_id,
                               action: 'Signing in failed - tenant ID is null',
                               payload: { email: values.email },
                               status: 'fail',

@@ -1190,16 +1190,16 @@ export const getCustomerIdFromTenantBuilding = async (tenantId: string): Promise
      if (!isUUID(tenantId)) {
           return { success: false, error: 'Invalid tenant ID' };
      }
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+
+     const supabase = await useServerSideSupabaseAnonClient();
 
      try {
           // Get tenant's apartment_id
           const { data: tenant, error: tenantError } = await supabase
                .from(TABLES.TENANTS)
                .select('apartment_id')
-               .eq('id', tenantId)
+               .or(`id.eq.${tenantId},user_id.eq.${tenantId}`)
                .single();
-
           if (tenantError) {
                log(`Error fetching tenant: ${tenantError.message}`);
                return { success: false, error: tenantError.message };
@@ -1215,7 +1215,6 @@ export const getCustomerIdFromTenantBuilding = async (tenantId: string): Promise
                .select('building_id')
                .eq('id', tenant.apartment_id)
                .single();
-
           if (apartmentError) {
                log(`Error fetching apartment: ${apartmentError.message}`);
                return { success: false, error: apartmentError.message };
@@ -1231,7 +1230,6 @@ export const getCustomerIdFromTenantBuilding = async (tenantId: string): Promise
                .select('customerId')
                .eq('id', apartment.building_id)
                .single();
-
           if (buildingError) {
                log(`Error fetching building: ${buildingError.message}`);
                return { success: false, error: buildingError.message };
