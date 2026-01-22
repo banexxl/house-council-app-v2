@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from 'next/cache';
-import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleAdminClient } from 'src/libs/supabase/sb-server';
+import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { getViewer } from 'src/libs/supabase/server-auth';
 import { TABLES } from 'src/libs/supabase/tables';
 import { logServerAction } from 'src/libs/supabase/server-logging';
@@ -755,23 +755,18 @@ export async function getPollResults(poll_id: string): Promise<{
           // Get current user
           const viewer = await getViewer();
 
-          if (!viewer.tenant) {
+          const isTenant = !!viewer.tenant;
+          const isCustomer = !!viewer.customer;
+          const isAdmin = !!viewer.admin;
+
+          if (!isTenant && !isCustomer && !isAdmin) {
                return {
                     success: false,
-                    error: 'User is not a tenant'
+                    error: 'User is not authenticated'
                };
           }
 
-          const tenantBuildingId = viewer.tenant.apartment?.building?.id;
-
-          if (!tenantBuildingId) {
-               return {
-                    success: false,
-                    error: 'Tenant building not found'
-               };
-          }
-
-          const supabase = await useServerSideSupabaseServiceRoleAdminClient();
+          const supabase = await useServerSideSupabaseAnonClient();
 
           // Get poll with options
           const { data: poll, error: pollError } = await supabase
@@ -795,7 +790,23 @@ export async function getPollResults(poll_id: string): Promise<{
                };
           }
 
-          if (poll.building_id !== tenantBuildingId) {
+          if (isTenant) {
+               const tenantBuildingId = viewer.tenant?.apartment?.building?.id;
+               if (!tenantBuildingId) {
+                    return {
+                         success: false,
+                         error: 'Tenant building not found'
+                    };
+               }
+               if (poll.building_id !== tenantBuildingId) {
+                    return {
+                         success: false,
+                         error: 'Poll not found'
+                    };
+               }
+          }
+
+          if (isCustomer && poll.customerId !== viewer.customer?.id) {
                return {
                     success: false,
                     error: 'Poll not found'
@@ -837,7 +848,7 @@ export async function getPollResults(poll_id: string): Promise<{
           const { data: buildingApartments, error: buildingApartmentsError } = await supabase
                .from(TABLES.APARTMENTS)
                .select('id')
-               .eq('building_id', tenantBuildingId);
+               .eq('building_id', poll.building_id);
 
           if (buildingApartmentsError) {
                return {

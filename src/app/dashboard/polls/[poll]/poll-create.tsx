@@ -40,8 +40,6 @@ import {
      ListItemText,
      Paper,
      TableContainer,
-     LinearProgress,
-     Rating,
      CircularProgress,
 } from '@mui/material';
 import Image from 'next/image';
@@ -113,7 +111,6 @@ export default function PollCreate({
      });
      const [pollResults, setPollResults] = useState<any>(null);
      const [loadingResults, setLoadingResults] = useState(false);
-
      useEffect(() => {
           setAttachments(((poll?.attachments ?? []) as unknown as DBStoredImage[]) || []);
      }, [poll?.attachments]);
@@ -208,10 +205,14 @@ export default function PollCreate({
      );
 
      const summarizeVote = (v: PollVote): string => {
-          if (v.abstain) return 'Abstain';
+          const abstainLabel = t('polls.voting.abstainOption') || 'Abstain';
+          const yesLabel = t('common.lblYes') || 'Yes';
+          const noLabel = t('common.lblNo') || 'No';
+
+          if (v.abstain) return abstainLabel;
           switch (poll?.type) {
                case 'yes_no':
-                    return v.choice_bool === true ? 'Yes' : v.choice_bool === false ? 'No' : '';
+                    return v.choice_bool === true ? yesLabel : v.choice_bool === false ? noLabel : '';
                case 'single_choice':
                case 'multiple_choice': {
                     const ids = v.choice_option_ids || [];
@@ -240,6 +241,22 @@ export default function PollCreate({
                     return '';
           }
      };
+
+     const pollVotes = useMemo(() => {
+          if (Array.isArray(votes) && votes.length > 0) {
+               return votes;
+          }
+          if (Array.isArray(poll?.votes)) {
+               return poll.votes;
+          }
+          return [];
+     }, [poll?.votes, votes]);
+
+     const sortedVotes = useMemo(() => {
+          return [...pollVotes].sort(
+               (a, b) => new Date(b.cast_at).getTime() - new Date(a.cast_at).getTime()
+          );
+     }, [pollVotes]);
 
      const buildingOptions = useMemo(
           () =>
@@ -664,12 +681,12 @@ export default function PollCreate({
 
           const { poll: resultPoll, statistics } = pollResults;
 
-          switch (poll.type) {
+          switch (resultPoll.type) {
                case 'yes_no':
                     if (statistics.yes_no_results) {
                          const pieOptions = {
                               chart: { type: 'pie' as const },
-                              labels: ['Yes', 'No'],
+                              labels: [t('common.lblYes'), t('common.lblNo')],
                               colors: ['#4caf50', '#f44336'],
                               legend: { position: 'bottom' as const },
                               responsive: [{
@@ -688,7 +705,7 @@ export default function PollCreate({
 
                          return (
                               <Box>
-                                   <Typography variant="h6" gutterBottom>Vote Distribution</Typography>
+                                   <Typography variant="h6" gutterBottom>{t('polls.voting.voteDistribution')}</Typography>
                                    <Chart options={pieOptions} series={pieSeries} type="pie" height={300} />
                               </Box>
                          );
@@ -704,7 +721,7 @@ export default function PollCreate({
                                    categories: statistics.results_by_option.map((r: any) => r.option_label),
                                    labels: { style: { fontSize: '12px' } }
                               },
-                              yaxis: { title: { text: 'Number of Votes' } },
+                              yaxis: { title: { text: t('polls.voting.numberVotes') } },
                               colors: ['#2196f3'],
                               plotOptions: {
                                    bar: { horizontal: false, borderRadius: 4 }
@@ -713,7 +730,7 @@ export default function PollCreate({
                          };
 
                          const barSeries = [{
-                              name: 'Votes',
+                              name: t('polls.voting.votes'),
                               data: statistics.results_by_option.map((r: any) => r.count)
                          }];
 
@@ -735,11 +752,11 @@ export default function PollCreate({
                          return (
                               <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
                                    <Box sx={{ flex: 1 }}>
-                                        <Typography variant="h6" gutterBottom>Vote Count by Option</Typography>
+                                        <Typography variant="h6" gutterBottom>{t('polls.voting.voteCountByOption')}</Typography>
                                         <Chart options={barOptions} series={barSeries} type="bar" height={300} />
                                    </Box>
                                    <Box sx={{ flex: 1 }}>
-                                        <Typography variant="h6" gutterBottom>Vote Distribution</Typography>
+                                        <Typography variant="h6" gutterBottom>{t('polls.voting.voteDistribution')}</Typography>
                                         <Chart options={pieOptions} series={pieSeries} type="pie" height={300} />
                                    </Box>
                               </Box>
@@ -755,7 +772,7 @@ export default function PollCreate({
                                    categories: statistics.ranking_results.map((r: any) => r.option_label),
                                    labels: { style: { fontSize: '12px' } }
                               },
-                              yaxis: { title: { text: 'Total Points' } },
+                              yaxis: { title: { text: t('polls.voting.totalPoints') } },
                               colors: ['#ff9800'],
                               plotOptions: {
                                    bar: { horizontal: false, borderRadius: 4 }
@@ -764,13 +781,13 @@ export default function PollCreate({
                          };
 
                          const barSeries = [{
-                              name: 'Points',
+                              name: t('polls.voting.totalPoints'),
                               data: statistics.ranking_results.map((r: any) => r.total_points)
                          }];
 
                          return (
                               <Box>
-                                   <Typography variant="h6" gutterBottom>Ranking Results (by Total Points)</Typography>
+                                   <Typography variant="h6" gutterBottom>{t('polls.voting.rankingResults')}</Typography>
                                    <Chart options={barOptions} series={barSeries} type="bar" height={350} />
                               </Box>
                          );
@@ -785,7 +802,7 @@ export default function PollCreate({
                                    categories: statistics.score_results.map((r: any) => r.option_label),
                                    labels: { style: { fontSize: '12px' } }
                               },
-                              yaxis: { title: { text: 'Average Score' }, max: 5 },
+                              yaxis: { title: { text: t('polls.voting.averageScore') }, max: 5 },
                               colors: ['#9c27b0'],
                               plotOptions: {
                                    bar: { horizontal: false, borderRadius: 4 }
@@ -794,13 +811,13 @@ export default function PollCreate({
                          };
 
                          const barSeries = [{
-                              name: 'Average Score',
+                              name: t('polls.voting.averageScore'),
                               data: statistics.score_results.map((r: any) => r.average_score)
                          }];
 
                          return (
                               <Box>
-                                   <Typography variant="h6" gutterBottom>Score Results (Average Rating)</Typography>
+                                   <Typography variant="h6" gutterBottom>{t('polls.voting.scoreResults')}</Typography>
                                    <Chart options={barOptions} series={barSeries} type="bar" height={350} />
                               </Box>
                          );
@@ -811,146 +828,53 @@ export default function PollCreate({
           return null;
      };
 
-     const renderResultsTable = () => {
-          if (!pollResults || !poll) return null;
+     const renderVotesTable = () => {
+          if (!poll || poll.status !== 'closed') return null;
 
-          const { poll: resultPoll, statistics } = pollResults;
-
-          switch (poll.type) {
-               case 'yes_no':
-                    if (statistics.yes_no_results) {
-                         return (
-                              <TableContainer component={Paper}>
-                                   <Table>
-                                        <TableHead>
-                                             <TableRow>
-                                                  <TableCell>Option</TableCell>
-                                                  <TableCell align="right">Votes</TableCell>
-                                                  <TableCell align="right">Percentage</TableCell>
-                                             </TableRow>
-                                        </TableHead>
-                                        <TableBody>
-                                             <TableRow>
-                                                  <TableCell>Yes</TableCell>
-                                                  <TableCell align="right">{statistics.yes_no_results.yes}</TableCell>
-                                                  <TableCell align="right">{statistics.yes_no_results.yes_percentage}%</TableCell>
-                                             </TableRow>
-                                             <TableRow>
-                                                  <TableCell>No</TableCell>
-                                                  <TableCell align="right">{statistics.yes_no_results.no}</TableCell>
-                                                  <TableCell align="right">{statistics.yes_no_results.no_percentage}%</TableCell>
-                                             </TableRow>
-                                        </TableBody>
-                                   </Table>
-                              </TableContainer>
-                         );
-                    }
-                    break;
-
-               case 'single_choice':
-               case 'multiple_choice':
-                    if (statistics.results_by_option) {
-                         return (
-                              <TableContainer component={Paper}>
-                                   <Table>
-                                        <TableHead>
-                                             <TableRow>
-                                                  <TableCell>Option</TableCell>
-                                                  <TableCell align="right">Votes</TableCell>
-                                                  <TableCell align="right">Percentage</TableCell>
-                                                  <TableCell>Progress</TableCell>
-                                             </TableRow>
-                                        </TableHead>
-                                        <TableBody>
-                                             {statistics.results_by_option.map((result: any) => (
-                                                  <TableRow key={result.option_id}>
-                                                       <TableCell>{result.option_label}</TableCell>
-                                                       <TableCell align="right">{result.count}</TableCell>
-                                                       <TableCell align="right">{result.percentage}%</TableCell>
-                                                       <TableCell>
-                                                            <Box sx={{ display: 'flex', alignItems: 'center', width: 100 }}>
-                                                                 <LinearProgress
-                                                                      variant="determinate"
-                                                                      value={result.percentage}
-                                                                      sx={{ flex: 1, mr: 1 }}
-                                                                 />
-                                                            </Box>
-                                                       </TableCell>
-                                                  </TableRow>
-                                             ))}
-                                        </TableBody>
-                                   </Table>
-                              </TableContainer>
-                         );
-                    }
-                    break;
-
-               case 'ranked_choice':
-                    if (statistics.ranking_results) {
-                         return (
-                              <TableContainer component={Paper}>
-                                   <Table>
-                                        <TableHead>
-                                             <TableRow>
-                                                  <TableCell>Rank</TableCell>
-                                                  <TableCell>Option</TableCell>
-                                                  <TableCell align="right">Total Points</TableCell>
-                                                  <TableCell align="right">Average Score</TableCell>
-                                             </TableRow>
-                                        </TableHead>
-                                        <TableBody>
-                                             {statistics.ranking_results.map((result: any, index: number) => (
-                                                  <TableRow key={result.option_id}>
-                                                       <TableCell>#{index + 1}</TableCell>
-                                                       <TableCell>{result.option_label}</TableCell>
-                                                       <TableCell align="right">{result.total_points}</TableCell>
-                                                       <TableCell align="right">{result.average_rank}</TableCell>
-                                                  </TableRow>
-                                             ))}
-                                        </TableBody>
-                                   </Table>
-                              </TableContainer>
-                         );
-                    }
-                    break;
-
-               case 'score':
-                    if (statistics.score_results) {
-                         return (
-                              <TableContainer component={Paper}>
-                                   <Table>
-                                        <TableHead>
-                                             <TableRow>
-                                                  <TableCell>Rank</TableCell>
-                                                  <TableCell>Option</TableCell>
-                                                  <TableCell align="right">Average Score</TableCell>
-                                                  <TableCell align="right">Total Score</TableCell>
-                                                  <TableCell align="right">Vote Count</TableCell>
-                                                  <TableCell>Rating</TableCell>
-                                             </TableRow>
-                                        </TableHead>
-                                        <TableBody>
-                                             {statistics.score_results.map((result: any, index: number) => (
-                                                  <TableRow key={result.option_id}>
-                                                       <TableCell>#{index + 1}</TableCell>
-                                                       <TableCell>{result.option_label}</TableCell>
-                                                       <TableCell align="right">{result.average_score}</TableCell>
-                                                       <TableCell align="right">{result.total_score}</TableCell>
-                                                       <TableCell align="right">{result.vote_count}</TableCell>
-                                                       <TableCell>
-                                                            <Rating value={result.average_score} max={5} readOnly size="small" />
-                                                       </TableCell>
-                                                  </TableRow>
-                                             ))}
-                                        </TableBody>
-                                   </Table>
-                              </TableContainer>
-                         );
-                    }
-                    break;
+          if (sortedVotes.length === 0) {
+               return (
+                    <Typography variant="body2" color="text.secondary">
+                         {t('polls.noVotesYet') || 'No votes yet'}
+                    </Typography>
+               );
           }
 
-          return null;
+          return (
+               <TableContainer component={Paper}>
+                    <Table size="small">
+                         <TableHead>
+                              <TableRow>
+                                   <TableCell>Voter</TableCell>
+                                   <TableCell>Apartment</TableCell>
+                                   <TableCell>Vote</TableCell>
+                                   <TableCell>{t('common.lblStatus') || 'Status'}</TableCell>
+                                   <TableCell>Submitted</TableCell>
+                                   <TableCell>Comment</TableCell>
+                              </TableRow>
+                         </TableHead>
+                         <TableBody>
+                              {sortedVotes.map((vote) => {
+                                   const voterLabel = vote.is_anonymous
+                                        ? (t('polls.anonymous') || 'Anonymous')
+                                        : vote.tenant_id;
+                                   const apartmentLabel = vote.is_anonymous ? '-' : (vote.apartment_id || '-');
+                                   const voteSummary = summarizeVote(vote) || '-';
+                                   const submittedAt = vote.cast_at ? new Date(vote.cast_at).toLocaleString() : '-';
+                                   return (
+                                        <TableRow key={vote.id}>
+                                             <TableCell>{voterLabel}</TableCell>
+                                             <TableCell>{apartmentLabel}</TableCell>
+                                             <TableCell>{voteSummary}</TableCell>
+                                             <TableCell>{voteStatusLabel(t, vote.status)}</TableCell>
+                                             <TableCell>{submittedAt}</TableCell>
+                                             <TableCell>{vote.comment || '-'}</TableCell>
+                                        </TableRow>
+                                   );
+                              })}
+                         </TableBody>
+                    </Table>
+               </TableContainer>
+          );
      };
 
      return (
@@ -1804,7 +1728,7 @@ export default function PollCreate({
                                                        </Paper>
                                                        <Paper sx={{ p: 2, minWidth: 120 }}>
                                                             <Typography variant="h6" color="primary">
-                                                                 {pollResults.statistics.eligible_voters}
+                                                                 {pollResults.statistics.total_eligible}
                                                             </Typography>
                                                             <Typography variant="body2" color="text.secondary">
                                                                  Eligible Voters
@@ -1830,15 +1754,22 @@ export default function PollCreate({
 
                                                   {/* Charts */}
                                                   {renderResultsChart()}
-
-                                                  {/* Tables */}
-                                                  {renderResultsTable()}
                                              </Stack>
                                         ) : (
                                              <Typography variant="body2" color="text.secondary">
                                                   {t('polls.noResultsAvailable') || 'No results available yet'}
                                              </Typography>
                                         )}
+                                   </CardContent>
+                              </Card>
+                         )}
+
+                         {poll?.status === 'closed' && (
+                              <Card>
+                                   <CardHeader title={t('polls.votesList') || 'Votes List'} />
+                                   <Divider />
+                                   <CardContent>
+                                        {renderVotesTable()}
                                    </CardContent>
                               </Card>
                          )}
