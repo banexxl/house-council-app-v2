@@ -83,6 +83,18 @@ type Props = {
      votes?: PollVote[] | null;
 };
 
+type PollVoteWithDetails = PollVote & {
+     tenant?: {
+          id: string;
+          first_name?: string | null;
+          last_name?: string | null;
+     } | null;
+     apartment?: {
+          id: string;
+          apartment_number?: string | null;
+     } | null;
+};
+
 type PollLifecycleActionArgs = {
      action: (pollId: string) => Promise<{ success: boolean; error?: string | null | undefined }>;
      successMessage: string;
@@ -242,12 +254,12 @@ export default function PollCreate({
           }
      };
 
-     const pollVotes = useMemo(() => {
+     const pollVotes = useMemo<PollVoteWithDetails[]>(() => {
           if (Array.isArray(votes) && votes.length > 0) {
-               return votes;
+               return votes as PollVoteWithDetails[];
           }
           if (Array.isArray(poll?.votes)) {
-               return poll.votes;
+               return poll.votes as PollVoteWithDetails[];
           }
           return [];
      }, [poll?.votes, votes]);
@@ -854,10 +866,16 @@ export default function PollCreate({
                          </TableHead>
                          <TableBody>
                               {sortedVotes.map((vote) => {
+                                   const tenantName = [vote.tenant?.first_name, vote.tenant?.last_name]
+                                        .map((part) => (part || '').trim())
+                                        .filter(Boolean)
+                                        .join(' ');
                                    const voterLabel = vote.is_anonymous
                                         ? (t('polls.anonymous') || 'Anonymous')
-                                        : vote.tenant_id;
-                                   const apartmentLabel = vote.is_anonymous ? '-' : (vote.apartment_id || '-');
+                                        : (tenantName || '-');
+                                   const apartmentLabel = vote.is_anonymous
+                                        ? '-'
+                                        : (vote.apartment?.apartment_number || '-');
                                    const voteSummary = summarizeVote(vote) || '-';
                                    const submittedAt = vote.cast_at ? new Date(vote.cast_at).toLocaleString() : '-';
                                    return (

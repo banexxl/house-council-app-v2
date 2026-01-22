@@ -139,7 +139,18 @@ export async function getPollById(id: string): Promise<{ success: boolean; error
     // Fetch poll votes and return with poll data
     const { data: votes, error: votesError } = await supabase
         .from(TABLES.POLL_VOTES)
-        .select('*')
+        .select(`
+            *,
+            tenant:tenant_id (
+                id,
+                first_name,
+                last_name
+            ),
+            apartment:apartment_id (
+                id,
+                apartment_number
+            )
+        `)
         .eq('poll_id', id)
         .order('created_at', { ascending: false });
 
