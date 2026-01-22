@@ -141,16 +141,16 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
           </SvgIcon>
         ),
       },
-      {
-        title: t(tokens.nav.account),
-        path: paths.dashboard.account,
-        roles: ["admin", "client"], // hidden for clientMember
-        icon: (
-          <SvgIcon fontSize="small">
-            <ManageAccountsIcon />
-          </SvgIcon>
-        ),
-      },
+      // {
+      //   title: t(tokens.nav.account),
+      //   path: paths.dashboard.account,
+      //   roles: ["admin", "client"], // hidden for clientMember
+      //   icon: (
+      //     <SvgIcon fontSize="small">
+      //       <ManageAccountsIcon />
+      //     </SvgIcon>
+      //   ),
+      // },
       {
         title: t(tokens.nav.locations),
         featureKey: 'locations',
