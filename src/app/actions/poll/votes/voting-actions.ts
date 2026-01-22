@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from 'next/cache';
-import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
+import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleAdminClient } from 'src/libs/supabase/sb-server';
 import { getViewer } from 'src/libs/supabase/server-auth';
 import { TABLES } from 'src/libs/supabase/tables';
 import { logServerAction } from 'src/libs/supabase/server-logging';
@@ -408,9 +408,9 @@ export async function submitVote(data: {
 /**
  * Get tenant's vote for a specific poll
  */
-export async function getTenantVote(poll_id: string): Promise<{
+export async function getAllTenantVotes(poll_id: string): Promise<{
      success: boolean;
-     data?: PollVote;
+     data?: PollVote[];
      error?: string;
 }> {
      const start = Date.now();
@@ -428,32 +428,17 @@ export async function getTenantVote(poll_id: string): Promise<{
 
           const supabase = await useServerSideSupabaseAnonClient();
 
-          // Get tenant ID
-          const { data: tenant, error: tenantError } = await supabase
-               .from(TABLES.TENANTS)
-               .select('id')
-               .eq('user_id', viewer.userData!.id)
-               .single();
-
-          if (tenantError || !tenant) {
-               return {
-                    success: false,
-                    error: 'Tenant not found'
-               };
-          }
-
           // Get tenant's vote for this poll
-          const { data: vote, error: voteError } = await supabase
+          const { data: votes, error: voteError } = await supabase
                .from(TABLES.POLL_VOTES)
                .select('*')
                .eq('poll_id', poll_id)
-               .eq('tenant_id', tenant.id)
-               .single();
+
           if (voteError && voteError.code !== 'PGRST116') {
                await logServerAction({
                     user_id: viewer.userData?.id || null,
                     action: 'Get Tenant Vote - Lookup failed',
-                    payload: { poll_id, tenant_id: tenant.id },
+                    payload: { poll_id },
                     status: 'fail',
                     error: voteError.message,
                     duration_ms: Date.now() - start,
@@ -468,7 +453,7 @@ export async function getTenantVote(poll_id: string): Promise<{
 
           return {
                success: true,
-               data: vote || undefined
+               data: votes || undefined
           };
 
      } catch (error) {
@@ -777,7 +762,16 @@ export async function getPollResults(poll_id: string): Promise<{
                };
           }
 
-          const supabase = await useServerSideSupabaseAnonClient();
+          const tenantBuildingId = viewer.tenant.apartment?.building?.id;
+
+          if (!tenantBuildingId) {
+               return {
+                    success: false,
+                    error: 'Tenant building not found'
+               };
+          }
+
+          const supabase = await useServerSideSupabaseServiceRoleAdminClient();
 
           // Get poll with options
           const { data: poll, error: pollError } = await supabase
@@ -798,6 +792,20 @@ export async function getPollResults(poll_id: string): Promise<{
                return {
                     success: false,
                     error: 'Poll not found'
+               };
+          }
+
+          if (poll.building_id !== tenantBuildingId) {
+               return {
+                    success: false,
+                    error: 'Poll not found'
+               };
+          }
+
+          if (poll.status !== 'closed') {
+               return {
+                    success: false,
+                    error: 'Poll is not closed'
                };
           }
 
@@ -825,38 +833,11 @@ export async function getPollResults(poll_id: string): Promise<{
                };
           }
 
-          // Get total eligible voters (tenants in the building)
-          const { data: tenant, error: tenantError } = await supabase
-               .from(TABLES.TENANTS)
-               .select('apartment_id')
-               .eq('user_id', viewer.userData!.id)
-               .single();
-
-          if (tenantError || !tenant) {
-               return {
-                    success: false,
-                    error: 'Tenant not found'
-               };
-          }
-
-          const { data: apartment, error: apartmentError } = await supabase
-               .from(TABLES.APARTMENTS)
-               .select('building_id')
-               .eq('id', tenant.apartment_id)
-               .single();
-
-          if (apartmentError || !apartment) {
-               return {
-                    success: false,
-                    error: 'Apartment not found'
-               };
-          }
-
           // Count total eligible voters in the building
           const { data: buildingApartments, error: buildingApartmentsError } = await supabase
                .from(TABLES.APARTMENTS)
                .select('id')
-               .eq('building_id', apartment.building_id);
+               .eq('building_id', tenantBuildingId);
 
           if (buildingApartmentsError) {
                return {
@@ -865,18 +846,23 @@ export async function getPollResults(poll_id: string): Promise<{
                };
           }
 
-          const apartmentIds = buildingApartments.map(apt => apt.id);
+          const apartmentIds = (buildingApartments || []).map(apt => apt.id);
+          let eligibleVoters: { id: string }[] = [];
 
-          const { data: eligibleVoters, error: eligibleVotersError } = await supabase
-               .from(TABLES.TENANTS)
-               .select('id')
-               .in('apartment_id', apartmentIds);
+          if (apartmentIds.length > 0) {
+               const { data: eligibleVotersData, error: eligibleVotersError } = await supabase
+                    .from(TABLES.TENANTS)
+                    .select('id')
+                    .in('apartment_id', apartmentIds);
 
-          if (eligibleVotersError) {
-               return {
-                    success: false,
-                    error: 'Failed to get eligible voters'
-               };
+               if (eligibleVotersError) {
+                    return {
+                         success: false,
+                         error: 'Failed to get eligible voters'
+                    };
+               }
+
+               eligibleVoters = eligibleVotersData || [];
           }
 
           // Calculate basic statistics

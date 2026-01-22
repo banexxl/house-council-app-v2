@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import {
      Container,
@@ -41,7 +41,7 @@ import { useTranslation } from 'react-i18next';
 import { Poll, PollVote, pollTypeLabel, pollStatusLabel } from 'src/types/poll';
 import { Tenant } from 'src/types/tenant';
 import { EntityFormHeader } from 'src/components/entity-form-header';
-import { submitVote, getTenantVote, revokeTenantVote, getPollResults } from 'src/app/actions/poll/votes/voting-actions';
+import { submitVote, getAllTenantVotes, revokeTenantVote, getPollResults } from 'src/app/actions/poll/votes/voting-actions';
 import { toast } from 'react-hot-toast';
 
 // Dynamic import for ApexCharts to avoid SSR issues
@@ -64,6 +64,8 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
      // Closed polls results state
      const [selectedClosedPoll, setSelectedClosedPoll] = useState<Poll | null>(null);
      const [pollResults, setPollResults] = useState<any>(null);
+     console.log('pollResults', pollResults);
+
      const [isLoadingResults, setIsLoadingResults] = useState(false);
 
      // Vote form state
@@ -77,48 +79,67 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
      const [isAnonymous, setIsAnonymous] = useState(false);
      const [comment, setComment] = useState('');
 
+     const applyExistingVote = (vote: PollVote | null) => {
+          setExistingVote(vote);
+
+          if (!vote) {
+               resetVoteForm();
+               return;
+          }
+
+          setAbstain(vote.abstain);
+          setIsAnonymous(vote.is_anonymous);
+          setComment(vote.comment || '');
+
+          if (vote.choice_bool !== null) {
+               setVoteData({ choice_bool: vote.choice_bool });
+          } else if (vote.choice_option_ids && vote.choice_option_ids.length > 0) {
+               setVoteData({ choice_option_ids: vote.choice_option_ids });
+          } else if (vote.ranks && vote.ranks.length > 0) {
+               setVoteData({ ranks: vote.ranks });
+          } else if (vote.scores && vote.scores.length > 0) {
+               setVoteData({ scores: vote.scores });
+          } else {
+               setVoteData({});
+          }
+     };
+
+     const syncTenantVote = (votes: PollVote[] | undefined) => {
+          if (!votes || votes.length === 0) {
+               applyExistingVote(null);
+               return;
+          }
+
+          const tenantVote = votes.find((vote) => vote.tenant_id === tenant.id) || null;
+          applyExistingVote(tenantVote);
+     };
+
      // Load existing vote when poll is selected
      useEffect(() => {
           const loadExistingVote = async () => {
                if (!selectedPoll) {
-                    setExistingVote(null);
+                    applyExistingVote(null);
                     return;
                }
 
                setIsLoading(true);
                try {
-                    const { success, data } = await getTenantVote(selectedPoll.id);
-                    if (success && data) {
-                         setExistingVote(data);
-                         setAbstain(data.abstain);
-                         setIsAnonymous(data.is_anonymous);
-                         setComment(data.comment || '');
-
-                         // Pre-fill vote data based on existing vote
-                         if (data.choice_bool !== null) {
-                              setVoteData({ choice_bool: data.choice_bool });
-                         } else if (data.choice_option_ids) {
-                              setVoteData({ choice_option_ids: data.choice_option_ids });
-                         } else if (data.ranks) {
-                              setVoteData({ ranks: data.ranks });
-                         } else if (data.scores) {
-                              setVoteData({ scores: data.scores });
-                         }
+                    const { success, data } = await getAllTenantVotes(selectedPoll.id);
+                    if (success && Array.isArray(data)) {
+                         syncTenantVote(data);
                     } else {
-                         setExistingVote(null);
-                         resetVoteForm();
+                         applyExistingVote(null);
                     }
                } catch (error) {
                     console.error('Failed to load existing vote:', error);
-                    setExistingVote(null);
-                    resetVoteForm();
+                    applyExistingVote(null);
                } finally {
                     setIsLoading(false);
                }
           };
 
           loadExistingVote();
-     }, [selectedPoll]);
+     }, [selectedPoll, tenant.id]);
 
      const resetVoteForm = () => {
           setVoteData({});
@@ -169,9 +190,9 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
                if (success) {
                     toast.success(existingVote ? t('polls.errors.voteUpdatedSuccess') : t('polls.errors.voteSubmittedSuccess'));
                     // Reload the existing vote to reflect changes
-                    const { success: loadSuccess, data } = await getTenantVote(selectedPoll.id);
-                    if (loadSuccess && data) {
-                         setExistingVote(data);
+                    const { success: loadSuccess, data } = await getAllTenantVotes(selectedPoll.id);
+                    if (loadSuccess && Array.isArray(data)) {
+                         syncTenantVote(data);
                     }
                } else {
                     toast.error(error || t('polls.errors.failedToSubmitVote'));

@@ -1,6 +1,7 @@
 'use server'
 
 import { createServerClient } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 
 // SUPABASE_ANON_KEY - Used for public / authenticated users.Respects user session, can refresh tokens, limited to Row Level Security(RLS).
@@ -49,6 +50,21 @@ export const useServerSideSupabaseServiceRoleClient = async () => {
                               }
                          });
                     },
+               },
+          }
+     );
+
+     return supabase
+}
+
+export const useServerSideSupabaseServiceRoleAdminClient = async () => {
+     const supabase = createClient(
+          process.env.SUPABASE_URL!,
+          process.env.SB_SERVICE_KEY!,
+          {
+               auth: {
+                    autoRefreshToken: false,
+                    persistSession: false,
                },
           }
      );

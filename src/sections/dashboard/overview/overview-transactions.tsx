@@ -27,7 +27,7 @@ export const OverviewTransactions: FC<OverviewTransactionsProps> = ({ invoices }
   const rows = Array.isArray(invoices) ? invoices : [];
   const [statusFilter, setStatusFilter] = useState<'all' | PolarOrderStatus>('all');
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
   const { t } = useTranslation();
 
   const filtered = useMemo(() => {
