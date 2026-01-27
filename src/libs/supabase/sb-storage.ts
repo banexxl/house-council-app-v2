@@ -506,8 +506,6 @@ export const uploadEntityFiles = async (
                     ...defaultUploadOptions(ctx),
                     ...(config.getUploadOptions ? config.getUploadOptions(ctx) : {}),
                };
-               console.log('storagePath, file, uploadOptions', storagePath, file, uploadOptions);
-
                const { error: uploadError } = await supabase.storage.from(bucket).upload(storagePath, file, uploadOptions);
                if (uploadError) {
                     log(`Error uploading file to storage: ${uploadError.message}`, 'error');

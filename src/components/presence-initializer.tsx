@@ -106,8 +106,6 @@ export const PresenceInitializer = () => {
                } else if (viewer.customer) {
                     const customer = viewer.customer;
                     const { success, data, error } = await getCustomerBuildingsForSocialProfile(customer.id);
-                    console.log('data', data);
-
                     if (!success) {
                          log(`[PresenceInitializer] Unable to fetch customer buildings: ${error ?? 'unknown error'}`, 'error');
                          return;

@@ -73,8 +73,6 @@ export default function ClientSubscriptionWatcher() {
           let signingOut = false;
 
           async function start() { // Orchestrates the lifecycle: initial status check -> realtime -> polling
-               console.log('customerId', customerId);
-
                if (!customerId) return;
 
                // Step 0: Initial snapshot validation - if subscription missing or not allowed, force sign-out early
@@ -84,12 +82,8 @@ export default function ClientSubscriptionWatcher() {
                          .select('status')
                          .eq('customerId', customerId)
                          .single();
-                    console.log('error', readErr);
-
                     if (!readErr) { // Successfully read subscription row
                          const statusNow = (current as any)?.status as string | undefined;
-                         console.log('statusNow', statusNow);
-
                          if (!statusNow || (statusNow !== 'active' && statusNow !== 'trialing')) { // Disallow anything outside permitted statuses
                               if (process.env.NODE_ENV !== 'production') {
                                    console.warn('[ClientSubscriptionWatcher] Non-active/trialing status on load; signing out', { statusNow });

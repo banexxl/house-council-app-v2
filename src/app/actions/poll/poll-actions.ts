@@ -279,7 +279,6 @@ export async function updatePollStatus(id: string, status: PollStatus, locale: s
     } else if (status === 'active') {
         updatePayload.closed_at = null; // Clear closed_at when reopening
     }
-    console.log('updatePollPayload', updatePayload);
 
     const { data, error } = await supabase
         .from(TABLES.POLLS)
@@ -378,8 +377,6 @@ export async function activateAllScheduledPolls(): Promise<{ success: boolean; e
     const supabase = await useServerSideSupabaseAnonClient();
 
     const dateTimeNow = new Date().toISOString();
-    console.log('dateTimeNow', dateTimeNow);
-
     // First get the poll to check its status and start time
     const { data: polls, error: fetchError } = await supabase
         .from(TABLES.POLLS)
@@ -387,8 +384,6 @@ export async function activateAllScheduledPolls(): Promise<{ success: boolean; e
         .eq('status', 'scheduled')
         .lte('starts_at', dateTimeNow)
         .order('starts_at', { ascending: true });
-    console.log('activateAllScheduledPolls - fetched polls:', polls, fetchError);
-
     if (fetchError) {
         await logServerAction({ action: 'activateScheduledPoll', duration_ms: Date.now() - t0, error: fetchError.message, payload: { polls }, status: 'fail', type: 'db', user_id: null });
         return { success: false, error: fetchError.message };

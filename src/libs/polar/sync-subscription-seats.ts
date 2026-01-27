@@ -93,9 +93,6 @@ export async function syncPolarSeatsForClient({ customerId }: SyncSeatsArgs) {
                type: "api",
                user_id: null,
           });
-          console.log('subUpdate', subUpdate);
-          console.log('customerUpdate', customerUpdate);
-
           return { success: false as const, error: err?.message };
      }
 }

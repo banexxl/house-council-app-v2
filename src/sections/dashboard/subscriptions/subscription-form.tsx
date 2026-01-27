@@ -118,8 +118,6 @@
 //           },
 //           validationSchema: subscriptionPlanValidationSchema(t),
 //           onSubmit: async (values: PolarProduct) => {
-//                console.log('values', values);
-
 //                // Validate that at least one price exists
 //                if (!prices || prices.length === 0) {
 //                     toast.error("At least one price is required to create a product");
@@ -148,8 +146,6 @@
 //                     id: subscriptionPlansData?.id,
 //                     prices: prices
 //                } as PolarProduct;
-
-//                console.log('Submitting payload with prices:', JSON.stringify(prices, null, 2));
 
 //                try {
 //                     let response;

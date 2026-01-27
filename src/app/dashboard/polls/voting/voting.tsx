@@ -64,8 +64,6 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
      // Closed polls results state
      const [selectedClosedPoll, setSelectedClosedPoll] = useState<Poll | null>(null);
      const [pollResults, setPollResults] = useState<any>(null);
-     console.log('pollResults', pollResults);
-
      const [isLoadingResults, setIsLoadingResults] = useState(false);
 
      // Vote form state
