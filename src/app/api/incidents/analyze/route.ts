@@ -157,6 +157,7 @@ export async function POST(req: Request) {
 You are analyzing a photo of a building-related problem reported by a tenant.
 Do not analyze anything outside the image or make assumptions beyond what is visible.
 Do not analyze people or unrelated objects.
+Do not analyze anything that is not related to the categories provided.
 
 Return ONLY valid JSON with this exact shape:
 {
