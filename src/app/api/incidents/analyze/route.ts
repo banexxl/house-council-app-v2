@@ -41,16 +41,23 @@ const ALLOWED_CATEGORIES = new Set([
 ]);
 
 function safeCategory(input?: string) {
-     if (!input) return "other";
-     const v = input.toLowerCase();
-     return ALLOWED_CATEGORIES.has(v) ? v : "other";
+     if (!input) return "administrative"; // ✅ fallback must be allowed
+     const v = String(input).toLowerCase().trim();
+     return ALLOWED_CATEGORIES.has(v) ? v : "administrative";
 }
+
+const USER_FRIENDLY_ERROR =
+     "AI analysis is temporarily unavailable. Please try again later, or submit the request without AI.";
 
 /* ------------------------------------------------------------------ */
 /* Route                                                              */
 /* ------------------------------------------------------------------ */
 
 export async function POST(req: Request) {
+     // ✅ parse once, use later (including in catch)
+     let incidentId: string | undefined;
+     let imageId: string | undefined;
+
      try {
           /* -------------------- Auth (Bearer from mobile) -------------------- */
 
@@ -58,7 +65,21 @@ export async function POST(req: Request) {
           const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
 
           if (!token) {
-               return NextResponse.json({ error: "Missing token" }, { status: 401 });
+               return NextResponse.json(
+                    { ok: false, message: "You are not signed in." },
+                    { status: 401 }
+               );
+          }
+
+          const body = await req.json();
+          incidentId = body?.incidentId;
+          imageId = body?.imageId;
+
+          if (!incidentId) {
+               return NextResponse.json(
+                    { ok: false, message: "Missing incident id." },
+                    { status: 400 }
+               );
           }
 
           const sbUser = createClient(SUPABASE_URL, SUPABASE_ANON, {
@@ -66,13 +87,12 @@ export async function POST(req: Request) {
                auth: { persistSession: false },
           });
 
-          const { incidentId, imageId } = await req.json();
-
           /* -------------------- Permission check via RLS -------------------- */
 
           const { data: incident, error: permErr } = await sbUser
                .from("tblIncidentReports")
-               .select(`
+               .select(
+                    `
         id,
         images:tblIncidentReportImages(
           id,
@@ -80,22 +100,29 @@ export async function POST(req: Request) {
           storage_path,
           is_primary
         )
-      `)
+      `
+               )
                .eq("id", incidentId)
                .single();
 
           if (permErr || !incident) {
-               return NextResponse.json({ error: "Not allowed or not found" }, { status: 403 });
+               return NextResponse.json(
+                    { ok: false, message: "Not allowed or not found." },
+                    { status: 403 }
+               );
           }
 
-          const images = incident.images ?? [];
+          const images = (incident as any).images ?? [];
           const chosen =
                (imageId && images.find((i: any) => i.id === imageId)) ||
                images.find((i: any) => i.is_primary) ||
                images[0];
 
           if (!chosen) {
-               return NextResponse.json({ error: "No image to analyze" }, { status: 400 });
+               return NextResponse.json(
+                    { ok: false, message: "No image to analyze." },
+                    { status: 200 }
+               );
           }
 
           /* -------------------- Mark analyzing -------------------- */
@@ -116,6 +143,7 @@ export async function POST(req: Request) {
           }
 
           /* -------------------- OpenAI Vision Call -------------------- */
+          // Responses API: output_text is the recommended way to pull text output :contentReference[oaicite:0]{index=0}
 
           const response = await openai.responses.create({
                model: "gpt-5-mini-2025-08-07",
@@ -145,7 +173,7 @@ Rules:
                               {
                                    type: "input_image",
                                    image_url: signed.signedUrl,
-                                   detail: "auto"
+                                   detail: "auto",
                               },
                          ],
                     },
@@ -155,7 +183,7 @@ Rules:
           const text = response.output_text;
           if (!text) throw new Error("AI returned no output");
 
-          let ai;
+          let ai: any;
           try {
                ai = JSON.parse(text);
           } catch {
@@ -165,6 +193,12 @@ Rules:
           /* -------------------- Normalize & Save -------------------- */
 
           const category = safeCategory(ai.category);
+          const confidence =
+               typeof ai.confidence === "number" ? ai.confidence : Number(ai.confidence);
+          const aiConfidence =
+               Number.isFinite(confidence) && confidence >= 0 && confidence <= 1
+                    ? confidence
+                    : null;
 
           const { data: updated, error: updErr } = await sbAdmin
                .from("tblIncidentReports")
@@ -173,9 +207,9 @@ Rules:
                     description: ai.description ?? "",
                     category,
                     ai_status: "done",
-                    ai_confidence: Number(ai.confidence) || null,
+                    ai_confidence: aiConfidence,
                     ai_provider: "openai",
-                    ai_model: "gpt-image-1-mini",
+                    ai_model: "gpt-5-mini-2025-08-07", // ✅ store the real model you used
                     ai_error: null,
                     ai_analyzed_at: new Date().toISOString(),
                     updated_at: new Date().toISOString(),
@@ -186,27 +220,30 @@ Rules:
 
           if (updErr) throw new Error(updErr.message);
 
-          return NextResponse.json({ incident: updated });
+          return NextResponse.json({ ok: true, incident: updated }, { status: 200 });
      } catch (e: any) {
+          // ✅ keep the real error internal
           console.error("AI analyze failed:", e);
 
-          // best-effort failure update
-          try {
-               const { incidentId } = await req.json();
-               if (incidentId) {
+          // best-effort failure update (store detailed message for you, not the user)
+          if (incidentId) {
+               try {
                     await sbAdmin
                          .from("tblIncidentReports")
                          .update({
                               ai_status: "failed",
-                              ai_error: e?.message ?? "AI analysis failed",
+                              ai_error: String(e?.message ?? "AI analysis failed"),
                          })
                          .eq("id", incidentId);
+               } catch {
+                    // ignore
                }
-          } catch { }
+          }
 
+          // ✅ user-safe response (no internal details)
           return NextResponse.json(
-               { error: e?.message ?? "AI analysis failed" },
-               { status: 500 }
+               { ok: false, code: "AI_ANALYSIS_FAILED", message: USER_FRIENDLY_ERROR },
+               { status: 200 }
           );
      }
 }
