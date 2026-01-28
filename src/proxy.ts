@@ -21,7 +21,6 @@ const AUTH_PAGES = [
 
 const PUBLIC_ENDPOINTS = [
      '/api/viewer',
-     '/dashboard/access-request',
      '/api/access-request/request',
      '/api/access-request/approve',
      '/api/check-subscription',
