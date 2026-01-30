@@ -5,6 +5,7 @@ import { sendAccessDeniedEmail, sendAccessRequestApprovedEmail, sendAccessReques
 import { TABLES } from 'src/libs/supabase/tables';
 import { useServerSideSupabaseServiceRoleClient, useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import log from 'src/utils/logger';
+import { logServerAction } from 'src/libs/supabase/server-logging';
 
 const SIGNING_SECRET = (process.env.ACCESS_REQUEST_SIGNING_SECRET || process.env.NEXT_PUBLIC_ACCESS_REQUEST_SIGNING_SECRET || '').trim();
 const FORM_SECRET = (process.env.ACCESS_REQUEST_FORM_SECRET || process.env.NEXT_PUBLIC_ACCESS_REQUEST_FORM_SECRET || '').trim();
@@ -433,8 +434,18 @@ export const getAccessRequestBuildingOptions = async (): Promise<{
                .select('country, building_id, street_address, street_number, city, location_id')
                .not('building_id', 'is', null);
 
-          log(`Access Request - fetched building locations: ${data?.length || 0} - error: ${error?.message || 'none'}`);
-          if (error) return { success: false };
+          if (error) {
+               logServerAction({
+                    user_id: null,
+                    action: 'getAccessRequestBuildingOptions',
+                    duration_ms: 0,
+                    error: error.message,
+                    payload: { data },
+                    status: 'fail',
+                    type: 'db'
+               });
+               return { success: false };
+          }
 
           const seen = new Set<string>();
           const countriesSet = new Set<string>();

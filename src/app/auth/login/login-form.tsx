@@ -158,10 +158,7 @@ const LoginForm = ({ safeRedirect }: { safeRedirect: string }) => {
                     </Link>
                </Typography>
                <Typography color="text.secondary" variant="body2" align="center" sx={{ mt: 1 }}>
-                    Need access?{" "}
-                    <Link href="/auth/access-request">
-                         Request access
-                    </Link>
+                    Need access? Scan QR code provided by your building manager.
                </Typography>
                <Typography color="text.secondary" variant="body2" align="center" sx={{ mt: 1 }}>
                     Forgot password?{" "}

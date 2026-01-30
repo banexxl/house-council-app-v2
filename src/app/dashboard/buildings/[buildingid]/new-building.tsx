@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, useMemo } from 'react';
 import { useFormik } from 'formik';
 import {
   Button, Card, CardContent, Grid, Stack, Switch,
@@ -8,6 +8,7 @@ import {
   Box,
   Tooltip,
   CircularProgress,
+  Alert,
 } from '@mui/material';
 import toast from 'react-hot-toast';
 import { FileDropzone } from 'src/components/file-dropzone';
@@ -34,6 +35,7 @@ import { PopupModal } from 'src/components/modal-dialog';
 import { useTranslation } from 'react-i18next';
 import { removeAllEntityFiles, removeEntityFile, setEntityFileAsCover, uploadEntityFiles } from 'src/libs/supabase/sb-storage';
 import { EntityFormHeader } from 'src/components/entity-form-header';
+import { QrCodeModal } from './qr-code';
 
 type BuildingCreateFormProps = {
   buildingData?: Building
@@ -48,6 +50,7 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
   const router = useRouter();
   const [initialFormValues, setInitialFormValues] = useState<Building>(buildingData ? { ...buildingData } : buildingInitialValues);
   const [open, setOpen] = useState(false);
+  const [qrOpen, setQrOpen] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | undefined>(undefined);
   const [deletingBuilding, setDeletingBuilding] = useState(false);
   const [isNavigatingBack, setIsNavigatingBack] = useState(false);
@@ -117,6 +120,18 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [buildingData]);
+
+  const buildingLabel = useMemo(() => {
+    const location = formik.values.building_location || buildingData?.building_location;
+    if (!location) return undefined;
+    const address = [location.street_address, location.street_number]
+      .filter(Boolean)
+      .join(' ')
+      .trim();
+    const city = location.city?.trim();
+    const country = location.country?.trim();
+    return [address, city, country].filter(Boolean).join(', ');
+  }, [formik.values.building_location, buildingData?.building_location]);
 
   const showFieldError = (name: string) => !!(formik.touched as any)[name] || formik.submitCount > 0;
 
@@ -359,7 +374,6 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
             )
           }
         />
-
         <Card>
           <CardContent>
             <Typography variant="h6" sx={{ mb: 2 }}>{t('locations.searchLocationLabel')}</Typography>
@@ -386,22 +400,48 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
         </Card>
 
         <Card>
-          <CardContent>
-            <Typography variant="h6" sx={{ mb: 2 }}>{t('common.formBasicInfo')}</Typography>
-            <TextField
-              fullWidth
-              multiline
-              rows={4}
-              label={t('common.lblDescription')}
-              name="description"
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              value={formik.values.description}
-              error={Boolean(formik.errors.description) && showFieldError('description')}
-              helperText={showFieldError('description') ? formik.errors.description : ''}
-              sx={{ mt: 2 }}
-            />
-          </CardContent>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: { xs: 'column', md: 'row' },
+            }}
+          >
+            <CardContent sx={{ flex: 1 }}>
+              <Typography variant="h6" sx={{ mb: 2 }}>{t('common.formBasicInfo')}</Typography>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                label={t('common.lblDescription')}
+                name="description"
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                value={formik.values.description}
+                error={Boolean(formik.errors.description) && showFieldError('description')}
+                helperText={showFieldError('description') ? formik.errors.description : ''}
+                sx={{ mt: 2 }}
+              />
+            </CardContent>
+            <CardContent
+              sx={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Alert severity="info" sx={{ mb: 2 }}>
+                {t('buildings.buildingQrCodeInfo')}
+              </Alert>
+              <Button
+                onClick={() => setQrOpen(true)}
+                disabled={!buildingData?.id}
+              >
+                QR code
+              </Button>
+            </CardContent>
+          </Box>
         </Card>
 
         <Card>
@@ -653,6 +693,12 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
         onConfirm={() => handleDeleteBuilding(buildingData?.id!)}
         title={'Are you sure you want to delete this building?'}
         type={'confirmation'}
+      />
+      <QrCodeModal
+        open={qrOpen}
+        onClose={() => setQrOpen(false)}
+        buildingLabel={buildingLabel}
+        buildingId={buildingData?.id}
       />
     </form >
   );
