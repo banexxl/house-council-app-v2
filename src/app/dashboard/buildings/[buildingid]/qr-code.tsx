@@ -309,7 +309,7 @@ export function QrCodeModal({
 }: QrCodeModalProps) {
   const qrPng = useQrPng(BUILDING_REQUEST_URL + (buildingId ? `?buildingId=${buildingId}` : ''));
   const titleText = buildingLabel ? `NestLink - ${buildingLabel}` : 'NestLink';
-  const descriptionText = `Scan to request access for your building`
+  const descriptionText = `Scan to request access for your building:`
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle>QR code</DialogTitle>

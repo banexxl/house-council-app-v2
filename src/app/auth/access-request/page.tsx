@@ -14,20 +14,14 @@ type AccessRequestPageProps = {
 export default async function Page({ searchParams }: AccessRequestPageProps) {
 
   const params = await searchParams;
-  console.log(params);
-
   const formSecret =
     (process.env.ACCESS_REQUEST_FORM_SECRET || process.env.NEXT_PUBLIC_ACCESS_REQUEST_FORM_SECRET || '').trim();
-  const buildingIdParam = Array.isArray(params?.buildingId)
-    ? params?.buildingId[0]
-    : params?.buildingId;
-
   let prefillBuilding:
     | { id: string; label: string; country?: string; city?: string }
     | undefined;
 
-  if (buildingIdParam) {
-    const buildingRes = await getBuildingById(buildingIdParam);
+  if (params?.buildingId) {
+    const buildingRes = await getBuildingById(params?.buildingId!.toString());
     if (buildingRes.success && buildingRes.data) {
       const location = buildingRes.data.building_location;
       const label = location
