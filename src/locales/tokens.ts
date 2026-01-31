@@ -42,6 +42,7 @@ export const tokens = {
     lblNotifications: 'account.lblNotifications',
     btnDecline: 'common.btnDecline',
     btnDownload: 'common.btnDownload',
+    btnPrint: 'common.btnPrint',
     btnUpload: 'common.btnUpload',
     btnAdd: 'common.btnAdd',
     btnUpdate: 'common.btnUpdate',
@@ -827,6 +828,10 @@ export const tokens = {
     lblBuildingStatusDemolished: 'buildings.lblBuildingStatusDemolished',
     lblBuildingStatusRestrictedAccess: 'buildings.lblBuildingStatusRestrictedAccess',
     lblBuildingStatusInactive: 'buildings.lblBuildingStatusInactive',
+    qrCodeDialogTitle: 'buildings.qrCodeDialogTitle',
+    qrCodeDescription: 'buildings.qrCodeDescription',
+    qrCodePosterTitle: 'buildings.qrCodePosterTitle',
+    qrCodeImageAlt: 'buildings.qrCodeImageAlt',
     validation: {
       titleTooShort: 'announcements.validation.titleTooShort',
       titleRequired: 'announcements.validation.titleRequired',

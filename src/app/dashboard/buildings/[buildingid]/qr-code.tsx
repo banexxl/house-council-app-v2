@@ -11,6 +11,8 @@ import {
   DialogContent,
   DialogTitle,
 } from '@mui/material';
+import { useTranslation } from 'react-i18next';
+import { tokens } from 'src/locales/tokens';
 
 const BUILDING_REQUEST_URL =
   `${process.env.NEXT_PUBLIC_BASE_URL}/auth/access-request`
@@ -75,7 +77,11 @@ const urlStyle: CSSProperties = {
 // -----------------------------
 // Print helper (iframe)
 // -----------------------------
-function printElementById(elementId: string) {
+type PrintOptions = {
+  title?: string;
+};
+
+function printElementById(elementId: string, options?: PrintOptions) {
   const el = document.getElementById(elementId);
   if (!el) return;
 
@@ -96,6 +102,8 @@ function printElementById(elementId: string) {
 
   const origin = window.location.origin;
 
+  const docTitle = options?.title ?? 'NestLink QR Poster';
+
   doc.open();
   doc.write(`
 <!doctype html>
@@ -103,7 +111,7 @@ function printElementById(elementId: string) {
   <head>
     <meta charset="utf-8" />
     <base href="${origin}/" />
-    <title>NestLink QR Poster</title>
+    <title>${docTitle}</title>
 
     <style>
       @page { size: A4 portrait; margin: 0; }
@@ -198,7 +206,7 @@ function printElementById(elementId: string) {
       }
 
       /* Logo */
-      img[alt="NestLink"] {
+      .qr-poster-logo {
         height: 85mm !important;
         width: auto !important;
         max-width: 100% !important;
@@ -206,7 +214,7 @@ function printElementById(elementId: string) {
       }
 
       /* QR */
-      img[alt*="QR"] {
+      .qr-poster-qr {
         width: 65mm !important;
         height: 65mm !important;
         display: block;
@@ -307,37 +315,42 @@ export function QrCodeModal({
   buildingLabel,
   buildingId,
 }: QrCodeModalProps) {
-  const qrPng = useQrPng(BUILDING_REQUEST_URL + (buildingId ? `?buildingId=${buildingId}` : ''));
+  const { t } = useTranslation();
+  const requestUrl = BUILDING_REQUEST_URL + (buildingId ? `?buildingId=${buildingId}` : '');
+  const qrPng = useQrPng(requestUrl);
   const titleText = buildingLabel ? `NestLink - ${buildingLabel}` : 'NestLink';
-  const descriptionText = `Scan to request access for your building:`
+  const descriptionText = t(tokens.buildings.qrCodeDescription);
+  const dialogTitle = t(tokens.buildings.qrCodeDialogTitle);
+  const posterTitle = t(tokens.buildings.qrCodePosterTitle);
+  const qrAlt = t(tokens.buildings.qrCodeImageAlt);
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>QR code</DialogTitle>
+      <DialogTitle>{dialogTitle}</DialogTitle>
       <DialogContent dividers>
         <Box id={POSTER_ID} style={posterStyle}>
-          <img src="/assets/logo-icons/1-01.png" alt="NestLink" style={logoStyle} />
+          <img src="/assets/logo-icons/1-01.png" alt="NestLink" style={logoStyle} className="qr-poster-logo" />
           <Box style={subtitleStyle}>{descriptionText}</Box>
           <Box style={titleStyle}>{titleText}</Box>
           <Box style={qrBoxStyle}>
             {qrPng ? (
-              <img src={qrPng} alt="QR code" style={qrImageStyle} />
+              <img src={qrPng} alt={qrAlt} style={qrImageStyle} className="qr-poster-qr" />
             ) : (
               <CircularProgress size={32} />
             )}
           </Box>
-          <Box style={urlStyle}>{BUILDING_REQUEST_URL + (buildingId ? `?buildingId=${buildingId}` : '')}</Box>
+          <Box style={urlStyle}>{requestUrl}</Box>
         </Box>
       </DialogContent>
       <DialogActions>
         <Button
-          onClick={() => printElementById(POSTER_ID)}
+          onClick={() => printElementById(POSTER_ID, { title: posterTitle })}
           variant="outlined"
           disabled={!qrPng}
         >
-          Print
+          {t(tokens.common.btnPrint)}
         </Button>
         <Button onClick={onClose} variant="contained">
-          Close
+          {t(tokens.common.btnClose)}
         </Button>
       </DialogActions>
     </Dialog>
