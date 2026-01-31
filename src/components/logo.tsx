@@ -30,6 +30,7 @@ export const Logo: FC<LogoProps> = ({
         height={height}
         priority={priority}
         style={style}
+        loading='eager'
         {...imageProps}
       />
     </Box>
