@@ -3,14 +3,15 @@
 import crypto from 'crypto';
 import { sendAccessDeniedEmail, sendAccessRequestApprovedEmail, sendAccessRequestClientEmail } from 'src/libs/email/node-mailer';
 import { TABLES } from 'src/libs/supabase/tables';
-import { useServerSideSupabaseServiceRoleClient, useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
+import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
 import log from 'src/utils/logger';
 import { logServerAction } from 'src/libs/supabase/server-logging';
+import { RecaptchaEnterpriseServiceClient } from '@google-cloud/recaptcha-enterprise'
 
 const SIGNING_SECRET = (process.env.ACCESS_REQUEST_SIGNING_SECRET || process.env.NEXT_PUBLIC_ACCESS_REQUEST_SIGNING_SECRET || '').trim();
 const FORM_SECRET = (process.env.ACCESS_REQUEST_FORM_SECRET || process.env.NEXT_PUBLIC_ACCESS_REQUEST_FORM_SECRET || '').trim();
 const RECAPTCHA_PROJECT_ID = process.env.RECAPTCHA_PROJECT_ID!.trim()
-const RECAPTCHA_SITE_KEY = (process.env.RECAPTCHA_SITE_KEY || process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '').trim();
+const NEXT_PUBLIC_RECAPTCHA_SITE_KEY = (process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '').trim();
 const ADMIN_EMAIL = (process.env.ACCESS_REQUEST_ADMIN_EMAIL || process.env.EMAIL_SMTP_USER || '').trim();
 const RECAPTCHA_MIN_SCORE = Number(process.env.RECAPTCHA_MIN_SCORE || '0.3');
 const RECAPTCHA_ACTION = process.env.RECAPTCHA_ACTION || 'access_request';
@@ -19,26 +20,14 @@ const DEFAULT_TENANT_PASSWORD = process.env.ACCESS_REQUEST_DEFAULT_PASSWORD || '
 let recaptchaClient: any | null = null;
 let serviceAccountCredentials: Record<string, any> | null = null;
 
-const loadServiceAccountCredentials = () => {
-     if (serviceAccountCredentials) return serviceAccountCredentials;
-     // 1. Load from Base64 (recommended)
-     if (process.env.GOOGLE_SERVICE_ACCOUNT_BASE64) {
-          try {
-               const jsonString = Buffer.from(
-                    process.env.GOOGLE_SERVICE_ACCOUNT_BASE64,
-                    'base64'
-               ).toString('utf8');
-
-               serviceAccountCredentials = JSON.parse(jsonString);
-               return serviceAccountCredentials;
-          } catch (e: any) {
-               log(
-                    `Access Request - failed to decode GOOGLE_SERVICE_ACCOUNT_BASE64: ${e?.message || e}`
-               );
-          }
-     }
-
-     return serviceAccountCredentials;
+type AccessRequestPayload = {
+     name: string;
+     email: string;
+     message?: string;
+     building_id?: string | null;
+     building_label?: string | null;
+     apartment_id?: string | null;
+     apartment_label?: string | null;
 };
 
 const generateTempPassword = () => {
@@ -68,29 +57,6 @@ const generateTempPassword = () => {
           log(`Access Request - failed to generate secure password, falling back to default: ${error?.message || error}`);
           return DEFAULT_TENANT_PASSWORD;
      }
-};
-
-const getRecaptchaClient = async () => {
-     if (recaptchaClient) return recaptchaClient;
-
-     const credentials = loadServiceAccountCredentials();
-     const { RecaptchaEnterpriseServiceClient } = await import('@google-cloud/recaptcha-enterprise');
-
-     recaptchaClient = credentials
-          ? new RecaptchaEnterpriseServiceClient({ credentials })
-          : new RecaptchaEnterpriseServiceClient();
-
-     return recaptchaClient;
-};
-
-type AccessRequestPayload = {
-     name: string;
-     email: string;
-     message?: string;
-     building_id?: string | null;
-     building_label?: string | null;
-     apartment_id?: string | null;
-     apartment_label?: string | null;
 };
 
 type ApprovalResult =
@@ -123,55 +89,92 @@ const signPayload = (payload: AccessRequestPayload & { ts: number }) => {
      return { serialized, signature: hmac };
 };
 
-const verifyRecaptchaEnterprise = async (token: string) => {
+const loadServiceAccountCredentials = () => {
+     if (serviceAccountCredentials) return serviceAccountCredentials;
 
-     if (!RECAPTCHA_SITE_KEY || !RECAPTCHA_PROJECT_ID) {
-          log('Access Request - recaptcha misconfigured: missing project or site key');
-          return { ok: false, error: 'Captcha not configured' };
+     const b64 = process.env.GOOGLE_SERVICE_ACCOUNT_BASE64?.trim();
+     if (!b64) return null;
+
+     const jsonString = Buffer.from(b64, 'base64').toString('utf8');
+     const parsed = JSON.parse(jsonString);
+
+     if (!parsed?.client_email || !parsed?.private_key) {
+          throw new Error('Service account JSON missing client_email/private_key');
      }
-     if (!token) {
-          log('Access Request - recaptcha token missing');
-          return { ok: false, error: 'Captcha token missing' };
-     }
+
+     serviceAccountCredentials = {
+          client_email: parsed.client_email,
+          private_key: parsed.private_key,
+          project_id: parsed.project_id,
+     };
+
+     return serviceAccountCredentials;
+}
+
+const getRecaptchaClient = () => {
+     if (recaptchaClient) return recaptchaClient;
+
+     const creds = loadServiceAccountCredentials();
+
+     // If creds is null, the library will try ADC (GOOGLE_APPLICATION_CREDENTIALS, workload identity, etc.)
+     // This is exactly what Google's samples assume.
+     recaptchaClient = new RecaptchaEnterpriseServiceClient(
+          // creds
+          //      ? {
+          //           projectId: creds.project_id || RECAPTCHA_PROJECT_ID || undefined,
+          //           credentials: {
+          //                client_email: creds.client_email,
+          //                private_key: creds.private_key,
+          //           },
+          //      }
+          //      : {}
+     );
+
+     return recaptchaClient;
+}
+
+export const verifyRecaptchaEnterprise = async (token: string): Promise<{ ok: true; score: number } | { ok: false; error: string }> => {
+     if (!RECAPTCHA_PROJECT_ID) return { ok: false, error: 'Missing RECAPTCHA_PROJECT_ID' };
+     if (!NEXT_PUBLIC_RECAPTCHA_SITE_KEY) return { ok: false, error: 'Missing NEXT_PUBLIC_RECAPTCHA_SITE_KEY' };
+     if (!token) return { ok: false, error: 'Captcha token missing' };
+
      try {
-          const client = await getRecaptchaClient();
+          const client = getRecaptchaClient();
+
           const [assessment] = await client.createAssessment({
+               parent: client.projectPath(RECAPTCHA_PROJECT_ID),
                assessment: {
                     event: {
                          token,
-                         siteKey: RECAPTCHA_SITE_KEY,
+                         siteKey: NEXT_PUBLIC_RECAPTCHA_SITE_KEY,
+                         expectedAction: RECAPTCHA_ACTION, // ✅ important
                     },
                },
-               parent: client.projectPath(RECAPTCHA_PROJECT_ID),
           });
 
+          // Token validity
           if (!assessment?.tokenProperties?.valid) {
-               log(`Access Request - recaptcha invalid: ${assessment?.tokenProperties?.invalidReason || 'unknown reason'}`);
-               return {
-                    ok: false,
-                    error: `Captcha invalid: ${assessment?.tokenProperties?.invalidReason || 'unknown reason'}`,
-               };
+               const reason = assessment?.tokenProperties?.invalidReason || 'unknown_reason';
+               return { ok: false, error: `Captcha invalid: ${reason}` };
           }
 
-          const action = assessment.tokenProperties?.action || '';
+          // Optional: still double-check what the client reported
+          const action = assessment?.tokenProperties?.action || '';
           if (action && action !== RECAPTCHA_ACTION) {
-               log(`Access Request - recaptcha action mismatch: expected ${RECAPTCHA_ACTION}, got ${action}`);
-               return { ok: false, error: 'Captcha action mismatch' };
+               return { ok: false, error: `Captcha action mismatch: expected ${RECAPTCHA_ACTION}, got ${action}` };
           }
 
           const score = assessment?.riskAnalysis?.score ?? 0;
           if (score < RECAPTCHA_MIN_SCORE) {
-               log(`Access Request - recaptcha score too low: ${score}`);
-               return { ok: false, error: 'Captcha score too low' };
+               return { ok: false, error: `Captcha score too low: ${score}` };
           }
 
-          log(`Access Request - recaptcha passed with score ${score}`);
-          return { ok: true };
+          return { ok: true, score };
      } catch (e: any) {
-          log(`Access Request - recaptcha verification failed: ${e?.message || e}`);
+          // This is the exact place your old "16 UNAUTHENTICATED" surfaced.
           return { ok: false, error: e?.message || 'Captcha verification failed' };
      }
-};
+}
 
 export const submitAccessRequest = async ({
      name,
@@ -243,7 +246,7 @@ export const submitAccessRequest = async ({
      let buildingClientEmail: string | null = null;
      try {
           if (buildingId) {
-               const supabase = await useServerSideSupabaseServiceRoleClient();
+               const supabase = await useServerSideSupabaseAnonClient();
                const { data: buildingRow } = await supabase
                     .from(TABLES.BUILDINGS)
                     .select('customerId')
@@ -323,12 +326,13 @@ export const approveAccessRequest = async (
           return { success: true, rejected: true, email: parsed.email, name: parsed.name };
      }
 
-     const supabase = await useServerSideSupabaseServiceRoleClient();
+     const supabase = await useServerSideSupabaseAnonClient();
+     const supabaseAdmin = await useServerSideSupabaseServiceRoleClient();
      const { firstName, lastName } = splitName(parsed.name);
      const tempPassword = generateTempPassword();
 
      // Create auth user with default password
-     const { data: createdUser, error: userError } = await supabase.auth.admin.createUser({
+     const { data: createdUser, error: userError } = await supabaseAdmin.auth.admin.createUser({
           email: parsed.email,
           email_confirm: true,
           password: tempPassword,
@@ -361,7 +365,7 @@ export const approveAccessRequest = async (
           .single();
 
      if (tenantError) {
-          await supabase.auth.admin.deleteUser(createdUser.user.id);
+          await supabaseAdmin.auth.admin.deleteUser(createdUser.user.id);
           return {
                success: false,
                error: tenantError.message || 'Failed to create tenant',
@@ -372,7 +376,7 @@ export const approveAccessRequest = async (
 
      const tenantId = (tenantRows as any)?.id as string | undefined;
      if (!tenantId) {
-          await supabase.auth.admin.deleteUser(createdUser.user.id);
+          await supabaseAdmin.auth.admin.deleteUser(createdUser.user.id);
           return {
                success: false,
                error: 'Tenant record created but ID was not returned',
@@ -428,7 +432,7 @@ export const getAccessRequestBuildingOptions = async (): Promise<{
      try {
           // Use service role to bypass any RLS that might hide location fields on the public form.
           // We query the locations table (which holds the FK to buildings) so we can surface the address instead of the building UUID.
-          const supabase = await useServerSideSupabaseServiceRoleClient();
+          const supabase = await useServerSideSupabaseAnonClient();
           const { data, error } = await supabase
                .from(TABLES.BUILDING_LOCATIONS)
                .select('country, building_id, street_address, street_number, city, location_id')
@@ -479,7 +483,7 @@ export const getAccessRequestApartments = async (
 ): Promise<{ success: boolean; data?: Array<{ id: string; label: string }> }> => {
      if (!buildingId) return { success: false };
      try {
-          const supabase = await useServerSideSupabaseServiceRoleClient();
+          const supabase = await useServerSideSupabaseAnonClient();
           const { data, error } = await supabase
                .from(TABLES.APARTMENTS)
                .select('id, apartment_number')
