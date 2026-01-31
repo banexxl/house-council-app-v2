@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 
 const BUILDING_REQUEST_URL =
-  `${process.env.NEXT_PUBLIC_BASE_URL}/auth/access-request/`
+  `${process.env.NEXT_PUBLIC_BASE_URL}/auth/access-request`
 
 const POSTER_ID = 'building-qr-poster';
 

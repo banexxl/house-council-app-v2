@@ -119,15 +119,15 @@ const getRecaptchaClient = () => {
      // If creds is null, the library will try ADC (GOOGLE_APPLICATION_CREDENTIALS, workload identity, etc.)
      // This is exactly what Google's samples assume.
      recaptchaClient = new RecaptchaEnterpriseServiceClient(
-          // creds
-          //      ? {
-          //           projectId: creds.project_id || RECAPTCHA_PROJECT_ID || undefined,
-          //           credentials: {
-          //                client_email: creds.client_email,
-          //                private_key: creds.private_key,
-          //           },
-          //      }
-          //      : {}
+          creds
+               ? {
+                    projectId: creds.project_id || RECAPTCHA_PROJECT_ID || undefined,
+                    credentials: {
+                         client_email: creds.client_email,
+                         private_key: creds.private_key,
+                    },
+               }
+               : {}
      );
 
      return recaptchaClient;
