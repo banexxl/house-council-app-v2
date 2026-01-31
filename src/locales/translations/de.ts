@@ -657,6 +657,7 @@ export const de = {
   [tokens.buildings.qrCodeDescription]: 'Scannen Sie, um Zugang zu Ihrem Gebäude anzufordern:',
   [tokens.buildings.qrCodePosterTitle]: 'NestLink QR-Poster',
   [tokens.buildings.qrCodeImageAlt]: 'QR-Code für Gebäudezugang',
+  [tokens.buildings.buildingQrCodeInfo]: 'Teilen Sie diesen QR-Code, damit Bewohner Zugang zum Gebäude anfordern können.',
   [tokens.buildings.lblBuildingStatusVacant]: 'Leer',
   [tokens.buildings.lblBuildingStatusPartiallyLeased]: 'Teilweise vermietet',
   [tokens.buildings.lblBuildingStatusRenovation]: 'In Renovierung',

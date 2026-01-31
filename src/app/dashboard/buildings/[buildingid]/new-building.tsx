@@ -438,7 +438,7 @@ export const BuildingCreateForm = ({ buildingData, locationData, userData }: Bui
                 onClick={() => setQrOpen(true)}
                 disabled={!buildingData?.id}
               >
-                QR code
+                {t('buildings.qrCodeDialogTitle')}
               </Button>
             </CardContent>
           </Box>

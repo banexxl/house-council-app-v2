@@ -832,6 +832,7 @@ export const tokens = {
     qrCodeDescription: 'buildings.qrCodeDescription',
     qrCodePosterTitle: 'buildings.qrCodePosterTitle',
     qrCodeImageAlt: 'buildings.qrCodeImageAlt',
+    buildingQrCodeInfo: 'buildings.buildingQrCodeInfo',
     validation: {
       titleTooShort: 'announcements.validation.titleTooShort',
       titleRequired: 'announcements.validation.titleRequired',

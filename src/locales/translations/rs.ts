@@ -771,6 +771,7 @@ export const rs = {
      [tokens.buildings.qrCodeDescription]: 'Skenirajte da zatražite pristup vašoj zgradi:',
      [tokens.buildings.qrCodePosterTitle]: 'NestLink QR poster',
      [tokens.buildings.qrCodeImageAlt]: 'QR kod za pristup zgradi',
+     [tokens.buildings.buildingQrCodeInfo]: 'Podelite ovaj QR kod kako bi stanari mogli da zatraže pristup zgradi.',
      [tokens.buildings.lblBuildingStatusVacant]: 'Prazno',
    [tokens.buildings.lblBuildingStatusPartiallyLeased]: 'Delimično izdato',
    [tokens.buildings.lblBuildingStatusRenovation]: 'Renoviranje',
