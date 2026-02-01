@@ -1,3 +1,5 @@
+import { DBStoredImage } from "src/components/file-dropzone";
+
 export type IncidentStatus =
      | 'open'
      | 'in_progress'
@@ -52,17 +54,17 @@ export interface IncidentReport {
 
      created_at: string;
      updated_at: string;
+
 }
 
 export interface IncidentReportImage {
-     id: string;
-     created_at: string;
-     updated_at: string;
-     storage_bucket: string;
      apartment_id?: string | null;
      building_id: string;
      incident_id: string;
-     storage_path: string;
+}
+
+export interface IncidentReportDetails extends IncidentReport {
+     images?: (DBStoredImage & IncidentReportImage)[];
 }
 
 export interface IncidentReportComment {

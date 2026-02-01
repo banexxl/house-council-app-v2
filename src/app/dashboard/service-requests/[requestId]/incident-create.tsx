@@ -25,7 +25,7 @@ import toast from 'react-hot-toast';
 import { createIncidentReport, updateIncidentReport } from 'src/app/actions/incident/incident-report-actions';
 import { RouterLink } from 'src/components/router-link';
 import { paths } from 'src/paths';
-import type { IncidentReport, IncidentCategory, IncidentPriority, IncidentStatus } from 'src/types/incident-report';
+import type { IncidentReport, IncidentCategory, IncidentPriority, IncidentStatus, IncidentReportDetails, IncidentReportImage } from 'src/types/incident-report';
 import {
   INCIDENT_CATEGORY_TOKENS,
   INCIDENT_PRIORITY_TOKENS,
@@ -38,7 +38,7 @@ import { useTheme } from '@mui/material';
 import { EntityFormHeader, type BreadcrumbItem } from 'src/components/entity-form-header';
 
 interface IncidentCreateProps {
-  incident?: IncidentReport;
+  incident?: DBStoredImage & IncidentReportDetails;
   defaultClientId?: string | null;
   defaultBuildingId?: string | null;
   defaultApartmentId?: string | null;
@@ -99,7 +99,7 @@ export const IncidentCreate: FC<IncidentCreateProps> = ({
   const router = useRouter();
   const [status, setStatus] = useState<{ success?: string; error?: string }>({});
   const [incidentId, setIncidentId] = useState<string | null>(incident?.id ?? null);
-  const [incidentImages, setIncidentImages] = useState<DBStoredImage[]>([]);
+  const [incidentImages, setIncidentImages] = useState<(DBStoredImage & IncidentReportImage)[]>(incident?.images ?? []);
   const [uploadProgress, setUploadProgress] = useState<number | undefined>(undefined);
   const theme = useTheme();
   const [isHeaderNavigating, setIsHeaderNavigating] = useState(false);
@@ -230,7 +230,7 @@ export const IncidentCreate: FC<IncidentCreateProps> = ({
           return;
         }
 
-        setIncidentImages((prev) => [...prev, ...(uploadRes.records as unknown as DBStoredImage[])]);
+        setIncidentImages((prev) => [...prev, ...(uploadRes.records as unknown as (DBStoredImage & IncidentReportImage)[])]);
         toast.success(t('common.actionUploadSuccess', 'Uploaded successfully'));
       } catch (err) {
         clearInterval(interval);

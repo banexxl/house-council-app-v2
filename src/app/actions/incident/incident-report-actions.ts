@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { TABLES } from 'src/libs/supabase/tables';
 import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
-import type { IncidentReport, IncidentStatus, IncidentCategory, IncidentPriority } from 'src/types/incident-report';
+import type { IncidentReport, IncidentReportDetails, IncidentStatus, IncidentCategory, IncidentPriority } from 'src/types/incident-report';
 import { getAllBuildingsFromClient, getBuildingIDsFromUserId, getBuildingAddressFromId, getNotificationEmailsForBuildings } from 'src/app/actions/building/building-actions';
 import log from 'src/utils/logger';
 import { getServerI18n, tokens as serverTokens } from 'src/locales/i18n-server';
@@ -190,14 +190,25 @@ export const createIncidentReport = async (
 
 export const getIncidentReportById = async (
   id: string
-): Promise<{ success: boolean; data?: IncidentReport; error?: string }> => {
+): Promise<{ success: boolean; data?: IncidentReportDetails; error?: string }> => {
   const supabase = await useServerSideSupabaseAnonClient();
+  const incidentImagesTable = TABLES.INCIDENT_REPORT_IMAGES ?? 'tblIncidentReportImages';
   const { data, error } = await supabase
     .from(TABLES.INCIDENT_REPORTS!)
     .select(`
       *,
       building:building_id ( id ),
-      apartment:apartment_id ( id, apartment_number )
+      apartment:apartment_id ( id, apartment_number ),
+      images:${incidentImagesTable} (
+        id,
+        created_at,
+        updated_at,
+        storage_bucket,
+        storage_path,
+        building_id,
+        apartment_id,
+        incident_id
+      )
     `)
     .eq('id', id)
     .single();
@@ -221,8 +232,9 @@ export const getIncidentReportById = async (
     });
     return { success: false, error: error ? error.message : '' };
   }
-  const mapped: IncidentReport = {
+  const mapped: IncidentReportDetails = {
     ...(data as any),
+    images: Array.isArray((data as any)?.images) ? (data as any).images : [],
     building_label: (data as any)?.building?.name ?? null,
     apartment_number: (data as any)?.apartment?.apartment_number ?? null,
   };

@@ -12,6 +12,8 @@ import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { TABLES } from 'src/libs/supabase/tables';
 import log from 'src/utils/logger';
 import { IncidentCreate } from './incident-create';
+import { DBStoredImage } from 'src/utils/sb-bucket';
+import { IncidentReportDetails } from 'src/types/incident-report';
 
 interface PageProps {
   params: Promise<{ requestId: string }>;
@@ -56,7 +58,6 @@ const Page = async ({ params }: PageProps) => {
 
   const { success: found, data: incident } = incidentId ? await getIncidentReportById(incidentId) : { success: false, data: null };
   const { tenant, customer, userData } = await getViewer();
-  log(`Loaded incident report page for incidentId: ${incidentId}, found: ${found}, incident: ${incident ? JSON.stringify(incident) : 'null'}`);
   let defaultBuildingId: string | undefined = incident?.building_id ?? undefined;
   let defaultClientId: string | undefined = incident?.customerId ?? undefined;
   const defaultApartmentId = incident?.apartment_id ?? tenant?.apartment_id ?? null;
@@ -69,8 +70,6 @@ const Page = async ({ params }: PageProps) => {
 
   const profileRes = tenant?.id ? await getTenantProfileByTenantId(tenant.id) : await getCurrentUserProfile();
   const currentProfile = profileRes.success ? profileRes.data : null;
-  log(`Current profile: ${currentProfile ? JSON.stringify(currentProfile) : profileRes.error}`);
-
   if (tenant?.id && !defaultBuildingId) {
     const [buildingRes, customerRes] = await Promise.all([
       getBuildingIdFromTenantId(tenant.id),
@@ -167,7 +166,7 @@ const Page = async ({ params }: PageProps) => {
       defaultAssigneeProfileId={defaultAssigneeProfile}
       buildingOptions={buildingOptions}
       assigneeOptions={assigneeOptions}
-      incident={found ? incident ?? undefined : undefined}
+      incident={found ? (incident as (DBStoredImage & IncidentReportDetails)) : undefined}
     />
   );
 };
