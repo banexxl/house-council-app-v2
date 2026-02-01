@@ -153,8 +153,6 @@ const Page = async ({ params }: PageProps) => {
     defaultReporterName = await resolveReporterName(incident.reported_by);
   }
 
-  const title = incident ? 'Incidents: Edit incident' : 'Incidents: Report new incident';
-
   return (
     <IncidentCreate
       defaultApartmentId={defaultApartmentId}
