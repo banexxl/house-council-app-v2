@@ -323,7 +323,7 @@ export default function Announcements({ customer, announcements, buildings }: An
                          : ((a as any).scheduled_at instanceof Date ? dayjs((a as any).scheduled_at).format('YYYY-MM-DDTHH:mm:ss') : null))
                     : null
           );
-     };
+     }
 
      const handleImagesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
           if (!editingEntity) {
@@ -348,7 +348,13 @@ export default function Announcements({ customer, announcements, buildings }: An
                     if (newUrls.length) {
                          toast.success(t(tokens.announcements.toasts.imagesUploaded));
                          const current = formik.values.images || [];
-                         formik.setFieldValue('images', [...current, ...newUrls]);
+                         const updatedImages = [...current, ...newUrls];
+                         formik.resetForm({
+                              values: {
+                                   ...formik.values,
+                                   images: updatedImages,
+                              }
+                         });
                     }
                }
           } finally {
@@ -371,9 +377,13 @@ export default function Announcements({ customer, announcements, buildings }: An
                toast.error(res.error || t(tokens.announcements.toasts.removeImageFailed));
           } else {
                toast.success(t(tokens.announcements.toasts.removeImageSuccess));
-               // Optimistically remove from formik
-               formik.setFieldValue('images', (formik.values.images || []).filter(i => i !== url));
-               router.refresh();
+               const updatedImages = (formik.values.images || []).filter(i => i !== url);
+               formik.resetForm({
+                    values: {
+                         ...formik.values,
+                         images: updatedImages,
+                    }
+               });
           }
      };
 
@@ -414,13 +424,18 @@ export default function Announcements({ customer, announcements, buildings }: An
                               };
                          });
                          const current = (formik.values.documents || []) as { url: string; name: string; mime?: string }[];
-                         formik.setFieldValue('documents', [...current, ...docsToAppend]);
+                         const updatedDocuments = [...current, ...docsToAppend];
+                         formik.resetForm({
+                              values: {
+                                   ...formik.values,
+                                   documents: updatedDocuments,
+                              }
+                         });
                     }
                }
           } finally {
                setDocsUploading(false);
                e.target.value = '';
-               router.refresh();
           }
      };
 
@@ -436,8 +451,13 @@ export default function Announcements({ customer, announcements, buildings }: An
                toast.error(res.error || t(tokens.announcements.toasts.removeImageFailed));
           } else {
                toast.success(t(tokens.announcements.toasts.removeImageSuccess));
-               formik.setFieldValue('documents', (formik.values.documents || []).filter((d: any) => d.url !== url));
-               router.refresh();
+               const updatedDocs = (formik.values.documents || []).filter((d: any) => d.url !== url);
+               formik.resetForm({
+                    values: {
+                         ...formik.values,
+                         documents: updatedDocs,
+                    }
+               });
           }
      };
 
@@ -456,8 +476,12 @@ export default function Announcements({ customer, announcements, buildings }: An
                toast.error(res.error || t(tokens.announcements.toasts.removeImagesFailed));
           } else {
                toast.success(t(tokens.announcements.toasts.removeImagesSuccess));
-               formik.setFieldValue('documents', []);
-               router.refresh();
+               formik.resetForm({
+                    values: {
+                         ...formik.values,
+                         documents: [],
+                    }
+               });
           }
      };
 
@@ -472,9 +496,13 @@ export default function Announcements({ customer, announcements, buildings }: An
                toast.error(res.error || t(tokens.announcements.toasts.removeImagesFailed));
           } else {
                toast.success(t(tokens.announcements.toasts.removeImagesSuccess));
-               formik.setFieldValue('images', []);
+               formik.resetForm({
+                    values: {
+                         ...formik.values,
+                         images: [],
+                    }
+               });
                formik.setSubmitting(false);
-               router.refresh();
           }
      };
 
