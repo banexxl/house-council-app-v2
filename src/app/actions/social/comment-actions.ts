@@ -64,7 +64,7 @@ export async function getPostComments(
      try {
           const supabase = await useServerSideSupabaseAnonClient();
           const viewer = await getViewer();
-          const currentUserId = viewer.tenant?.id || null;
+          const currentUserId = viewer.tenant?.id ?? viewer.customer?.id ?? null;
           const limit = Math.max(options?.limit ?? 20, 1);
           const offset = Math.max(options?.offset ?? 0, 0);
 
@@ -134,19 +134,45 @@ export async function getPostComments(
  */
 export async function createTenantPostComment(payload: CreateTenantPostCommentPayload): Promise<ActionResponse<TenantPostComment>> {
      try {
-          const viewer = await getViewer();
-          if (!viewer.tenant) {
-               return { success: false, error: 'User not authenticated or not a tenant' };
+          const { tenant, customer } = await getViewer();
+
+          if (!tenant && !customer) {
+               return { success: false, error: 'User not authenticated' };
           }
 
           const supabase = await useServerSideSupabaseAnonClient();
+          // Fetch profile id to satisfy non-null constraint on profile_id
+          const tenantId = tenant?.id ?? null;
+          const customerId = customer?.id ?? null;
 
-          // Fetch tenant profile id to satisfy non-null constraint on profile_id
-          const { data: profileRow, error: profileError } = await supabase
-               .from(TABLES.TENANT_PROFILES)
-               .select('id')
-               .eq('tenant_id', viewer.tenant.id)
-               .maybeSingle();
+          let profileRow: { id: string } | null = null;
+          let profileError: any = null;
+
+          if (tenantId && customerId) {
+               const { data, error } = await supabase
+                    .from(TABLES.TENANT_PROFILES)
+                    .select('id')
+                    .or(`tenant_id.eq.${tenantId},customerId.eq.${customerId}`)
+                    .maybeSingle();
+               profileRow = data as any;
+               profileError = error;
+          } else if (tenantId) {
+               const { data, error } = await supabase
+                    .from(TABLES.TENANT_PROFILES)
+                    .select('id')
+                    .eq('tenant_id', tenantId)
+                    .maybeSingle();
+               profileRow = data as any;
+               profileError = error;
+          } else if (customerId) {
+               const { data, error } = await supabase
+                    .from(TABLES.TENANT_PROFILES)
+                    .select('id')
+                    .eq('customerId', customerId)
+                    .maybeSingle();
+               profileRow = data as any;
+               profileError = error;
+          }
 
           if (profileError) {
                console.error('Error loading tenant profile for comment:', profileError);
@@ -154,7 +180,7 @@ export async function createTenantPostComment(payload: CreateTenantPostCommentPa
           }
 
           if (!profileRow?.id) {
-               return { success: false, error: 'Tenant profile not found. Please create your profile first.' };
+               return { success: false, error: 'Profile not found. Please create your profile first.' };
           }
 
           // Resolve building id from payload or parent post (safety in case payload missing)
@@ -181,8 +207,9 @@ export async function createTenantPostComment(payload: CreateTenantPostCommentPa
           const { data, error } = await supabase
                .from(TABLES.TENANT_POST_COMMENTS)
                .insert({
-                    tenant_id: viewer.tenant.id,
+                    tenant_id: tenant?.id ?? null,
                     profile_id: profileRow.id,
+                    customerId: customer?.id ?? null,
                     ...payload,
                })
                .select()
@@ -217,7 +244,7 @@ export async function createTenantPostComment(payload: CreateTenantPostCommentPa
                     if (tid) participantTenantIds.add(tid);
                }
 
-               participantTenantIds.delete(viewer.tenant.id);
+               participantTenantIds.delete(tenant?.id!);
 
                let targetUserIds: string[] = [];
                if (participantTenantIds.size > 0) {
@@ -271,13 +298,15 @@ export async function createTenantPostComment(payload: CreateTenantPostCommentPa
  */
 export async function reactToComment(commentId: string, emoji: string): Promise<ActionResponse<ReactionResult>> {
      try {
-          const viewer = await getViewer();
-          if (!viewer.tenant) {
-               return { success: false, error: 'User not authenticated or not a tenant' };
+          const { tenant, customer } = await getViewer();
+
+          if (!tenant && !customer) {
+               return { success: false, error: 'User not authenticated' };
           }
 
           const supabase = await useServerSideSupabaseAnonClient();
-          const tenantId = viewer.tenant.id;
+          const tenantId = tenant?.id ?? null;
+          const customerId = customer?.id ?? null;
 
           // Fetch comment to get building_id (ensure not-null inserts)
           const { data: commentRow, error: commentError } = await supabase
@@ -295,11 +324,19 @@ export async function reactToComment(commentId: string, emoji: string): Promise<
                return { success: false, error: 'Building not found for this comment' };
           }
 
+          const orParts: string[] = [];
+
+          if (tenantId) orParts.push(`tenant_id.eq.${tenantId}`);
+          if (customerId) orParts.push(`customerId.eq.${customerId}`);
+          if (orParts.length === 0) {
+               return { success: false, error: "Missing tenantId and customerId" };
+          }
+
           const { data: existingReaction, error: existingError } = await supabase
                .from(TABLES.TENANT_COMMENT_LIKES)
-               .select('id, emoji')
-               .eq('comment_id', commentId)
-               .eq('tenant_id', tenantId)
+               .select("id, emoji")
+               .eq("comment_id", commentId)
+               .or(orParts.join(","))
                .maybeSingle();
 
           if (existingError && existingError.code !== 'PGRST116') {
@@ -332,7 +369,8 @@ export async function reactToComment(commentId: string, emoji: string): Promise<
                     .from(TABLES.TENANT_COMMENT_LIKES)
                     .insert({
                          comment_id: commentId,
-                         tenant_id: tenantId,
+                         tenant_id: tenantId || null,
+                         customerId: customer?.id || null,
                          emoji,
                     });
 
@@ -375,8 +413,9 @@ export async function updateTenantPostComment(
 ): Promise<ActionResponse<TenantPostComment>> {
      try {
           const viewer = await getViewer();
-          if (!viewer.tenant) {
-               return { success: false, error: 'User not authenticated or not a tenant' };
+          const actorId = viewer.tenant?.id ?? viewer.customer?.id ?? null;
+          if (!actorId) {
+               return { success: false, error: 'User not authenticated' };
           }
 
           const supabase = await useServerSideSupabaseAnonClient();
@@ -392,7 +431,7 @@ export async function updateTenantPostComment(
                return { success: false, error: 'Comment not found' };
           }
 
-          if (comment.tenant_id !== viewer.tenant.id) {
+          if (comment.tenant_id !== actorId) {
                return { success: false, error: 'You can only update your own comments' };
           }
 
@@ -427,8 +466,9 @@ export async function updateTenantPostComment(
 export async function deleteTenantPostComment(commentId: string): Promise<ActionResponse<void>> {
      try {
           const viewer = await getViewer();
-          if (!viewer.tenant) {
-               return { success: false, error: 'User not authenticated or not a tenant' };
+          const actorId = viewer.tenant?.id ?? viewer.customer?.id ?? null;
+          if (!actorId) {
+               return { success: false, error: 'User not authenticated' };
           }
 
           const supabase = await useServerSideSupabaseAnonClient();
@@ -444,7 +484,7 @@ export async function deleteTenantPostComment(commentId: string): Promise<Action
                return { success: false, error: 'Comment not found' };
           }
 
-          if (comment.tenant_id !== viewer.tenant.id) {
+          if (comment.tenant_id !== actorId) {
                return { success: false, error: 'You can only delete your own comments' };
           }
 
@@ -475,8 +515,9 @@ export async function deleteTenantPostComment(commentId: string): Promise<Action
 export async function getCurrentUserComments(): Promise<ActionResponse<TenantPostComment[]>> {
      try {
           const viewer = await getViewer();
-          if (!viewer.tenant) {
-               return { success: false, error: 'User not authenticated or not a tenant' };
+          const actorId = viewer.tenant?.id ?? viewer.customer?.id ?? null;
+          if (!actorId) {
+               return { success: false, error: 'User not authenticated' };
           }
 
           const supabase = await useServerSideSupabaseAnonClient();
@@ -484,7 +525,7 @@ export async function getCurrentUserComments(): Promise<ActionResponse<TenantPos
           const { data, error } = await supabase
                .from(TABLES.TENANT_POST_COMMENTS)
                .select('*')
-               .eq('tenant_id', viewer.tenant.id)
+               .eq('tenant_id', actorId)
                .order('created_at', { ascending: false });
 
           if (error) {

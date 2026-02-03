@@ -597,9 +597,9 @@ export async function createTenantPost(payload: CreateTenantPostPayload): Promis
                await logActionResult(action, 'fail', {
                     userId: viewer.tenant.id,
                     payload: { buildingId: payload.building_id ?? null },
-                    error: 'Tenant profile not found',
+                    error: 'Profile not found',
                });
-               return { success: false, error: 'Tenant profile not found. Please create your profile first.' };
+               return { success: false, error: 'Profile not found. Please create your profile first.' };
           }
 
           const { data, error } = await supabase

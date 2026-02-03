@@ -30,19 +30,27 @@ const socialType = NOTIFICATION_TYPES_MAP.find((t) => t.value === 'social')!;
  */
 export async function reactToPost(postId: string, emoji: string): Promise<ActionResponse<ReactionResult>> {
      try {
-          const viewer = await getViewer();
-          if (!viewer.tenant) {
-               return { success: false, error: 'User not authenticated or not a tenant' };
+          const { tenant, customer } = await getViewer();
+
+          if (!tenant && !customer) {
+               return { success: false, error: 'User not authenticated' };
           }
 
           const supabase = await useServerSideSupabaseAnonClient();
-          const tenantId = viewer.tenant.id;
+          const tenantId = tenant?.id ?? null;
+          const customerId = customer?.id ?? null;
+          const orParts: string[] = [];
+          if (tenantId) orParts.push(`tenant_id.eq.${tenantId}`);
+          if (customerId) orParts.push(`customerId.eq.${customerId}`);
+          if (orParts.length === 0) {
+               return { success: false, error: "Missing tenantId and customerId" };
+          }
 
           const { data: existingReaction, error: existingError } = await supabase
                .from(TABLES.TENANT_POST_LIKES)
                .select('id, emoji')
                .eq('post_id', postId)
-               .eq('tenant_id', tenantId)
+               .or(orParts.join(","))
                .maybeSingle();
 
           if (existingError && existingError.code !== 'PGRST116') {
@@ -130,7 +138,8 @@ export async function reactToPost(postId: string, emoji: string): Promise<Action
                     if (tid) participantTenantIds.add(tid);
                }
 
-               participantTenantIds.delete(tenantId);
+               participantTenantIds.delete(tenantId || '');
+               participantTenantIds.delete(customerId || '');
 
                let targetUserIds: string[] = [];
                if (participantTenantIds.size > 0) {
@@ -143,10 +152,11 @@ export async function reactToPost(postId: string, emoji: string): Promise<Action
                          .filter((uid): uid is string => Boolean(uid));
                }
 
+               const actorName = tenant?.first_name || (customer as any)?.name || 'Someone';
                const notifications: Notification[] = targetUserIds.map((uid) => ({
                     type: socialType,
                     title: 'New reaction on a post you follow',
-                    description: `${viewer.tenant ? viewer.tenant.first_name || 'Someone' : 'Someone'} reacted ${emoji}`,
+                    description: `${actorName} reacted ${emoji}`,
                     created_at: new Date().toISOString(),
                     user_id: uid,
                     is_read: false,
@@ -211,7 +221,8 @@ export async function getPostLikes(postId: string): Promise<ActionResponse<Tenan
 export async function checkUserLikedPost(postId: string): Promise<ActionResponse<boolean>> {
      try {
           const viewer = await getViewer();
-          if (!viewer.tenant) {
+          const actorId = viewer.tenant?.id ?? viewer.customer?.id ?? null;
+          if (!actorId) {
                return { success: true, data: false };
           }
 
@@ -221,7 +232,7 @@ export async function checkUserLikedPost(postId: string): Promise<ActionResponse
                .from(TABLES.TENANT_POST_LIKES)
                .select('id')
                .eq('post_id', postId)
-               .eq('tenant_id', viewer.tenant.id)
+               .eq('tenant_id', actorId)
                .single();
 
           if (error && error.code !== 'PGRST116') {

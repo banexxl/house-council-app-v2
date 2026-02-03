@@ -214,8 +214,10 @@ export async function getTenantProfiles(buildingId?: string): Promise<ActionResp
 export async function createTenantProfile(payload: CreateTenantProfilePayload): Promise<ActionResponse<TenantProfile>> {
      try {
           const viewer = await getViewer();
-          if (!viewer.tenant) {
-               return { success: false, error: 'User not authenticated or not a tenant' };
+          // Allow both tenants and customers to have social profiles
+          const actorId = viewer.tenant?.id ?? viewer.customer?.id ?? null;
+          if (!actorId) {
+               return { success: false, error: 'User not authenticated' };
           }
 
           const supabase = await useServerSideSupabaseAnonClient();
@@ -224,28 +226,32 @@ export async function createTenantProfile(payload: CreateTenantProfilePayload): 
           const { data: existingProfile } = await supabase
                .from(TABLES.TENANT_PROFILES)
                .select('id')
-               .eq('tenant_id', viewer.tenant.id)
-               .single();
+               .eq('tenant_id', actorId)
+               .maybeSingle();
 
           if (existingProfile) {
                return { success: false, error: 'Profile already exists' };
           }
 
-          // Get current tenant data for shared fields
-          const { data: tenantData } = await supabase
-               .from(TABLES.TENANTS)
-               .select('first_name, last_name, phone_number')
-               .eq('id', viewer.tenant.id)
-               .single();
+          // Get current tenant data for shared fields when acting as a tenant
+          let tenantData: { first_name?: string; last_name?: string; phone_number?: string | null } | null = null;
+          if (viewer.tenant) {
+               const { data } = await supabase
+                    .from(TABLES.TENANTS)
+                    .select('first_name, last_name, phone_number')
+                    .eq('id', viewer.tenant.id)
+                    .maybeSingle();
+               tenantData = data as any;
+          }
 
           // Prepare profile data with shared fields from tenant
           const profileData = {
-               tenant_id: viewer.tenant.id,
+               tenant_id: actorId,
                ...payload,
                // Override with shared fields from tenant if not provided in payload
                first_name: payload.first_name || tenantData?.first_name || '',
                last_name: payload.last_name || tenantData?.last_name || '',
-               phone_number: payload.phone_number || tenantData?.phone_number,
+               phone_number: (payload.phone_number ?? tenantData?.phone_number) ?? undefined,
           };
 
           // Calculate profile progress
@@ -267,7 +273,8 @@ export async function createTenantProfile(payload: CreateTenantProfilePayload): 
           }
 
           // Update tenant table with shared fields if they were provided in payload
-          if (payload.first_name || payload.last_name || payload.phone_number) {
+          // Only applicable when the current viewer is a tenant
+          if (viewer.tenant && (payload.first_name || payload.last_name || payload.phone_number)) {
                const tenantUpdates: any = {};
                if (payload.first_name) tenantUpdates.first_name = payload.first_name;
                if (payload.last_name) tenantUpdates.last_name = payload.last_name;
@@ -301,8 +308,9 @@ export async function updateTenantProfile(
      log(`Updating tenant profile ${profileId} with payload: ${JSON.stringify(payload)}`);
      try {
           const viewer = await getViewer();
-          if (!viewer.tenant) {
-               return { success: false, error: 'User not authenticated or not a tenant' };
+          const actorId = viewer.tenant?.id ?? viewer.customer?.id ?? null;
+          if (!actorId) {
+               return { success: false, error: 'User not authenticated' };
           }
 
           const supabase = await useServerSideSupabaseAnonClient();
@@ -319,7 +327,7 @@ export async function updateTenantProfile(
                return { success: false, error: 'Profile not found' };
           }
 
-          if (profile.tenant_id !== viewer.tenant.id) {
+          if (profile.tenant_id !== actorId) {
                log('Attempt to update profile not owned by user', 'error');
                return { success: false, error: 'You can only update your own profile' };
           }
@@ -333,7 +341,7 @@ export async function updateTenantProfile(
                }
           }
 
-          if (Object.keys(tenantUpdates).length > 0) {
+          if (viewer.tenant && Object.keys(tenantUpdates).length > 0) {
                tenantUpdates.updated_at = new Date().toISOString();
                const { error: tenantError } = await supabase
                     .from(TABLES.TENANTS)
@@ -390,8 +398,9 @@ export async function updateTenantProfile(
 export async function deleteTenantProfile(profileId: string): Promise<ActionResponse<void>> {
      try {
           const viewer = await getViewer();
-          if (!viewer.tenant) {
-               return { success: false, error: 'User not authenticated or not a tenant' };
+          const actorId = viewer.tenant?.id ?? viewer.customer?.id ?? null;
+          if (!actorId) {
+               return { success: false, error: 'User not authenticated' };
           }
 
           const supabase = await useServerSideSupabaseAnonClient();
@@ -407,7 +416,7 @@ export async function deleteTenantProfile(profileId: string): Promise<ActionResp
                return { success: false, error: 'Profile not found' };
           }
 
-          if (profile.tenant_id !== viewer.tenant.id) {
+          if (profile.tenant_id !== actorId) {
                return { success: false, error: 'You can only delete your own profile' };
           }
 
