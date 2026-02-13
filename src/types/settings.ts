@@ -26,7 +26,7 @@ export const initialAppSettings: Settings = {
   colorPreset: 'orange',
   contrast: 'normal',
   direction: 'ltr',
-  language: 'rs',
+  language: 'en',
   layout: 'vertical',
   navColor: 'evident',
   paletteMode: 'light',
