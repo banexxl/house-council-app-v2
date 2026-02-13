@@ -5,10 +5,9 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 
 import { usePopover } from 'src/hooks/use-popover';
+import type { Language } from 'src/types/settings';
 
 import { LanguagePopover } from './language-popover';
-
-type Language = 'en' | 'de' | 'es' | 'rs';
 
 const languages: Record<Language, string> = {
   en: '/assets/flags/flag-uk.svg',
@@ -21,7 +20,8 @@ export const LanguageSwitch: FC = () => {
   const { i18n } = useTranslation();
   const popover = usePopover<HTMLButtonElement>();
 
-  const flag = languages[i18n.language as Language];
+  const activeLanguage = (i18n.resolvedLanguage ?? i18n.language).split('-')[0] as Language;
+  const flag = languages[activeLanguage] ?? languages.rs;
 
 
   return (

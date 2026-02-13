@@ -6,6 +6,7 @@ export const defaultSettings: Settings = {
   colorPreset: 'orange',
   contrast: 'normal',
   direction: 'ltr',
+  language: 'en',
   layout: 'vertical',
   navColor: 'evident',
   paletteMode: 'light',

@@ -10,9 +10,9 @@ import MenuItem from '@mui/material/MenuItem';
 import Popover from '@mui/material/Popover';
 import Typography from '@mui/material/Typography';
 
+import { useSettings } from 'src/hooks/use-settings';
 import { tokens } from 'src/locales/tokens';
-
-type Language = 'en' | 'de' | 'es' | 'rs';
+import type { Language } from 'src/types/settings';
 
 type LanguageOptions = {
   [key in Language]: {
@@ -50,14 +50,16 @@ export const LanguagePopover: FC<LanguagePopoverProps> = (props) => {
 
   const { anchorEl, onClose, open = false, ...other } = props;
   const { i18n, t } = useTranslation();
+  const settings = useSettings();
 
   const handleChange = useCallback(async (language: Language): Promise<void> => {
     onClose?.();
     await i18n.changeLanguage(language);
+    settings.handleUpdate({ language });
     const message = t(tokens.common.languageChanged) as string;
     toast.success(message);
   },
-    [onClose, i18n, t]
+    [onClose, i18n, settings, t]
   );
 
   return (

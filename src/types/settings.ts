@@ -6,10 +6,15 @@ export type Layout = 'horizontal' | 'vertical';
 
 export type NavColor = 'blend-in' | 'discrete' | 'evident';
 
+export const appLanguages = ['en', 'de', 'es', 'rs'] as const;
+
+export type Language = (typeof appLanguages)[number];
+
 export interface Settings {
   colorPreset?: ColorPreset;
   contrast?: Contrast;
   direction?: Direction;
+  language?: Language;
   layout?: Layout;
   navColor?: NavColor;
   paletteMode?: PaletteMode;
@@ -21,6 +26,7 @@ export const initialAppSettings: Settings = {
   colorPreset: 'orange',
   contrast: 'normal',
   direction: 'ltr',
+  language: 'rs',
   layout: 'vertical',
   navColor: 'evident',
   paletteMode: 'light',

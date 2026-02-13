@@ -7,7 +7,7 @@ import { NextAppDirEmotionCacheProvider } from 'tss-react/next/appDir';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
 import { AuthProvider } from 'src/contexts/auth';
-import 'src/locales/i18n';
+import i18n from 'src/locales/i18n';
 
 import { RTL } from 'src/components/rtl';
 import { SettingsButton } from 'src/components/settings/settings-button';
@@ -16,9 +16,26 @@ import { Toaster } from 'src/components/toaster';
 import { SettingsConsumer, SettingsProvider } from 'src/contexts/settings';
 import { store } from 'src/store';
 import { createTheme } from 'src/theme';
-import { initialAppSettings, type Settings } from 'src/types/settings';
+import { appLanguages, initialAppSettings, type Language, type Settings } from 'src/types/settings';
 
 const SETTINGS_STORAGE_KEY = 'app.settings';
+const DEFAULT_LANGUAGE: Language = initialAppSettings.language ?? 'rs';
+
+const isLanguage = (value: unknown): value is Language => {
+  return typeof value === 'string' && appLanguages.some((language) => language === value);
+};
+
+const resolveLanguage = (value: unknown): Language => {
+  return isLanguage(value) ? value : DEFAULT_LANGUAGE;
+};
+
+const normalizeSettings = (settings?: Settings): Settings => {
+  return {
+    ...initialAppSettings,
+    ...settings,
+    language: resolveLanguage(settings?.language),
+  };
+};
 
 interface LayoutProps {
   children: ReactNode;
@@ -30,27 +47,35 @@ export const Layout: FC<LayoutProps> = (props: LayoutProps) => {
   const [initialSettings, setInitialSettings] = useState<Settings | undefined>(initialAppSettings);
 
   useEffect(() => {
-    setMounted(true);
     try {
       const storedSettings = localStorage.getItem(SETTINGS_STORAGE_KEY);
-      if (storedSettings) {
-        setInitialSettings(JSON.parse(storedSettings));
-        return;
-      }
-      localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(initialAppSettings));
-      setInitialSettings(initialAppSettings);
+      const parsedSettings = storedSettings ? (JSON.parse(storedSettings) as Settings) : undefined;
+      const nextSettings = normalizeSettings(parsedSettings);
+      localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(nextSettings));
+      setInitialSettings(nextSettings);
+      void i18n.changeLanguage(nextSettings.language ?? DEFAULT_LANGUAGE);
     } catch (error) {
       console.error('Failed to initialize settings storage', error);
-      setInitialSettings(initialAppSettings);
+      const fallbackSettings = normalizeSettings(initialAppSettings);
+      setInitialSettings(fallbackSettings);
+      void i18n.changeLanguage(fallbackSettings.language ?? DEFAULT_LANGUAGE);
+    } finally {
+      setMounted(true);
     }
   }, []);
 
   const handleSettingsUpdate = (newSettings: Settings) => {
-    localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(newSettings));
+    const nextSettings = normalizeSettings(newSettings);
+    localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(nextSettings));
+    const currentLanguage = resolveLanguage(i18n.resolvedLanguage ?? i18n.language);
+    if (nextSettings.language && nextSettings.language !== currentLanguage) {
+      void i18n.changeLanguage(nextSettings.language);
+    }
   };
 
   const handleSettingsReset = () => {
     localStorage.removeItem(SETTINGS_STORAGE_KEY);
+    void i18n.changeLanguage(DEFAULT_LANGUAGE);
   };
 
   if (!mounted) {
