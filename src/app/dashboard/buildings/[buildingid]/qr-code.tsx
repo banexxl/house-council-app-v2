@@ -10,6 +10,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Divider,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { tokens } from 'src/locales/tokens';
@@ -17,25 +18,29 @@ import { tokens } from 'src/locales/tokens';
 const BUILDING_REQUEST_URL =
   `${process.env.NEXT_PUBLIC_BASE_URL}/auth/access-request`
 
+const PLAY_STORE_URL =
+  "https://play.google.com/store/apps/details?id=com.banexxl.nestlinkapp";
+
 const POSTER_ID = 'building-qr-poster';
 
 const posterStyle: CSSProperties = {
   width: '100%',
   maxWidth: 420,
   margin: '0 auto',
-  padding: '24px 20px',
+  padding: '16px 20px 24px',
   border: '1px solid #e0e0e0',
   borderRadius: 12,
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
+  justifyContent: 'flex-start',
   gap: 12,
   textAlign: 'center',
   backgroundColor: '#fff',
 };
 
 const logoStyle: CSSProperties = {
-  width: 120,
+  width: 60,
   height: 'auto',
 };
 
@@ -54,6 +59,33 @@ const qrBoxStyle: CSSProperties = {
   width: 180,
   height: 180,
   padding: 8,
+  border: '1px solid #e0e0e0',
+  borderRadius: 8,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: '#fff',
+  marginBottom: 24
+};
+
+const smallQrSectionStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: 6,
+};
+
+const smallQrLabelStyle: CSSProperties = {
+  fontSize: 12,
+  fontWeight: 600,
+  color: '#444',
+  marginTop: 6,
+};
+
+const smallQrBoxStyle: CSSProperties = {
+  width: 92,
+  height: 92,
+  padding: 6,
   border: '1px solid #e0e0e0',
   borderRadius: 8,
   display: 'flex',
@@ -113,122 +145,136 @@ function printElementById(elementId: string, options?: PrintOptions) {
     <base href="${origin}/" />
     <title>${docTitle}</title>
 
-    <style>
-      @page { size: A4 portrait; margin: 0; }
+          <style>
+                @page { 
+  size: A4 portrait; 
+  margin: 0; 
+}
 
-      html, body {
-        margin: 0;
-        padding: 0;
-        width: 210mm;
-        height: 297mm;
-        background: #fff;
-        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-        overflow: hidden;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-      }
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 210mm;
+  height: 297mm;
+  background: #fff;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
 
-      * { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
-      .poster {
-        width: 210mm;
-        height: 297mm;
-        padding: 10mm;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
+/* A4 wrapper */
+.poster {
+  width: 210mm;
+  height: 297mm;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 25mm;
+}
 
-      .frame {
-        width: 100%;
-        height: 100%;
-        border: 1px solid #e6e6e6;
-        border-radius: 10mm;
-        padding: 12mm;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: #fff;
-      }
+/* Center injected React content */
+.sheet {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
 
-      /* wrapper around injected markup */
-      .sheet {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
+/* RESET the injected poster container */
+.sheet > * {
+  all: unset !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  text-align: center !important;
+  width: 160mm !important;
+}
 
-      /* Kill MUI default spacing */
-      .sheet, .sheet * {
-        margin: 0 !important;
-        padding: 0 !important;
-      }
+/* Logo */
+.qr-poster-logo {
+  height: 25mm !important;
+  width: auto !important;
+  margin-bottom: 10mm !important;
+}
 
-      /* VERY IMPORTANT: prevent absolute/transform overlap inside injected markup */
-      .sheet * {
-        position: static !important;
-        transform: none !important;
-      }
+/* Subtitle */
+.qr-poster-subtitle {
+  margin-bottom: 5mm !important;
+  font-size: 14pt !important;
+}
 
-      /* Make the injected "card" a clean vertical stack */
-      .sheet > * {
-        width: 100% !important;
-        max-width: 170mm !important;
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        text-align: center !important;
+/* Title */
+.qr-poster-title {
+  margin-bottom: 8mm !important;
+  font-size: 16pt !important;
+  font-weight: 700 !important;
+}
 
-        border: 1px solid #efefef !important;
-        border-radius: 6mm !important;
-        padding: 12mm !important;
+/* Main QR container */
+.qr-poster-main-qr-box {
+  all: unset !important;
+  display: flex !important;
+  justify-content: center !important;
+  margin-bottom: 30mm !important;
+}
 
-        /* Spacing controlled here (no overlap) */
-        gap: 8mm !important;
-      }
+/* Main QR */
+.qr-poster-qr {
+  width: 90mm !important;
+  height: 90mm !important;
+  display: block;
+}
 
-      /* Make the title area always have room (prevents QR covering it) */
-      .sheet > * > :nth-child(2) {
-        min-height: 18mm !important; /* reserve space for "Scan..." + building name */
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: center !important;
-        gap: 3mm !important;
-      }
+/* Bottom section */
+.qr-poster-small-section {
+  all: unset !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
 
-      /* QR block gets its own lane */
-      .sheet > * > :nth-child(3) {
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        gap: 4mm !important;
-      }
+/* Bottom label */
+.qr-poster-small-section > *:first-child {
+  margin-bottom: 8mm !important;
+  font-size: 14pt !important;
+  font-weight: 600 !important;
+}
 
-      /* Logo */
-      .qr-poster-logo {
-        height: 85mm !important;
-        width: auto !important;
-        max-width: 100% !important;
-        display: block;
-      }
+/* Bottom QR */
+.qr-poster-qr-small {
+  width: 55mm !important;
+  height: 55mm !important;
+  display: block;
+}
 
-      /* QR */
-      .qr-poster-qr {
-        width: 65mm !important;
-        height: 65mm !important;
-        display: block;
-      }
+.qr-poster-small-label {
+  margin: 8mm !important;
+  font-size: 14pt !important;
+  font-weight: 600 !important;
+  color: #000 !important;
+}
 
-      /* URL wrap */
-      .sheet a, .sheet p, .sheet span, .sheet div {
-        max-width: 160mm;
-        word-break: break-word;
-        overflow-wrap: anywhere;
-        font-size: 12pt !important;
-        line-height: 1.25 !important;
-      }
-    </style>
+.qr-poster-small-section {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+
+.qr-poster-qr-small {
+  width: 55mm !important;
+  height: 55mm !important;
+  margin-bottom: 6mm !important;
+}
+
+.qr-poster-small-label {
+  font-size: 14pt !important;
+  font-weight: 600 !important;
+  color: #000 !important;
+}
+          </style>
   </head>
 
   <body>
@@ -318,7 +364,8 @@ export function QrCodeModal({
   const { t } = useTranslation();
   const requestUrl = BUILDING_REQUEST_URL + (buildingId ? `?buildingId=${buildingId}` : '');
   const qrPng = useQrPng(requestUrl);
-  const titleText = buildingLabel ? `NestLink - ${buildingLabel}` : 'NestLink';
+  const playStoreQrPng = useQrPng(PLAY_STORE_URL);
+  const titleText = buildingLabel ? `${buildingLabel}` : 'NestLink';
   const descriptionText = t(tokens.buildings.qrCodeDescription);
   const dialogTitle = t(tokens.buildings.qrCodeDialogTitle);
   const posterTitle = t(tokens.buildings.qrCodePosterTitle);
@@ -329,23 +376,49 @@ export function QrCodeModal({
       <DialogContent dividers>
         <Box id={POSTER_ID} style={posterStyle}>
           <img src="/assets/logo-icons/1-01.png" alt="NestLink" style={logoStyle} className="qr-poster-logo" />
-          <Box style={subtitleStyle}>{descriptionText}</Box>
-          <Box style={titleStyle}>{titleText}</Box>
-          <Box style={qrBoxStyle}>
+          <Box style={subtitleStyle} className="qr-poster-subtitle">{descriptionText}</Box>
+          <Box style={titleStyle} className="qr-poster-title">{titleText}</Box>
+          <Box style={qrBoxStyle} className="qr-poster-main-qr-box">
             {qrPng ? (
-              <img src={qrPng} alt={qrAlt} style={qrImageStyle} className="qr-poster-qr" />
+              <img
+                src={qrPng}
+                alt={qrAlt}
+                style={qrImageStyle}
+                className="qr-poster-qr"
+              />
             ) : (
               <CircularProgress size={32} />
             )}
           </Box>
-          <Box style={urlStyle}>{requestUrl}</Box>
+
+          <Divider sx={{ width: '80%', margin: '40px 0 20px 0' }} />
+
+          <Box style={smallQrSectionStyle} className="qr-poster-small-section">
+            <Box style={smallQrBoxStyle}>
+              {playStoreQrPng ? (
+                <img
+                  src={playStoreQrPng}
+                  alt="Google Play QR code"
+                  style={qrImageStyle}
+                  className="qr-poster-qr-small"
+                />
+              ) : (
+                <CircularProgress size={20} />
+              )}
+            </Box>
+
+            <Box style={smallQrLabelStyle} className="qr-poster-small-label">
+              Google Play Download
+            </Box>
+          </Box>
+
         </Box>
       </DialogContent>
       <DialogActions>
         <Button
           onClick={() => printElementById(POSTER_ID, { title: posterTitle })}
           variant="outlined"
-          disabled={!qrPng}
+          disabled={!qrPng || !playStoreQrPng}
         >
           {t(tokens.common.btnPrint)}
         </Button>
