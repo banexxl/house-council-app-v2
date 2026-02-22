@@ -33,9 +33,10 @@ import { paths } from 'src/paths';
 import { EntityFormHeader } from 'src/components/entity-form-header';
 import { Button } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
-import { upsertAnnouncement } from 'src/app/actions/announcement/announcement-actions';
+import { publishAnnouncement, upsertAnnouncement } from 'src/app/actions/announcement/announcement-actions';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
+import { useSettings } from 'src/hooks/use-settings';
 
 interface Props {
      announcements: Announcement[];
@@ -44,6 +45,7 @@ interface Props {
 
 export default function TenantAnnouncementsViewer({ announcements, buildings = {} }: Props) {
      const { t } = useTranslation();
+     const settings = useSettings();
      const router = useRouter();
      const trPref = useCallback((k1: string, k2?: string, raw?: string) => {
           const v1 = t(k1 as any);
@@ -180,13 +182,15 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
                schedule_enabled: false,
                scheduled_at: null,
                scheduled_timezone: null,
-               status: 'published',
+               status: 'draft',
                customerId: customerId || undefined,
           });
 
+          const publishResult = await publishAnnouncement(result.data?.id || '', { labelToken: 'yourLabelToken', value: 'announcement' }, settings.language);
+
           setIsCreatingAnnouncement(false);
 
-          if (!result.success) {
+          if (!result.success || !publishResult.success) {
                toast.error(result.error || t('common.actionCreateError'));
                return;
           }
