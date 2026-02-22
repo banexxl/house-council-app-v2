@@ -4,8 +4,6 @@ import { useState, useMemo, useCallback } from 'react';
 import { Announcement, ANNOUNCEMENT_CATEGORIES, announcementCategoryLabelMap, announcementSubcategoryLabelMap } from 'src/types/announcement';
 import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import Card from '@mui/material/Card';
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
