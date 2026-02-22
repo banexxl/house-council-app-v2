@@ -8,7 +8,7 @@ import { BaseNotification, NotificationTypeMap } from 'src/types/notification';
 import { createAnnouncementNotification } from 'src/utils/notification';
 import { validate as isUUID } from 'uuid';
 import { toStorageRef } from 'src/utils/sb-bucket';
-import { readAllTenantsFromBuildingIds } from '../tenant/tenant-actions';
+import { getCustomerIdFromTenantBuilding, readAllTenantsFromBuildingIds } from '../tenant/tenant-actions';
 import { TABLES } from 'src/libs/supabase/tables';
 import { emitNotifications } from '../notification/emit-notification';
 import { getViewer } from 'src/libs/supabase/server-auth';
@@ -475,8 +475,14 @@ export async function upsertAnnouncement(
 ): Promise<{ success: boolean; error?: string; data?: Announcement }> {
      const time = Date.now();
      const supabase = await useServerSideSupabaseAnonClient();
-     const { customer, admin } = await getViewer();
-     const customerId = input.customerId || customer?.id || null;
+     const { customer, admin, tenant } = await getViewer();
+     let customerId = input.customerId || customer?.id || null;
+     if (!customerId && tenant?.id) {
+          const customerFromTenant = await getCustomerIdFromTenantBuilding(tenant.id);
+          if (customerFromTenant.success && customerFromTenant.data) {
+               customerId = customerFromTenant.data;
+          }
+     }
      if (!customerId && !admin) {
           return { success: false, error: 'Customer required' };
      }

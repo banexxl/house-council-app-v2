@@ -43,6 +43,7 @@ import { Tenant } from 'src/types/tenant';
 import { EntityFormHeader } from 'src/components/entity-form-header';
 import { submitVote, getAllTenantVotes, revokeTenantVote, getPollResults } from 'src/app/actions/poll/votes/voting-actions';
 import { toast } from 'react-hot-toast';
+import { paths } from 'src/paths';
 
 // Dynamic import for ApexCharts to avoid SSR issues
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
@@ -692,8 +693,8 @@ export function Voting({ polls, closedPolls, tenant }: VotingProps) {
           <Container maxWidth="lg">
                <Stack spacing={3}>
                     <EntityFormHeader
-                         backHref="/dashboard/polls"
-                         backLabel={t('polls.voting.backToPolls')}
+                         backHref={paths.dashboard.index}
+                         backLabel={t('nav.dashboard')}
                          title={t('polls.voting.title')}
                          breadcrumbs={[
                               { title: t('polls.voting.dashboard'), href: '/dashboard' },

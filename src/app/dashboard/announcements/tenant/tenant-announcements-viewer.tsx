@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from 'react';
-import { Announcement, announcementCategoryLabelMap, announcementSubcategoryLabelMap } from 'src/types/announcement';
+import { Announcement, ANNOUNCEMENT_CATEGORIES, announcementCategoryLabelMap, announcementSubcategoryLabelMap } from 'src/types/announcement';
 import { useTranslation } from 'react-i18next';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
@@ -23,6 +23,7 @@ import Badge from '@mui/material/Badge';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
+import DialogActions from '@mui/material/DialogActions';
 import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
@@ -30,7 +31,13 @@ import ImageIcon from '@mui/icons-material/Image';
 import DescriptionIcon from '@mui/icons-material/Description';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import ScheduleIcon from '@mui/icons-material/Schedule';
-import { tokens } from 'src/locales/tokens';
+import { paths } from 'src/paths';
+import { EntityFormHeader } from 'src/components/entity-form-header';
+import { Button } from '@mui/material';
+import CircularProgress from '@mui/material/CircularProgress';
+import { upsertAnnouncement } from 'src/app/actions/announcement/announcement-actions';
+import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 
 interface Props {
      announcements: Announcement[];
@@ -39,6 +46,7 @@ interface Props {
 
 export default function TenantAnnouncementsViewer({ announcements, buildings = {} }: Props) {
      const { t } = useTranslation();
+     const router = useRouter();
      const trPref = useCallback((k1: string, k2?: string, raw?: string) => {
           const v1 = t(k1 as any);
           if (v1 !== k1) return v1;
@@ -53,6 +61,12 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
      const [category, setCategory] = useState<string>('');
      const [buildingFilter, setBuildingFilter] = useState<string>('');
      const [lightbox, setLightbox] = useState<{ open: boolean; url?: string }>({ open: false });
+     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+     const [isCreatingAnnouncement, setIsCreatingAnnouncement] = useState(false);
+     const [newAnnouncementTitle, setNewAnnouncementTitle] = useState('');
+     const [newAnnouncementDescription, setNewAnnouncementDescription] = useState('');
+     const [newAnnouncementCategory, setNewAnnouncementCategory] = useState('');
+     const [newAnnouncementSubcategory, setNewAnnouncementSubcategory] = useState('');
 
      const categories = useMemo(() => Array.from(new Set(announcements.map(a => a.category).filter(Boolean))) as string[], [announcements]);
      const buildingOptions = useMemo(() => {
@@ -60,6 +74,24 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
           announcements.forEach(a => (a.buildings || []).forEach(b => set.add(b)));
           return Array.from(set.values());
      }, [announcements]);
+     const createBuildingIds = useMemo(() => {
+          const fromMap = Object.keys(buildings || {});
+          if (fromMap.length > 0) return fromMap;
+
+          const set = new Set<string>();
+          announcements.forEach(a => (a.buildings || []).forEach(id => set.add(id)));
+          return Array.from(set);
+     }, [announcements, buildings]);
+     const selectedCreateCategory = useMemo(
+          () => ANNOUNCEMENT_CATEGORIES.find(cat => cat.id === newAnnouncementCategory),
+          [newAnnouncementCategory]
+     );
+     const requiresCreateSubcategory = (selectedCreateCategory?.subcategories.length ?? 0) > 0;
+     const canSaveNewAnnouncement =
+          newAnnouncementTitle.trim().length > 0 &&
+          newAnnouncementDescription.trim().length > 0 &&
+          !!newAnnouncementCategory &&
+          (!requiresCreateSubcategory || !!newAnnouncementSubcategory);
 
      const filtered = useMemo(() => {
           const searchLower = search.trim().toLowerCase();
@@ -103,6 +135,82 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
           setCategory('');
           setBuildingFilter('');
      }, []);
+     const resetCreateForm = useCallback(() => {
+          setNewAnnouncementTitle('');
+          setNewAnnouncementDescription('');
+          setNewAnnouncementCategory('');
+          setNewAnnouncementSubcategory('');
+     }, []);
+
+     const openCreateModal = useCallback(() => {
+          resetCreateForm();
+          setIsCreateModalOpen(true);
+     }, [resetCreateForm]);
+
+     const closeCreateModal = useCallback(() => {
+          if (isCreatingAnnouncement) return;
+          setIsCreateModalOpen(false);
+     }, [isCreatingAnnouncement]);
+
+     const saveNewAnnouncement = useCallback(async () => {
+          if (isCreatingAnnouncement || !canSaveNewAnnouncement) return;
+
+          if (!createBuildingIds.length) {
+               toast.error(t('announcements.validation.buildingsRequired'));
+               return;
+          }
+
+          const customerId = announcements.find(a => !!a.customerId)?.customerId;
+
+          setIsCreatingAnnouncement(true);
+          const safeMessage = newAnnouncementDescription
+               .trim()
+               .replace(/&/g, '&amp;')
+               .replace(/</g, '&lt;')
+               .replace(/>/g, '&gt;')
+               .replace(/"/g, '&quot;')
+               .replace(/'/g, '&#39;')
+               .replace(/\r?\n/g, '<br/>');
+
+          const result = await upsertAnnouncement({
+               title: newAnnouncementTitle.trim(),
+               message: safeMessage,
+               category: newAnnouncementCategory as Announcement['category'],
+               subcategory: newAnnouncementSubcategory,
+               buildings: createBuildingIds,
+               pinned: false,
+               schedule_enabled: false,
+               scheduled_at: null,
+               scheduled_timezone: null,
+               status: 'published',
+               customerId: customerId || undefined,
+          });
+
+          setIsCreatingAnnouncement(false);
+
+          if (!result.success) {
+               toast.error(result.error || t('common.actionCreateError'));
+               return;
+          }
+
+          toast.success(t('common.actionCreateSuccess'));
+          resetCreateForm();
+          setIsCreateModalOpen(false);
+          if (result.data?.id) setSelectedId(result.data.id);
+          router.refresh();
+     }, [
+          announcements,
+          canSaveNewAnnouncement,
+          createBuildingIds,
+          isCreatingAnnouncement,
+          newAnnouncementCategory,
+          newAnnouncementDescription,
+          newAnnouncementSubcategory,
+          newAnnouncementTitle,
+          resetCreateForm,
+          router,
+          t
+     ]);
 
      const openLightbox = useCallback((url: string) => setLightbox({ open: true, url }), []);
      const closeLightbox = useCallback(() => setLightbox({ open: false }), []);
@@ -110,9 +218,26 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
      return (
           <Container maxWidth="xl">
                <Stack spacing={3}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                         <Typography variant="h4">{t('announcements.title')}</Typography>
-                    </Box>
+                    <EntityFormHeader
+                         backHref={paths.dashboard.index}
+                         backLabel={t('nav.dashboard')}
+                         title={t('announcements.title')}
+                         breadcrumbs={[
+                              { title: t('nav.dashboard'), href: paths.dashboard.index },
+                              { title: t('announcements.title') },
+                         ]}
+                         showNotificationAlert={false}
+                         actionComponent={
+                              <Button
+                                   variant="contained"
+                                   onClick={openCreateModal}
+                                   disabled={isCreatingAnnouncement}
+                                   sx={{ width: { xs: '100%', sm: 'auto' } }}
+                              >
+                                   {t('common.btnCreate')}
+                              </Button>
+                         }
+                    />
                     <Card sx={{ p: 2, maxWidth: { xs: '100%', md: 1000, lg: 1200 }, mx: 'auto' }}>
                          <Box
                               display="flex"
@@ -407,6 +532,77 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
                                              <Box component="img" src={lightbox.url} alt="preview" sx={{ width: '100%', height: 'auto', borderRadius: 1 }} />
                                         )}
                                    </DialogContent>
+                              </Dialog>
+                              <Dialog open={isCreateModalOpen} onClose={closeCreateModal} maxWidth="sm" fullWidth>
+                                   <DialogTitle>{t('announcements.createNew')}</DialogTitle>
+                                   <DialogContent dividers>
+                                        <Stack spacing={2} sx={{ mt: 0.5 }}>
+                                             <TextField
+                                                  label={t('announcements.form.title')}
+                                                  value={newAnnouncementTitle}
+                                                  onChange={(event) => setNewAnnouncementTitle(event.target.value)}
+                                                  disabled={isCreatingAnnouncement}
+                                                  fullWidth
+                                                  required
+                                             />
+                                             <TextField
+                                                  label={t('common.lblDescription')}
+                                                  value={newAnnouncementDescription}
+                                                  onChange={(event) => setNewAnnouncementDescription(event.target.value)}
+                                                  disabled={isCreatingAnnouncement}
+                                                  multiline
+                                                  minRows={4}
+                                                  fullWidth
+                                                  required
+                                             />
+                                             <TextField
+                                                  select
+                                                  label={t('announcements.form.category')}
+                                                  value={newAnnouncementCategory}
+                                                  onChange={(event) => {
+                                                       setNewAnnouncementCategory(event.target.value);
+                                                       setNewAnnouncementSubcategory('');
+                                                  }}
+                                                  disabled={isCreatingAnnouncement}
+                                                  fullWidth
+                                                  required
+                                             >
+                                                  {ANNOUNCEMENT_CATEGORIES.map(cat => {
+                                                       const label = trPref(`announcements.categories.${cat.id}`, announcementCategoryLabelMap[cat.id] ?? cat.id, cat.id);
+                                                       return <MenuItem key={cat.id} value={cat.id}>{label}</MenuItem>;
+                                                  })}
+                                             </TextField>
+                                             {selectedCreateCategory && selectedCreateCategory.subcategories.length > 0 && (
+                                                  <TextField
+                                                       select
+                                                       label={t('announcements.form.subcategory')}
+                                                       value={newAnnouncementSubcategory}
+                                                       onChange={(event) => setNewAnnouncementSubcategory(event.target.value)}
+                                                       disabled={isCreatingAnnouncement}
+                                                       fullWidth
+                                                       required
+                                                  >
+                                                       {selectedCreateCategory.subcategories.map(sc => {
+                                                            const label = trPref(`announcements.subcategories.${sc.id}`, announcementSubcategoryLabelMap[sc.id] ?? sc.id, sc.id);
+                                                            return <MenuItem key={sc.id} value={sc.id}>{label}</MenuItem>;
+                                                       })}
+                                                  </TextField>
+                                             )}
+                                        </Stack>
+                                   </DialogContent>
+                                   <DialogActions>
+                                        <Button onClick={closeCreateModal} disabled={isCreatingAnnouncement}>
+                                             {t('common.btnCancel')}
+                                        </Button>
+                                        <Button
+                                             onClick={saveNewAnnouncement}
+                                             variant="contained"
+                                             disabled={!canSaveNewAnnouncement || isCreatingAnnouncement}
+                                             startIcon={isCreatingAnnouncement ? <CircularProgress size={16} color="inherit" /> : undefined}
+                                        >
+                                             {t('common.btnSave')}
+                                        </Button>
+                                   </DialogActions>
                               </Dialog>
                          </Box>
                     </Card>
