@@ -5,6 +5,7 @@ import { getAllBuildings, getAllBuildingsFromClient } from 'src/app/actions/buil
 import { getPollById } from 'src/app/actions/poll/poll-actions';
 import PollCreate from './poll-create';
 import { paths } from 'src/paths';
+import { Card, Container } from '@mui/material';
 
 type Props = { params: Promise<{ poll: string }> };
 
@@ -50,10 +51,14 @@ export default async function PollCreatePage({ params }: Props) {
     : undefined;
 
   return (
-    <PollCreate
-      buildings={buildings}
-      clientId={customer?.id || ''}
-      poll={normalizedPoll}
-    />
+    <Container maxWidth="xl">
+      <Card sx={{ p: 2 }}>
+        <PollCreate
+          buildings={buildings}
+          clientId={customer?.id || ''}
+          poll={normalizedPoll}
+        />
+      </Card>
+    </Container>
   );
 }

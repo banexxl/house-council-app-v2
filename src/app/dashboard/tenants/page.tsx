@@ -3,6 +3,7 @@ import { getViewer } from 'src/libs/supabase/server-auth';
 import Tenants from './tenants';
 import { redirect } from 'next/navigation';
 import { paths } from 'src/paths';
+import { Card, Container } from '@mui/material';
 
 
 export default async function TenantsPage() {
@@ -24,5 +25,11 @@ export default async function TenantsPage() {
     redirect('/dashboard/social/profile');
   }
 
-  return <Tenants tenants={tenants} />;
+  return (
+    <Container maxWidth="xl">
+      <Card sx={{ p: 2 }}>
+        <Tenants tenants={tenants} />
+      </Card>
+    </Container>
+  );
 }

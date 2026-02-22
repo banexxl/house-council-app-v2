@@ -14,23 +14,15 @@ export default async function Page() {
      // const subscriptionPlans = await readAllSubscriptionPlans();
 
      return (
-          <Box
-               component="main"
-               sx={{
-                    flexGrow: 1,
-                    py: 8,
-               }}
-          >
-               <Container maxWidth="xl">
-                    <Stack spacing={4}>
-                         <Card>
-                              {/* <SubscriptionTable
+          <Container maxWidth="xl">
+               <Card sx={{ p: 2 }}>
+                    <Card>
+                         {/* <SubscriptionTable
                                    subscriptionPlans={subscriptionPlans.subscriptionPlansData}
                               /> */}
-                         </Card>
-                    </Stack>
-               </Container>
-          </Box>
+                    </Card>
+               </Card>
+          </Container>
      )
 }
 

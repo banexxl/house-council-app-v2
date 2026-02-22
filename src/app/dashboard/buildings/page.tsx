@@ -5,6 +5,7 @@ import Buildings from "./buildings";
 import { getViewer } from "src/libs/supabase/server-auth";
 import { redirect } from "next/navigation";
 import { Building } from "src/types/building";
+import { Card, Container } from "@mui/material";
 
 
 export default async function Page() {
@@ -26,7 +27,11 @@ export default async function Page() {
   }
 
   return (
-    <Buildings clientBuildings={buildings} />
+    <Container maxWidth="xl">
+      <Card sx={{ p: 2 }}>
+        <Buildings clientBuildings={buildings} />
+      </Card>
+    </Container>
   );
 }
 

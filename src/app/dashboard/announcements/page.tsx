@@ -3,6 +3,7 @@ import { getAnnouncements } from 'src/app/actions/announcement/announcement-acti
 import { getViewer } from 'src/libs/supabase/server-auth';
 import { getAllBuildingsFromClient } from 'src/app/actions/building/building-actions';
 import { redirect } from 'next/navigation';
+import { Card, Container } from '@mui/material';
 
 export default async function AnnouncementsPage() {
 
@@ -26,10 +27,14 @@ export default async function AnnouncementsPage() {
      const buildings = (buildingsRes as any).error ? [] : (buildingsRes as any).data || [];
 
      return (
-          <Announcements
-               announcements={announcements}
-               customer={customer}
-               buildings={buildings}
-          />
+          <Container maxWidth="xl">
+               <Card sx={{ p: 2 }}>
+                    <Announcements
+                         announcements={announcements}
+                         customer={customer}
+                         buildings={buildings}
+                    />
+               </Card>
+          </Container >
      );
 }

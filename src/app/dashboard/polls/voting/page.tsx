@@ -5,6 +5,7 @@ import { logout } from 'src/app/auth/actions';
 import { getTenantBuildingPolls, getTenantClosedPolls } from 'src/app/actions/poll/votes/voting-actions';
 import { Voting } from './voting';
 import { paths } from 'src/paths';
+import { Card, Container } from '@mui/material';
 
 export const metadata: Metadata = {
      title: 'Voting | House Council',
@@ -27,10 +28,14 @@ export default async function VotingPage() {
      const { data: closedPolls } = await getTenantClosedPolls();
 
      return (
-          <Voting
-               polls={polls && polls.length > 0 ? polls : []}
-               closedPolls={closedPolls && closedPolls.length > 0 ? closedPolls : []}
-               tenant={tenant}
-          />
+          <Container maxWidth="xl">
+               <Card sx={{ p: 2 }}>
+                    <Voting
+                         polls={polls && polls.length > 0 ? polls : []}
+                         closedPolls={closedPolls && closedPolls.length > 0 ? closedPolls : []}
+                         tenant={tenant}
+                    />
+               </Card>
+          </Container>
      );
 }

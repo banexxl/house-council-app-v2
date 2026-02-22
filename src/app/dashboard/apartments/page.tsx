@@ -6,6 +6,7 @@ import { getViewer } from "src/libs/supabase/server-auth";
 import { redirect } from "next/navigation";
 import { Apartment } from "src/types/apartment";
 import { paths } from "src/paths";
+import { Card, Container } from "@mui/material";
 
 export default async function Page() {
 
@@ -31,6 +32,10 @@ export default async function Page() {
   }
 
   return (
-    <Apartments apartments={apartments ?? []} />
+    <Container maxWidth="xl">
+      <Card sx={{ p: 2 }}>
+        <Apartments apartments={apartments ?? []} />
+      </Card>
+    </Container>
   );
 }

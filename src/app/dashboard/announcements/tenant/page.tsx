@@ -3,8 +3,8 @@ import { redirect } from 'next/navigation';
 import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { getPublishedAnnouncementsForBuildings } from 'src/app/actions/announcement/announcement-actions';
 import TenantAnnouncementsViewer from 'src/app/dashboard/announcements/tenant/tenant-announcements-viewer';
-import { logout } from 'src/app/auth/actions';
 import { TABLES } from 'src/libs/supabase/tables';
+import { Card, Container } from '@mui/material';
 
 // Server component: lists published announcements for the tenant's building(s)
 export default async function TenantAnnouncementsPage() {
@@ -42,5 +42,11 @@ export default async function TenantAnnouncementsPage() {
      if (!publishedRes.success) return <div>Failed to load announcements.</div>;
      const announcements = publishedRes.data || [];
      const buildingsMap = publishedRes.buildings || {};
-     return <TenantAnnouncementsViewer announcements={announcements} buildings={buildingsMap} />;
+     return (
+          <Container maxWidth="xl">
+               <Card sx={{ p: 2 }}>
+                    <TenantAnnouncementsViewer announcements={announcements} buildings={buildingsMap} />
+               </Card>
+          </Container>
+     )
 }

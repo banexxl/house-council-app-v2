@@ -1,4 +1,4 @@
-import { Box, Container, Stack } from "@mui/material";
+import { Box, Card, Container, Stack } from "@mui/material";
 import { notFound } from "next/navigation";
 // import { readSubscriptionPlan } from "src/app/actions/subscription-plan/subscription-plan-actions";
 // import SubscriptionEditor from "src/sections/dashboard/subscriptions/subscription-form";
@@ -17,15 +17,13 @@ export default async function SubscriptionEditorPage({ params }: { params: Promi
      // }
 
      return (
-          <Box component="main" sx={{ flexGrow: 1, py: 8 }}>
-               <Container maxWidth="xl">
-                    <Stack spacing={4}>
-                         {/* <SubscriptionEditor
+          <Container maxWidth="xl">
+               <Card sx={{ p: 2 }}>
+                    {/* <SubscriptionEditor
                               subscriptionPlansData={subscriptionPlan || undefined}
                          /> */}
-                    </Stack>
-               </Container>
-          </Box>
+               </Card>
+          </Container>
      );
 }
 

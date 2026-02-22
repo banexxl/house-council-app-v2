@@ -7,6 +7,7 @@ import { Seo } from 'src/components/seo';
 import { getAllBuildingsWithApartmentsForClient, readTenantByIdAction } from 'src/app/actions/tenant/tenant-actions';
 import { getViewer } from 'src/libs/supabase/server-auth';
 import { TenantForm } from 'src/app/dashboard/tenants/[tenantid]/tenant-form';
+import { Card } from '@mui/material';
 
 export default async function Page({ params }: {
   params: Promise<{ tenantid: string }>
@@ -29,21 +30,10 @@ export default async function Page({ params }: {
   const buildings = buildingsResult.success && buildingsResult.data ? buildingsResult.data : [];
 
   return (
-    <>
-      <Seo title="Dashboard: Tenant Edit" />
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          py: 8,
-        }}
-      >
-        <Container maxWidth="lg">
-          <Stack spacing={4}>
-            <TenantForm tenantData={getTenantByIdActionData} buildings={buildings} />
-          </Stack>
-        </Container>
-      </Box>
-    </>
+    <Container maxWidth="xl">
+      <Card sx={{ p: 2 }}>
+        <TenantForm tenantData={getTenantByIdActionData} buildings={buildings} />
+      </Card>
+    </Container>
   );
 }

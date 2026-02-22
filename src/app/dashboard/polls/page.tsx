@@ -3,6 +3,7 @@ import { getViewer } from 'src/libs/supabase/server-auth';
 import { getPollsFromClient } from 'src/app/actions/poll/poll-actions';
 import { getAllBuildings, getAllBuildingsFromClient } from 'src/app/actions/building/building-actions';
 import Polls from './polls';
+import { Card, Container } from '@mui/material';
 
 export default async function PollsPage() {
 
@@ -34,6 +35,12 @@ export default async function PollsPage() {
     buildings = Array.isArray(data) ? data : [];
   }
 
-  return <Polls polls={polls} buildings={buildings} />;
+  return (
+    <Container maxWidth="xl">
+      <Card sx={{ p: 2 }}>
+        <Polls polls={polls} buildings={buildings} />
+      </Card>
+    </Container>
+  );
 }
 

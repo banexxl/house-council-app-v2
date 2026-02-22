@@ -33,28 +33,17 @@ const Page = async () => {
   }
 
   return (
-    <>
-      <Seo title="Dashboard: Calendar" />
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          py: 8,
-        }}
-      >
-        <Container maxWidth="xl">
-          <Card sx={{ p: 2 }}>
-            <CalendarClient
-              initialEvents={events}
-              clientId={clientId}
-              isTenant={!!tenant && !admin}
-              isAdmin={!!admin}
-              buildings={buildings}
-            />
-          </Card>
-        </Container>
-      </Box>
-    </>
+    <Container maxWidth="xl">
+      <Card sx={{ p: 2 }}>
+        <CalendarClient
+          initialEvents={events}
+          clientId={clientId}
+          isTenant={!!tenant && !admin}
+          isAdmin={!!admin}
+          buildings={buildings}
+        />
+      </Card>
+    </Container>
   );
 };
 

@@ -4,6 +4,7 @@ import { getNotificationsForClient } from 'src/app/actions/notification/notifica
 import { getViewer } from 'src/libs/supabase/server-auth';
 import { logout } from 'src/app/auth/actions';
 import { redirect } from 'next/navigation';
+import { Card, Container } from '@mui/material';
 
 export default async function NotificationsPage() {
      const { customer, tenant, admin } = await getViewer();
@@ -12,5 +13,11 @@ export default async function NotificationsPage() {
      }
      const { success, data } = await getNotificationsForClient();
      const notifications: Notification[] = success && data ? data : [];
-     return <NotificationsClient initialNotifications={notifications} />;
+     return (
+          <Container maxWidth="xl">
+               <Card sx={{ p: 2 }}>
+                    <NotificationsClient initialNotifications={notifications} />
+               </Card>
+          </Container>
+     );
 }

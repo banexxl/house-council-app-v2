@@ -216,397 +216,395 @@ export default function TenantAnnouncementsViewer({ announcements, buildings = {
      const closeLightbox = useCallback(() => setLightbox({ open: false }), []);
 
      return (
-          <Container maxWidth="xl">
-               <Stack spacing={3}>
-                    <EntityFormHeader
-                         backHref={paths.dashboard.index}
-                         backLabel={t('nav.dashboard')}
-                         title={t('announcements.title')}
-                         breadcrumbs={[
-                              { title: t('nav.dashboard'), href: paths.dashboard.index },
-                              { title: t('announcements.title') },
-                         ]}
-                         showNotificationAlert={false}
-                         actionComponent={
-                              <Button
-                                   variant="contained"
-                                   onClick={openCreateModal}
-                                   disabled={isCreatingAnnouncement}
-                                   sx={{ width: { xs: '100%', sm: 'auto' } }}
-                              >
-                                   {t('common.btnCreate')}
-                              </Button>
-                         }
-                    />
-                    <Card sx={{ p: 2, maxWidth: { xs: '100%', md: 1000, lg: 1200 }, mx: 'auto' }}>
-                         <Box
-                              display="flex"
-                              gap={2}
-                              sx={{
-                                   width: '100%',
-                                   alignItems: 'stretch',
-                                   flexDirection: { xs: 'column', sm: 'row' },
-                                   flexWrap: { xs: 'wrap', sm: 'nowrap' }
-                              }}
+          <Stack spacing={3}>
+               <EntityFormHeader
+                    backHref={paths.dashboard.index}
+                    backLabel={t('nav.dashboard')}
+                    title={t('announcements.title')}
+                    breadcrumbs={[
+                         { title: t('nav.dashboard'), href: paths.dashboard.index },
+                         { title: t('announcements.title') },
+                    ]}
+                    showNotificationAlert={false}
+                    actionComponent={
+                         <Button
+                              variant="contained"
+                              onClick={openCreateModal}
+                              disabled={isCreatingAnnouncement}
+                              sx={{ width: { xs: '100%', sm: 'auto' } }}
                          >
-                              {/* Left Pane */}
-                              <Paper variant="outlined" sx={{ width: { xs: '100%', sm: '33.333%' }, display: 'flex', flexDirection: 'column', maxHeight: '70vh' }}>
-                                   <Box sx={{ p: 1.5, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                                        <Stack direction="row" spacing={1} alignItems="center">
-                                             <TextField
-                                                  size="small"
-                                                  fullWidth
-                                                  placeholder={t('announcements.searchPlaceholder')}
-                                                  value={search}
-                                                  onChange={e => setSearch(e.target.value)}
-                                                  InputProps={{
-                                                       startAdornment: (
-                                                            <InputAdornment position="start">
-                                                                 <SearchIcon fontSize="small" />
-                                                            </InputAdornment>
-                                                       )
-                                                  }}
-                                             />
-                                             {(search || category || buildingFilter) && (
-                                                  <Tooltip title={t('common.clearFilters')}>
-                                                       <IconButton size="small" onClick={clearFilters}>
-                                                            <FilterAltOffIcon fontSize="small" />
-                                                       </IconButton>
-                                                  </Tooltip>
-                                             )}
-                                        </Stack>
+                              {t('common.btnCreate')}
+                         </Button>
+                    }
+               />
+               <Stack spacing={3} direction={{ xs: 'column', md: 'row' }}>
+                    <Box
+                         display="flex"
+                         gap={2}
+                         sx={{
+                              width: '100%',
+                              alignItems: 'stretch',
+                              flexDirection: { xs: 'column', sm: 'row' },
+                              flexWrap: { xs: 'wrap', sm: 'nowrap' }
+                         }}
+                    >
+                         {/* Left Pane */}
+                         <Paper variant="outlined" sx={{ width: { xs: '100%', sm: '33.333%' }, display: 'flex', flexDirection: 'column', maxHeight: '70vh' }}>
+                              <Box sx={{ p: 1.5, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                                   <Stack direction="row" spacing={1} alignItems="center">
                                         <TextField
-                                             select
-                                             label={t('announcements.fields.category')}
                                              size="small"
-                                             value={category}
-                                             onChange={e => setCategory(e.target.value)}
                                              fullWidth
-                                        >
-                                             <MenuItem value="">{t('common.all')}</MenuItem>
-                                             {categories.map(c => {
-                                                  const label = trPref(`announcements.categories.${c}`, announcementCategoryLabelMap[c] ?? c, c);
-                                                  return <MenuItem key={c} value={c}>{label}</MenuItem>;
-                                             })}
-                                        </TextField>
-                                        <TextField
-                                             select
-                                             label={t('announcements.fields.building')}
-                                             size="small"
-                                             value={buildingFilter}
-                                             onChange={e => setBuildingFilter(e.target.value)}
-                                             fullWidth
-                                        >
-                                             <MenuItem value="">{t('common.all')}</MenuItem>
-                                             {buildingOptions.map(b => {
-                                                  const bd = buildings[b];
-                                                  let label = b;
-                                                  if (bd?.building_location) {
-                                                       const loc = bd.building_location || {};
-                                                       label = [loc.street_address, loc.street_number, loc.city].filter(Boolean).join(' ');
-                                                  }
-                                                  return <MenuItem key={b} value={b}>{label}</MenuItem>;
-                                             })}
-                                        </TextField>
-                                   </Box>
-                                   <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
-                                        <List disablePadding>
-                                             {ordered.map((a: Announcement) => {
-                                                  const imagesCount = Array.isArray(a.images) ? a.images.length : 0;
-                                                  const docsCount = Array.isArray(a.documents) ? a.documents.length : 0;
-                                                  return (
-                                                       <ListItemButton
-                                                            key={a.id}
-                                                            selected={a.id === selectedId}
-                                                            alignItems="flex-start"
-                                                            onClick={() => setSelectedId(a.id!)}
-                                                            sx={{
-                                                                 py: 1.2,
-                                                                 borderLeft: a.id === selectedId ? theme => `3px solid ${theme.palette.primary.main}` : '3px solid transparent',
-                                                                 alignItems: 'center'
-                                                            }}
-                                                       >
-                                                            <ListItemText
-                                                                 primary={
-                                                                      <Stack direction="row" spacing={1} alignItems="center" sx={{ maxWidth: '100%' }}>
-                                                                           <Typography variant="subtitle2" noWrap sx={{ flexGrow: 1 }}>{a.title || t('common.untitled')}</Typography>
-                                                                           {a.pinned && <Tooltip title={t('announcements.pinned')}><PushPinIcon color="warning" fontSize="small" /></Tooltip>}
-                                                                           {a.schedule_enabled && a.scheduled_at && (
-                                                                                <Tooltip title={t('announcements.scheduledAt', { date: new Date(a.scheduled_at).toLocaleString() })}>
-                                                                                     <ScheduleIcon color="info" fontSize="small" />
-                                                                                </Tooltip>
-                                                                           )}
-                                                                           {imagesCount > 0 && (
-                                                                                <Tooltip title={t('announcements.imagesCount', { count: imagesCount })}>
-                                                                                     <Badge badgeContent={imagesCount} color="primary" max={9}>
-                                                                                          <ImageIcon fontSize="small" />
-                                                                                     </Badge>
-                                                                                </Tooltip>
-                                                                           )}
-                                                                           {docsCount > 0 && (
-                                                                                <Tooltip title={t('announcements.documentsCount', { count: docsCount })}>
-                                                                                     <Badge badgeContent={docsCount} color="secondary" max={9}>
-                                                                                          <DescriptionIcon fontSize="small" />
-                                                                                     </Badge>
-                                                                                </Tooltip>
-                                                                           )}
-                                                                      </Stack>
-                                                                 }
-                                                                 secondary={
-                                                                      <Typography variant="caption" color="text.secondary" noWrap>
-                                                                           {new Date(a.created_at).toLocaleString()} · {(a.buildings || []).length} {t('announcements.buildingsShort', { count: (a.buildings || []).length })}
-                                                                      </Typography>
-                                                                 }
-                                                            />
-                                                       </ListItemButton>
-                                                  );
-                                             })}
-                                             {filtered.length === 0 && (
-                                                  <Box sx={{ p: 3, textAlign: 'center' }}>
-                                                       <Typography variant="body2" color="text.secondary">{t('announcements.noneMatch')}</Typography>
-                                                  </Box>
-                                             )}
-                                        </List>
-                                   </Box>
-                                   <Divider />
-                                   <Box sx={{ p: 1, textAlign: 'right' }}>
-                                        <Typography variant="caption" color="text.secondary">{t('announcements.countShown', { shown: ordered.length, total: announcements.length })}</Typography>
-                                   </Box>
-                              </Paper>
+                                             placeholder={t('announcements.searchPlaceholder')}
+                                             value={search}
+                                             onChange={e => setSearch(e.target.value)}
+                                             InputProps={{
+                                                  startAdornment: (
+                                                       <InputAdornment position="start">
+                                                            <SearchIcon fontSize="small" />
+                                                       </InputAdornment>
+                                                  )
+                                             }}
+                                        />
+                                        {(search || category || buildingFilter) && (
+                                             <Tooltip title={t('common.clearFilters')}>
+                                                  <IconButton size="small" onClick={clearFilters}>
+                                                       <FilterAltOffIcon fontSize="small" />
+                                                  </IconButton>
+                                             </Tooltip>
+                                        )}
+                                   </Stack>
+                                   <TextField
+                                        select
+                                        label={t('announcements.fields.category')}
+                                        size="small"
+                                        value={category}
+                                        onChange={e => setCategory(e.target.value)}
+                                        fullWidth
+                                   >
+                                        <MenuItem value="">{t('common.all')}</MenuItem>
+                                        {categories.map(c => {
+                                             const label = trPref(`announcements.categories.${c}`, announcementCategoryLabelMap[c] ?? c, c);
+                                             return <MenuItem key={c} value={c}>{label}</MenuItem>;
+                                        })}
+                                   </TextField>
+                                   <TextField
+                                        select
+                                        label={t('announcements.fields.building')}
+                                        size="small"
+                                        value={buildingFilter}
+                                        onChange={e => setBuildingFilter(e.target.value)}
+                                        fullWidth
+                                   >
+                                        <MenuItem value="">{t('common.all')}</MenuItem>
+                                        {buildingOptions.map(b => {
+                                             const bd = buildings[b];
+                                             let label = b;
+                                             if (bd?.building_location) {
+                                                  const loc = bd.building_location || {};
+                                                  label = [loc.street_address, loc.street_number, loc.city].filter(Boolean).join(' ');
+                                             }
+                                             return <MenuItem key={b} value={b}>{label}</MenuItem>;
+                                        })}
+                                   </TextField>
+                              </Box>
+                              <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
+                                   <List disablePadding>
+                                        {ordered.map((a: Announcement) => {
+                                             const imagesCount = Array.isArray(a.images) ? a.images.length : 0;
+                                             const docsCount = Array.isArray(a.documents) ? a.documents.length : 0;
+                                             return (
+                                                  <ListItemButton
+                                                       key={a.id}
+                                                       selected={a.id === selectedId}
+                                                       alignItems="flex-start"
+                                                       onClick={() => setSelectedId(a.id!)}
+                                                       sx={{
+                                                            py: 1.2,
+                                                            borderLeft: a.id === selectedId ? theme => `3px solid ${theme.palette.primary.main}` : '3px solid transparent',
+                                                            alignItems: 'center'
+                                                       }}
+                                                  >
+                                                       <ListItemText
+                                                            primary={
+                                                                 <Stack direction="row" spacing={1} alignItems="center" sx={{ maxWidth: '100%' }}>
+                                                                      <Typography variant="subtitle2" noWrap sx={{ flexGrow: 1 }}>{a.title || t('common.untitled')}</Typography>
+                                                                      {a.pinned && <Tooltip title={t('announcements.pinned')}><PushPinIcon color="warning" fontSize="small" /></Tooltip>}
+                                                                      {a.schedule_enabled && a.scheduled_at && (
+                                                                           <Tooltip title={t('announcements.scheduledAt', { date: new Date(a.scheduled_at).toLocaleString() })}>
+                                                                                <ScheduleIcon color="info" fontSize="small" />
+                                                                           </Tooltip>
+                                                                      )}
+                                                                      {imagesCount > 0 && (
+                                                                           <Tooltip title={t('announcements.imagesCount', { count: imagesCount })}>
+                                                                                <Badge badgeContent={imagesCount} color="primary" max={9}>
+                                                                                     <ImageIcon fontSize="small" />
+                                                                                </Badge>
+                                                                           </Tooltip>
+                                                                      )}
+                                                                      {docsCount > 0 && (
+                                                                           <Tooltip title={t('announcements.documentsCount', { count: docsCount })}>
+                                                                                <Badge badgeContent={docsCount} color="secondary" max={9}>
+                                                                                     <DescriptionIcon fontSize="small" />
+                                                                                </Badge>
+                                                                           </Tooltip>
+                                                                      )}
+                                                                 </Stack>
+                                                            }
+                                                            secondary={
+                                                                 <Typography variant="caption" color="text.secondary" noWrap>
+                                                                      {new Date(a.created_at).toLocaleString()} · {(a.buildings || []).length} {t('announcements.buildingsShort', { count: (a.buildings || []).length })}
+                                                                 </Typography>
+                                                            }
+                                                       />
+                                                  </ListItemButton>
+                                             );
+                                        })}
+                                        {filtered.length === 0 && (
+                                             <Box sx={{ p: 3, textAlign: 'center' }}>
+                                                  <Typography variant="body2" color="text.secondary">{t('announcements.noneMatch')}</Typography>
+                                             </Box>
+                                        )}
+                                   </List>
+                              </Box>
+                              <Divider />
+                              <Box sx={{ p: 1, textAlign: 'right' }}>
+                                   <Typography variant="caption" color="text.secondary">{t('announcements.countShown', { shown: ordered.length, total: announcements.length })}</Typography>
+                              </Box>
+                         </Paper>
 
-                              {/* Right Pane */}
-                              <Paper variant="outlined" sx={{ flexGrow: 1, width: { xs: '100%', sm: '66.666%' }, display: 'flex', flexDirection: 'column', maxHeight: '70vh', minWidth: 0 }}>
-                                   {!selected && (
-                                        <Box sx={{ p: 4, textAlign: 'center' }}>
-                                             <Typography variant="body2" color="text.secondary">{t('announcements.selectPrompt')}</Typography>
-                                        </Box>
-                                   )}
-                                   {selected && (
-                                        <>
-                                             <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
-                                                  <Stack direction="row" spacing={2} alignItems="flex-start" justifyContent="space-between">
-                                                       <Box sx={{ minWidth: 0, flexGrow: 1 }}>
-                                                            <Typography variant="h5" sx={{ mb: 1, pr: 1 }} noWrap>{selected.title}</Typography>
-                                                            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                                                                 {selected.pinned && <Chip size="small" color="warning" label={t('announcements.pinned')} />}
-                                                                 <Chip size="small" label={selected.status === 'published' ? t('announcements.status.published') : t('announcements.status.draft')} color={selected.status === 'published' ? 'success' : 'default'} />
-                                                                 {selected.category && (
-                                                                      <Chip
-                                                                           size="small"
-                                                                           label={trPref(`announcements.categories.${selected.category}`, announcementCategoryLabelMap[selected.category] ?? selected.category, selected.category)}
-                                                                           variant="outlined"
-                                                                      />
-                                                                 )}
-                                                                 {selected.subcategory && (
-                                                                      <Chip
-                                                                           size="small"
-                                                                           label={trPref(`announcements.subcategories.${selected.subcategory}`, announcementSubcategoryLabelMap[selected.subcategory] ?? selected.subcategory, selected.subcategory)}
-                                                                           variant="outlined"
-                                                                      />
-                                                                 )}
-                                                                 {selected.schedule_enabled && selected.scheduled_at && <Chip size="small" color="info" label={t('announcements.scheduledAt', { date: new Date(selected.scheduled_at).toLocaleString() })} />}
-                                                                 {(selected.images?.length || 0) > 0 && (
-                                                                      <Chip
-                                                                           size="small"
-                                                                           variant="outlined"
-                                                                           icon={<ImageIcon fontSize="small" />}
-                                                                           label={t('announcements.imagesCount', { count: selected.images?.length ?? 0 })}
-                                                                      />
-                                                                 )}
-                                                                 {Array.isArray(selected.documents) && selected.documents.length > 0 && (
-                                                                      <Chip
-                                                                           size="small"
-                                                                           variant="outlined"
-                                                                           icon={<DescriptionIcon fontSize="small" />}
-                                                                           label={t('announcements.documentsCount', { count: selected.documents.length })}
-                                                                      />
-                                                                 )}
-                                                            </Stack>
-                                                       </Box>
-                                                       <Stack spacing={0.5} sx={{ textAlign: 'right' }}>
-                                                            <Typography variant="caption" color="text.secondary">{`${t('common.createdAt')} ${new Date(selected.created_at).toLocaleString()}`}</Typography>
-                                                            {selected.updated_at && (
-                                                                 <Typography variant="caption" color="text.secondary">{`${t('common.updatedAt')} ${new Date(selected.updated_at).toLocaleString()}`}</Typography>
+                         {/* Right Pane */}
+                         <Paper variant="outlined" sx={{ flexGrow: 1, width: { xs: '100%', sm: '66.666%' }, display: 'flex', flexDirection: 'column', maxHeight: '70vh', minWidth: 0 }}>
+                              {!selected && (
+                                   <Box sx={{ p: 4, textAlign: 'center' }}>
+                                        <Typography variant="body2" color="text.secondary">{t('announcements.selectPrompt')}</Typography>
+                                   </Box>
+                              )}
+                              {selected && (
+                                   <>
+                                        <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
+                                             <Stack direction="row" spacing={2} alignItems="flex-start" justifyContent="space-between">
+                                                  <Box sx={{ minWidth: 0, flexGrow: 1 }}>
+                                                       <Typography variant="h5" sx={{ mb: 1, pr: 1 }} noWrap>{selected.title}</Typography>
+                                                       <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                                                            {selected.pinned && <Chip size="small" color="warning" label={t('announcements.pinned')} />}
+                                                            <Chip size="small" label={selected.status === 'published' ? t('announcements.status.published') : t('announcements.status.draft')} color={selected.status === 'published' ? 'success' : 'default'} />
+                                                            {selected.category && (
+                                                                 <Chip
+                                                                      size="small"
+                                                                      label={trPref(`announcements.categories.${selected.category}`, announcementCategoryLabelMap[selected.category] ?? selected.category, selected.category)}
+                                                                      variant="outlined"
+                                                                 />
+                                                            )}
+                                                            {selected.subcategory && (
+                                                                 <Chip
+                                                                      size="small"
+                                                                      label={trPref(`announcements.subcategories.${selected.subcategory}`, announcementSubcategoryLabelMap[selected.subcategory] ?? selected.subcategory, selected.subcategory)}
+                                                                      variant="outlined"
+                                                                 />
+                                                            )}
+                                                            {selected.schedule_enabled && selected.scheduled_at && <Chip size="small" color="info" label={t('announcements.scheduledAt', { date: new Date(selected.scheduled_at).toLocaleString() })} />}
+                                                            {(selected.images?.length || 0) > 0 && (
+                                                                 <Chip
+                                                                      size="small"
+                                                                      variant="outlined"
+                                                                      icon={<ImageIcon fontSize="small" />}
+                                                                      label={t('announcements.imagesCount', { count: selected.images?.length ?? 0 })}
+                                                                 />
+                                                            )}
+                                                            {Array.isArray(selected.documents) && selected.documents.length > 0 && (
+                                                                 <Chip
+                                                                      size="small"
+                                                                      variant="outlined"
+                                                                      icon={<DescriptionIcon fontSize="small" />}
+                                                                      label={t('announcements.documentsCount', { count: selected.documents.length })}
+                                                                 />
                                                             )}
                                                        </Stack>
+                                                  </Box>
+                                                  <Stack spacing={0.5} sx={{ textAlign: 'right' }}>
+                                                       <Typography variant="caption" color="text.secondary">{`${t('common.createdAt')} ${new Date(selected.created_at).toLocaleString()}`}</Typography>
+                                                       {selected.updated_at && (
+                                                            <Typography variant="caption" color="text.secondary">{`${t('common.updatedAt')} ${new Date(selected.updated_at).toLocaleString()}`}</Typography>
+                                                       )}
                                                   </Stack>
-                                             </Box>
-                                             <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 3 }}>
-                                                  {(selected.buildings || []).length > 0 && (
-                                                       <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mb: 2 }}>
-                                                            {(selected.buildings || []).map(bid => {
-                                                                 const b = buildings[bid];
-                                                                 let label = bid;
-                                                                 if (b?.building_location) {
-                                                                      const loc = b.building_location || {};
-                                                                      label = [loc.street_address, loc.street_number, loc.city].filter(Boolean).join(' ');
-                                                                 }
-                                                                 return <Chip key={bid} size="small" variant="outlined" label={label || bid} />;
-                                                            })}
-                                                       </Stack>
-                                                  )}
-                                                  {selected.message && (
+                                             </Stack>
+                                        </Box>
+                                        <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 3 }}>
+                                             {(selected.buildings || []).length > 0 && (
+                                                  <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mb: 2 }}>
+                                                       {(selected.buildings || []).map(bid => {
+                                                            const b = buildings[bid];
+                                                            let label = bid;
+                                                            if (b?.building_location) {
+                                                                 const loc = b.building_location || {};
+                                                                 label = [loc.street_address, loc.street_number, loc.city].filter(Boolean).join(' ');
+                                                            }
+                                                            return <Chip key={bid} size="small" variant="outlined" label={label || bid} />;
+                                                       })}
+                                                  </Stack>
+                                             )}
+                                             {selected.message && (
+                                                  <Box
+                                                       sx={{
+                                                            mb: 4,
+                                                            lineHeight: 1.55,
+                                                            '& p': { margin: 0, marginBottom: 1 },
+                                                            '& ul, & ol': { paddingLeft: 3, marginTop: 0, marginBottom: 1 },
+                                                            '& h1, & h2, & h3, & h4, & h5, & h6': { marginTop: 1.5, marginBottom: 0.75 },
+                                                            '& a': { color: 'primary.main', textDecoration: 'underline' },
+                                                            '& strong, & b': { fontWeight: 600 },
+                                                            '& em, & i': { fontStyle: 'italic' },
+                                                            whiteSpace: 'normal',
+                                                       }}
+                                                       dangerouslySetInnerHTML={{ __html: selected.message }}
+                                                  />
+                                             )}
+                                             {Array.isArray(selected.images) && selected.images.length > 0 && (
+                                                  <Box sx={{ mb: 4 }}>
+                                                       <Typography variant="subtitle1" gutterBottom>{t('announcements.images')}</Typography>
                                                        <Box
                                                             sx={{
-                                                                 mb: 4,
-                                                                 lineHeight: 1.55,
-                                                                 '& p': { margin: 0, marginBottom: 1 },
-                                                                 '& ul, & ol': { paddingLeft: 3, marginTop: 0, marginBottom: 1 },
-                                                                 '& h1, & h2, & h3, & h4, & h5, & h6': { marginTop: 1.5, marginBottom: 0.75 },
-                                                                 '& a': { color: 'primary.main', textDecoration: 'underline' },
-                                                                 '& strong, & b': { fontWeight: 600 },
-                                                                 '& em, & i': { fontStyle: 'italic' },
-                                                                 whiteSpace: 'normal',
+                                                                 display: 'grid',
+                                                                 gap: 2,
+                                                                 gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))'
                                                             }}
-                                                            dangerouslySetInnerHTML={{ __html: selected.message }}
-                                                       />
-                                                  )}
-                                                  {Array.isArray(selected.images) && selected.images.length > 0 && (
-                                                       <Box sx={{ mb: 4 }}>
-                                                            <Typography variant="subtitle1" gutterBottom>{t('announcements.images')}</Typography>
-                                                            <Box
-                                                                 sx={{
-                                                                      display: 'grid',
-                                                                      gap: 2,
-                                                                      gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))'
-                                                                 }}
-                                                            >
-                                                                 {selected.images.map((url: string, i: number) => (
+                                                       >
+                                                            {selected.images.map((url: string, i: number) => (
+                                                                 <Box
+                                                                      key={i}
+                                                                      onClick={() => openLightbox(url)}
+                                                                      sx={{
+                                                                           position: 'relative',
+                                                                           cursor: 'pointer',
+                                                                           borderRadius: 1,
+                                                                           overflow: 'hidden',
+                                                                           border: '1px solid',
+                                                                           borderColor: 'divider',
+                                                                           '&:hover img': { transform: 'scale(1.05)' }
+                                                                      }}
+                                                                 >
                                                                       <Box
-                                                                           key={i}
-                                                                           onClick={() => openLightbox(url)}
+                                                                           component="img"
+                                                                           src={url}
+                                                                           alt={`img-${i}`}
                                                                            sx={{
-                                                                                position: 'relative',
-                                                                                cursor: 'pointer',
-                                                                                borderRadius: 1,
-                                                                                overflow: 'hidden',
-                                                                                border: '1px solid',
-                                                                                borderColor: 'divider',
-                                                                                '&:hover img': { transform: 'scale(1.05)' }
+                                                                                width: '100%',
+                                                                                height: 120,
+                                                                                objectFit: 'cover',
+                                                                                transition: 'transform .3s'
                                                                            }}
-                                                                      >
-                                                                           <Box
-                                                                                component="img"
-                                                                                src={url}
-                                                                                alt={`img-${i}`}
-                                                                                sx={{
-                                                                                     width: '100%',
-                                                                                     height: 120,
-                                                                                     objectFit: 'cover',
-                                                                                     transition: 'transform .3s'
-                                                                                }}
-                                                                           />
-                                                                      </Box>
-                                                                 ))}
-                                                            </Box>
+                                                                      />
+                                                                 </Box>
+                                                            ))}
                                                        </Box>
-                                                  )}
-                                                  {Array.isArray(selected.documents) && selected.documents.length > 0 && (
-                                                       <Box sx={{ mb: 4 }}>
-                                                            <Typography variant="subtitle1" gutterBottom>{t('announcements.documents')}</Typography>
-                                                            <List dense>
-                                                                 {selected.documents.map((d: any, i: number) => (
-                                                                      <ListItemButton key={i} component="a" href={d.url} target="_blank" rel="noopener noreferrer" sx={{ borderRadius: 1 }}>
-                                                                           <ListItemText
-                                                                                primary={<Typography variant="body2">{d.name || t('announcements.documentWithIndex', { index: i + 1 })}</Typography>}
-                                                                                secondary={<Typography variant="caption" color="text.secondary">{d.mime}</Typography>}
-                                                                           />
-                                                                      </ListItemButton>
-                                                                 ))}
-                                                            </List>
-                                                       </Box>
-                                                  )}
-                                             </Box>
-                                        </>
+                                                  </Box>
+                                             )}
+                                             {Array.isArray(selected.documents) && selected.documents.length > 0 && (
+                                                  <Box sx={{ mb: 4 }}>
+                                                       <Typography variant="subtitle1" gutterBottom>{t('announcements.documents')}</Typography>
+                                                       <List dense>
+                                                            {selected.documents.map((d: any, i: number) => (
+                                                                 <ListItemButton key={i} component="a" href={d.url} target="_blank" rel="noopener noreferrer" sx={{ borderRadius: 1 }}>
+                                                                      <ListItemText
+                                                                           primary={<Typography variant="body2">{d.name || t('announcements.documentWithIndex', { index: i + 1 })}</Typography>}
+                                                                           secondary={<Typography variant="caption" color="text.secondary">{d.mime}</Typography>}
+                                                                      />
+                                                                 </ListItemButton>
+                                                            ))}
+                                                       </List>
+                                                  </Box>
+                                             )}
+                                        </Box>
+                                   </>
+                              )}
+                         </Paper>
+                         <Dialog open={lightbox.open} onClose={closeLightbox} maxWidth="md" fullWidth>
+                              <DialogTitle sx={{ pr: 5 }}>
+                                   {t('announcements.lightbox.imagePreview')}
+                                   <IconButton aria-label={t('common.close')} onClick={closeLightbox} sx={{ position: 'absolute', right: 8, top: 8 }}>
+                                        <CloseIcon />
+                                   </IconButton>
+                              </DialogTitle>
+                              <DialogContent dividers>
+                                   {lightbox.url && (
+                                        <Box component="img" src={lightbox.url} alt="preview" sx={{ width: '100%', height: 'auto', borderRadius: 1 }} />
                                    )}
-                              </Paper>
-                              <Dialog open={lightbox.open} onClose={closeLightbox} maxWidth="md" fullWidth>
-                                   <DialogTitle sx={{ pr: 5 }}>
-                                        {t('announcements.lightbox.imagePreview')}
-                                        <IconButton aria-label={t('common.close')} onClick={closeLightbox} sx={{ position: 'absolute', right: 8, top: 8 }}>
-                                             <CloseIcon />
-                                        </IconButton>
-                                   </DialogTitle>
-                                   <DialogContent dividers>
-                                        {lightbox.url && (
-                                             <Box component="img" src={lightbox.url} alt="preview" sx={{ width: '100%', height: 'auto', borderRadius: 1 }} />
-                                        )}
-                                   </DialogContent>
-                              </Dialog>
-                              <Dialog open={isCreateModalOpen} onClose={closeCreateModal} maxWidth="sm" fullWidth>
-                                   <DialogTitle>{t('announcements.createNew')}</DialogTitle>
-                                   <DialogContent dividers>
-                                        <Stack spacing={2} sx={{ mt: 0.5 }}>
-                                             <TextField
-                                                  label={t('announcements.form.title')}
-                                                  value={newAnnouncementTitle}
-                                                  onChange={(event) => setNewAnnouncementTitle(event.target.value)}
-                                                  disabled={isCreatingAnnouncement}
-                                                  fullWidth
-                                                  required
-                                             />
-                                             <TextField
-                                                  label={t('common.lblDescription')}
-                                                  value={newAnnouncementDescription}
-                                                  onChange={(event) => setNewAnnouncementDescription(event.target.value)}
-                                                  disabled={isCreatingAnnouncement}
-                                                  multiline
-                                                  minRows={4}
-                                                  fullWidth
-                                                  required
-                                             />
+                              </DialogContent>
+                         </Dialog>
+                         <Dialog open={isCreateModalOpen} onClose={closeCreateModal} maxWidth="sm" fullWidth>
+                              <DialogTitle>{t('announcements.createNew')}</DialogTitle>
+                              <DialogContent dividers>
+                                   <Stack spacing={2} sx={{ mt: 0.5 }}>
+                                        <TextField
+                                             label={t('announcements.form.title')}
+                                             value={newAnnouncementTitle}
+                                             onChange={(event) => setNewAnnouncementTitle(event.target.value)}
+                                             disabled={isCreatingAnnouncement}
+                                             fullWidth
+                                             required
+                                        />
+                                        <TextField
+                                             label={t('common.lblDescription')}
+                                             value={newAnnouncementDescription}
+                                             onChange={(event) => setNewAnnouncementDescription(event.target.value)}
+                                             disabled={isCreatingAnnouncement}
+                                             multiline
+                                             minRows={4}
+                                             fullWidth
+                                             required
+                                        />
+                                        <TextField
+                                             select
+                                             label={t('announcements.form.category')}
+                                             value={newAnnouncementCategory}
+                                             onChange={(event) => {
+                                                  setNewAnnouncementCategory(event.target.value);
+                                                  setNewAnnouncementSubcategory('');
+                                             }}
+                                             disabled={isCreatingAnnouncement}
+                                             fullWidth
+                                             required
+                                        >
+                                             {ANNOUNCEMENT_CATEGORIES.map(cat => {
+                                                  const label = trPref(`announcements.categories.${cat.id}`, announcementCategoryLabelMap[cat.id] ?? cat.id, cat.id);
+                                                  return <MenuItem key={cat.id} value={cat.id}>{label}</MenuItem>;
+                                             })}
+                                        </TextField>
+                                        {selectedCreateCategory && selectedCreateCategory.subcategories.length > 0 && (
                                              <TextField
                                                   select
-                                                  label={t('announcements.form.category')}
-                                                  value={newAnnouncementCategory}
-                                                  onChange={(event) => {
-                                                       setNewAnnouncementCategory(event.target.value);
-                                                       setNewAnnouncementSubcategory('');
-                                                  }}
+                                                  label={t('announcements.form.subcategory')}
+                                                  value={newAnnouncementSubcategory}
+                                                  onChange={(event) => setNewAnnouncementSubcategory(event.target.value)}
                                                   disabled={isCreatingAnnouncement}
                                                   fullWidth
                                                   required
                                              >
-                                                  {ANNOUNCEMENT_CATEGORIES.map(cat => {
-                                                       const label = trPref(`announcements.categories.${cat.id}`, announcementCategoryLabelMap[cat.id] ?? cat.id, cat.id);
-                                                       return <MenuItem key={cat.id} value={cat.id}>{label}</MenuItem>;
+                                                  {selectedCreateCategory.subcategories.map(sc => {
+                                                       const label = trPref(`announcements.subcategories.${sc.id}`, announcementSubcategoryLabelMap[sc.id] ?? sc.id, sc.id);
+                                                       return <MenuItem key={sc.id} value={sc.id}>{label}</MenuItem>;
                                                   })}
                                              </TextField>
-                                             {selectedCreateCategory && selectedCreateCategory.subcategories.length > 0 && (
-                                                  <TextField
-                                                       select
-                                                       label={t('announcements.form.subcategory')}
-                                                       value={newAnnouncementSubcategory}
-                                                       onChange={(event) => setNewAnnouncementSubcategory(event.target.value)}
-                                                       disabled={isCreatingAnnouncement}
-                                                       fullWidth
-                                                       required
-                                                  >
-                                                       {selectedCreateCategory.subcategories.map(sc => {
-                                                            const label = trPref(`announcements.subcategories.${sc.id}`, announcementSubcategoryLabelMap[sc.id] ?? sc.id, sc.id);
-                                                            return <MenuItem key={sc.id} value={sc.id}>{label}</MenuItem>;
-                                                       })}
-                                                  </TextField>
-                                             )}
-                                        </Stack>
-                                   </DialogContent>
-                                   <DialogActions>
-                                        <Button onClick={closeCreateModal} disabled={isCreatingAnnouncement}>
-                                             {t('common.btnCancel')}
-                                        </Button>
-                                        <Button
-                                             onClick={saveNewAnnouncement}
-                                             variant="contained"
-                                             disabled={!canSaveNewAnnouncement || isCreatingAnnouncement}
-                                             startIcon={isCreatingAnnouncement ? <CircularProgress size={16} color="inherit" /> : undefined}
-                                        >
-                                             {t('common.btnSave')}
-                                        </Button>
-                                   </DialogActions>
-                              </Dialog>
-                         </Box>
-                    </Card>
+                                        )}
+                                   </Stack>
+                              </DialogContent>
+                              <DialogActions>
+                                   <Button onClick={closeCreateModal} disabled={isCreatingAnnouncement}>
+                                        {t('common.btnCancel')}
+                                   </Button>
+                                   <Button
+                                        onClick={saveNewAnnouncement}
+                                        variant="contained"
+                                        disabled={!canSaveNewAnnouncement || isCreatingAnnouncement}
+                                        startIcon={isCreatingAnnouncement ? <CircularProgress size={16} color="inherit" /> : undefined}
+                                   >
+                                        {t('common.btnSave')}
+                                   </Button>
+                              </DialogActions>
+                         </Dialog>
+                    </Box>
                </Stack>
-          </Container>
+          </Stack>
      );
 }

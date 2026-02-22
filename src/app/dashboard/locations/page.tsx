@@ -6,6 +6,7 @@ import { logout } from 'src/app/auth/actions';
 import { redirect } from 'next/navigation';
 import Locations from './locations';
 import { BuildingLocation } from 'src/types/location';
+import { Card, Container } from '@mui/material';
 
 const Page = async () => {
 
@@ -27,7 +28,11 @@ const Page = async () => {
   }
 
   return (
-    <Locations locations={locations} />
+    <Container maxWidth="xl">
+      <Card sx={{ p: 2 }}>
+        <Locations locations={locations} />
+      </Card>
+    </Container>
   );
 };
 

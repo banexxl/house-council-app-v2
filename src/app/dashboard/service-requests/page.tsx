@@ -3,6 +3,7 @@ import { IncidentsClient } from './incidents-client';
 import { getViewer } from 'src/libs/supabase/server-auth';
 import { redirect } from 'next/navigation';
 import { getBuildingIDsFromUserId } from 'src/app/actions/building/building-actions';
+import { Card, Container } from '@mui/material';
 
 const Page = async () => {
 
@@ -36,7 +37,13 @@ const Page = async () => {
     incidents = result.success && Array.isArray(result.data) ? result.data : [];
   }
 
-  return <IncidentsClient incidents={incidents} />
+  return (
+    <Container maxWidth="xl">
+      <Card sx={{ p: 2 }}>
+        <IncidentsClient incidents={incidents} />
+      </Card>
+    </Container>
+  );
 
 };
 

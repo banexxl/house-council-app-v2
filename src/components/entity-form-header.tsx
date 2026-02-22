@@ -58,6 +58,7 @@ export const EntityFormHeader = (props: EntityFormHeaderProps) => {
 
   const notificationRoutes: string[] = useMemo(
     () => [
+      '/dashboard/tenant/announcements/',
       '/dashboard/announcements',
       '/dashboard/service-requests',
       '/dashboard/calendar',
