@@ -14,7 +14,8 @@ import {
      verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Button, TextField } from '@mui/material';
+import { Box, Button, TextField } from '@mui/material';
+import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import { useTranslation } from 'react-i18next';
 
 export type SortableItem = { id?: string; label: string; isDirty?: boolean };
@@ -88,48 +89,70 @@ function SortableOptionItem({ id, label, isDirty, disabled, canDelete, onDelete,
           transition,
           isDragging,
      } = useSortable({ id });
-     const style = {
-          transform: CSS.Transform.toString(transform),
-          transition,
-          opacity: isDragging ? 0.5 : 1,
-          background: isDragging ? '#f5f5f5' : undefined,
-          borderRadius: 4,
-          padding: '4px 0',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-     };
      const { t } = useTranslation();
      const trimmedLabel = label.trim();
+
      return (
-          <div ref={setNodeRef} style={style} {...attributes}>
-               <span {...listeners} style={{ cursor: 'grab', marginRight: 8, color: '#888' }}>≡</span>
-               <TextField
-                    disabled={disabled}
-                    size="small"
-                    label="Option label"
-                    value={label}
-                    onChange={(e) => onLabelChange(e.target.value)}
-                    sx={{ flex: 1 }}
-               />
-               <Button
-                    type="button"
-                    disabled={disabled}
-                    color="error"
-                    variant="outlined"
-                    onClick={onDelete}
+          <Box
+               ref={setNodeRef}
+               {...attributes}
+               sx={{
+                    transform: CSS.Transform.toString(transform),
+                    transition,
+                    opacity: isDragging ? 0.5 : 1,
+                    backgroundColor: isDragging ? '#f5f5f5' : 'transparent',
+                    borderRadius: 1,
+                    py: 0.5,
+                    display: 'flex',
+                    flexDirection: { xs: 'column', sm: 'row' },
+                    alignItems: { xs: 'stretch', sm: 'center' },
+                    gap: 1,
+               }}
+          >
+               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1, minWidth: 0 }}>
+                    <Box component="span" {...listeners} sx={{ cursor: 'grab', color: '#888', userSelect: 'none', display: 'flex', alignItems: 'center' }}>
+                         <DragIndicatorIcon fontSize="small" />
+                    </Box>
+                    <TextField
+                         disabled={disabled}
+                         size="small"
+                         label="Option label"
+                         value={label}
+                         onChange={(e) => onLabelChange(e.target.value)}
+                         sx={{ flex: 1 }}
+                    />
+               </Box>
+
+               <Box
+                    sx={{
+                         display: 'flex',
+                         gap: 1,
+                         width: { xs: '100%', sm: 'auto' },
+                         pl: { xs: 3.5, sm: 0 },
+                         justifyContent: { xs: 'flex-start', sm: 'flex-end' },
+                    }}
                >
-                    {t('common.btnDelete')}
-               </Button>
-               <Button
-                    type="button"
-                    disabled={disabled || !trimmedLabel || !isDirty}
-                    color="primary"
-                    variant="contained"
-                    onClick={onSave}
-               >
-                    {t('common.btnSave')}
-               </Button>
-          </div>
+                    <Button
+                         type="button"
+                         disabled={disabled}
+                         color="error"
+                         variant="outlined"
+                         onClick={onDelete}
+                         sx={{ flex: { xs: 1, sm: 'none' } }}
+                    >
+                         {t('common.btnDelete')}
+                    </Button>
+                    <Button
+                         type="button"
+                         disabled={disabled || !trimmedLabel || !isDirty}
+                         color="primary"
+                         variant="contained"
+                         onClick={onSave}
+                         sx={{ flex: { xs: 1, sm: 'none' } }}
+                    >
+                         {t('common.btnSave')}
+                    </Button>
+               </Box>
+          </Box>
      );
 }

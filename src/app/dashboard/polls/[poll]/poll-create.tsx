@@ -1393,7 +1393,7 @@ export default function PollCreate({
                                         </CardContent>
                                    </Card>
 
-                                   <Card>
+                                   <Card sx={{ mt: 2 }}>
                                         <CardHeader title={t('polls.details') || 'Details'} />
                                         <Divider />
                                         <CardContent>
@@ -1569,7 +1569,7 @@ export default function PollCreate({
                                                        </Stack>
                                                   </CardContent>
                                              </Card>
-                                             <Card>
+                                             <Card sx={{ mt: 2 }}>
                                                   <CardHeader title={t('polls.options') || 'Options'} />
                                                   <Divider />
                                                   <CardContent>
