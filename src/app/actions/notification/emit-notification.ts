@@ -2,14 +2,13 @@ import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { TABLES } from 'src/libs/supabase/tables';
 import log from 'src/utils/logger';
-import { readTenantContactByUserIds } from '../tenant/tenant-actions';
 import { Notification } from 'src/types/notification';
-
 
 type EmitResult = { success: boolean; error?: string; inserted?: number };
 
 export async function emitNotifications(
-     rows: Notification[]
+     rows: Notification[],
+     supabaseOverride?: { from: (table: string) => any }
 ): Promise<EmitResult> {
      log(`Emitting ${rows.length} notifications`, 'warn');
      const time = Date.now();
@@ -17,7 +16,7 @@ export async function emitNotifications(
 
      try {
           // 1) Insert into DB (batch)
-          const supabase = await useServerSideSupabaseAnonClient();
+          const supabase = supabaseOverride ?? (await useServerSideSupabaseAnonClient());
           const BATCH = 500;
           let inserted = 0;
 
