@@ -90,6 +90,7 @@ export default function Announcements({ customer, announcements, buildings }: An
      const [modalState, setModalState] = useState<null | { type: 'delete-announcement' | 'remove-all-images' | 'remove-all-documents' | 'confirm-publish'; targetId?: string }>(null);
      const [isHeaderNavigating, setIsHeaderNavigating] = useState(false);
      const [isStartingNew, setIsStartingNew] = useState(false);
+     const [titleSearch, setTitleSearch] = useState('');
 
      const uploadingBusy = imagesUploading || docsUploading; // only busy during media uploads
      const router = useRouter();
@@ -550,6 +551,12 @@ export default function Announcements({ customer, announcements, buildings }: An
           setRowBusy(null);
      };
 
+     const filteredAnnouncements = useMemo(() => {
+          const q = titleSearch.trim().toLowerCase();
+          if (!q) return announcements;
+          return announcements.filter((a) => (a.title || '').toLowerCase().includes(q));
+     }, [announcements, titleSearch]);
+
 
      return (
           <Container maxWidth="xl">
@@ -616,12 +623,24 @@ export default function Announcements({ customer, announcements, buildings }: An
                               {/* Table Column */}
                               <Grid size={{ xs: 12, md: 6, lg: 5 }}>
                                    <Paper variant="outlined" sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
-                                        <Typography variant="h6" sx={{ mb: 2 }}>{t(tokens.announcements.table.heading)}</Typography>
+                                        <Stack spacing={1} sx={{ mb: 2 }}>
+                                             <Typography variant="h6">{t(tokens.announcements.table.heading)}</Typography>
+                                             <TextField
+                                                  size="small"
+                                                  placeholder={t('common.search')}
+                                                  value={titleSearch}
+                                                  onChange={(e) => setTitleSearch(e.target.value)}
+                                                  fullWidth
+                                             />
+                                        </Stack>
                                         <TableContainer
                                              sx={{
                                                   flexGrow: 1,
                                                   position: 'relative',
                                                   overflowX: 'auto',
+                                                  overflowY: 'auto',
+                                                  // 10 visible items + header row
+                                                  maxHeight: 484,
                                                   WebkitOverflowScrolling: 'touch',
                                                   // Add subtle fade edges to indicate scrollability on narrow screens
                                                   '&:before, &:after': {
@@ -645,25 +664,25 @@ export default function Announcements({ customer, announcements, buildings }: An
                                         >
                                              <Table size="small" stickyHeader sx={{ width: '100%', tableLayout: 'auto' }}>
                                                   <TableHead>
-                                                       <TableRow>
+                                                       <TableRow sx={{ height: 44 }}>
                                                             <TableCell sx={{ width: 'auto' }}>{t(tokens.announcements.table.colTitle)}</TableCell>
                                                             <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{t(tokens.announcements.table.colActions)}</TableCell>
                                                        </TableRow>
                                                   </TableHead>
                                                   <TableBody>
-                                                       {announcements.length === 0 && (
+                                                       {filteredAnnouncements.length === 0 && (
                                                             <TableRow>
                                                                  <TableCell colSpan={2}>
                                                                       <Typography variant="body2" color="text.secondary">{t(tokens.announcements.table.noData)}</Typography>
                                                                  </TableCell>
                                                             </TableRow>
                                                        )}
-                                                       {announcements.map(row => (
+                                                       {filteredAnnouncements.map(row => (
                                                             <TableRow
                                                                  key={row.id}
                                                                  onClick={() => handleEdit(row.id)}
                                                                  hover
-                                                                 sx={{ backgroundColor: editingEntity?.id === row.id ? 'action.selected' : 'inherit' }}>
+                                                                 sx={{ height: 44, backgroundColor: editingEntity?.id === row.id ? 'action.selected' : 'inherit' }}>
                                                                  <TableCell sx={{ py: 0.5 }}>
                                                                       <Stack direction="row" spacing={1} alignItems="flex-start" sx={{ minWidth: 0 }}>
                                                                            {row.pinned && <PushPinIcon color="primary" fontSize="small" style={{ marginTop: 2 }} />}
