@@ -10,11 +10,12 @@ export interface CalendarEvent {
   customerId: string;
   calendar_event_type?: EventType;
   building_id?: string | null;
+  timezone: string;
 }
 
 export interface UpdateCalendarEventInput {
   eventId: string;
-  update: Partial<Pick<CalendarEvent, 'all_day' | 'description' | 'end_date_time' | 'start_date_time' | 'title' | 'color' | 'calendar_event_type' | 'building_id'>>;
+  update: Partial<Pick<CalendarEvent, 'all_day' | 'description' | 'end_date_time' | 'start_date_time' | 'title' | 'color' | 'calendar_event_type' | 'building_id' | 'timezone'>>;
 }
 
 export type EventType = 'appointment' | 'meeting' | 'reminder' | 'task' | 'holiday' | 'other';
@@ -29,6 +30,7 @@ export interface CalendarEventFormValues {
   startTime: string; // HH:mm
   endTime: string;   // HH:mm
   building_id: string;
+  timezone: string;
 }
 
 export const CALENDAR_EVENT_INITIAL_VALUES: CalendarEventFormValues = {
@@ -38,4 +40,5 @@ export const CALENDAR_EVENT_INITIAL_VALUES: CalendarEventFormValues = {
   startTime: '09:00',
   endTime: '10:00',
   building_id: '',
+  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
 };

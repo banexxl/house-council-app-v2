@@ -53,6 +53,7 @@ const BASE_EVENT_TYPE_META: Record<EventType, { color: string }> = {
 
 export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, buildings = [] }: CalendarClientProps) => {
      const { t } = useTranslation();
+     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
      const EVENT_TYPE_META: Record<EventType, { label: string; color: string }> = useMemo(() => ({
           appointment: { label: t(tokens.calendar.types.appointment), color: BASE_EVENT_TYPE_META.appointment.color },
           meeting: { label: t(tokens.calendar.types.meeting), color: BASE_EVENT_TYPE_META.meeting.color },
@@ -158,6 +159,7 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, bui
                startTime: `${pad(startDate.getHours())}:${pad(startDate.getMinutes())}`,
                endTime: `${pad(endDate.getHours())}:${pad(endDate.getMinutes())}`,
                building_id: event.building_id || '',
+               timezone: event.timezone || timezone,
           });
           setOpenModal(true);
      };
@@ -191,6 +193,7 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, bui
                     calendar_event_type: values.calendar_event_type,
                     building_id: values.building_id || null,
                     created_at: new Date().toISOString(),
+                    timezone,
                };
                setOptimisticEvents(prev => [...prev, optimistic]);
                await (dispatch as any)(thunks.createEvent({
@@ -202,6 +205,7 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, bui
                     calendar_event_type: values.calendar_event_type,
                     building_id: values.building_id || null,
                     created_at: new Date().toISOString(),
+                    timezone,
                }));
                setOptimisticEvents(prev => prev.filter(e => e.id !== tempId));
                setCreating(false);
@@ -217,6 +221,7 @@ export const CalendarClient = ({ initialEvents, clientId, isTenant, isAdmin, bui
                          title: values.title,
                          calendar_event_type: values.calendar_event_type,
                          building_id: values.building_id || null,
+                         timezone
                     },
                }));
                setCreating(false);
