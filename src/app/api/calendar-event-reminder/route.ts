@@ -5,6 +5,7 @@ import { logServerAction } from 'src/libs/supabase/server-logging'
 import { emitNotifications } from 'src/app/actions/notification/emit-notification';
 import { createNotification } from 'src/utils/notification';
 import { sendViaEmail } from 'src/app/actions/notification/senders';
+import { buildCalendarEventReminderEmail } from 'src/libs/email/messages/calendar-event-reminder';
 
 // Expect a secret in header: x-cron-secret
 const CRON_SECRET = process.env.X_CRON_SECRET;
@@ -20,8 +21,23 @@ type CalendarEventRow = {
      start_date_time: string;
      end_date_time: string;
      building_id?: string | null;
-     timezone: string
+     timezone?: string | null
 };
+
+function toIntlLocale(locale: string): string {
+     switch ((locale || '').toLowerCase()) {
+          case 'rs':
+               return 'sr-RS';
+          case 'de':
+               return 'de-DE';
+          case 'es':
+               return 'es-ES';
+          case 'en':
+               return 'en-US';
+          default:
+               return 'en-US';
+     }
+}
 
 function formatEventStartForEmail(
      startUtcIso: string,
@@ -62,6 +78,8 @@ export async function POST(req: NextRequest) {
      if (CRON_SECRET && secret !== CRON_SECRET) {
           return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
      }
+
+     const locale = req.headers.get('x-locale') || 'rs';
 
      const now = new Date();
      const nowIso = now.toISOString();
@@ -163,7 +181,7 @@ export async function POST(req: NextRequest) {
                          if (alreadyNotified.has(uid)) continue;
 
                          const description = `Reminder: ${ev.title} starts in ${offsetMin} minutes.`;
-                         const url = 'https://dashboard.nest-link.app/dashboard/calendar';
+                         const url = '/dashboard/calendar/';
 
                          notifications.push(
                               createNotification({
@@ -185,23 +203,18 @@ export async function POST(req: NextRequest) {
                          if (t.email) {
                               emailsAttempted += 1;
 
-                              const subject = `Reminder: ${ev.title}`;
+                              const startLocal = formatEventStartForEmail(ev.start_date_time, ev.timezone, toIntlLocale(locale));
 
-                              const startLocal = formatEventStartForEmail(
-                                   ev.start_date_time,
-                                   ev.timezone
-                              );
+                              const { subject, injectedHtml } = await buildCalendarEventReminderEmail({
+                                   locale,
+                                   title: ev.title,
+                                   description: ev.description,
+                                   startFormatted: startLocal,
+                                   minutesRemaining: offsetMin,
+                                   calendarPath: url,
+                              });
 
-                              const html = `
-                                   <p>This is a reminder for an upcoming calendar event.</p>
-                                   <p><strong>${ev.title}</strong></p>
-                                   <p><strong>Starts:</strong> ${startLocal}</p>
-                                   <p><strong>Time remaining:</strong> ${offsetMin} minutes</p>
-                                   ${ev.description ? `<p>${String(ev.description)}</p>` : ''}
-                                   <p><a href="${url}">Open calendar</a></p>
-                         `;
-
-                              const res = await sendViaEmail(t.email, subject, html);
+                              const res = await sendViaEmail(t.email, subject, injectedHtml);
                               if (res.ok) emailsSent += 1;
                          }
                     }

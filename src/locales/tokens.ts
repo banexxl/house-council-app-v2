@@ -1392,6 +1392,13 @@ export const tokens = {
       intro: 'email.calendarEventCreatedBodyIntro',
       ctaLabel: 'email.calendarEventCreatedBodyCta',
     },
+    calendarEventReminder: {
+      subject: 'email.calendarEventReminderTitle',
+      intro: 'email.calendarEventReminderBodyIntro',
+      startsAt: 'email.calendarEventReminderStartsAt',
+      timeRemaining: 'email.calendarEventReminderTimeRemaining',
+      ctaLabel: 'email.calendarEventReminderBodyCta',
+    },
     common: {
       descriptionLabel: 'email.commonDescriptionLabel',
     },
