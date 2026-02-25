@@ -35,7 +35,8 @@ const mapRow = (r: any): CalendarEvent => ({
      customerId: r.customerId,
      calendar_event_type: (r.calendar_event_type as CalendarEvent['calendar_event_type']) || undefined,
      building_id: r.building_id ?? null,
-     created_at: r.created_at instanceof Date ? r.created_at.toISOString() : r.created_at
+     created_at: r.created_at instanceof Date ? r.created_at.toISOString() : r.created_at,
+     timezone: r.timezone,
 });
 
 type ActionResult<T> = { success: true; data: T } | { success: false; error: string };
