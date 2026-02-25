@@ -1493,6 +1493,7 @@ export const de = {
   [tokens.fileManager.createFolderTitle]: 'Ordner erstellen',
   [tokens.fileManager.folderNameLabel]: 'Name des Ordners',
   [tokens.fileManager.creatingFolder]: 'Erstellen...',
+  [tokens.fileManager.invalidFileType]: 'Nicht unterstützter Dateityp. Bitte lade ein Bild oder ein Dokument hoch.',
   [tokens.fileManager.tagsOptions.invoices]: 'Rechnungen',
   [tokens.fileManager.tagsOptions.work]: 'Arbeit',
   [tokens.fileManager.tagsOptions.business]: 'Gesch\u00e4ft',

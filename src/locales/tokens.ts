@@ -450,6 +450,7 @@ export const tokens = {
     createFolderTitle: 'fileManager.createFolderTitle',
     folderNameLabel: 'fileManager.folderNameLabel',
     creatingFolder: 'fileManager.creatingFolder',
+    invalidFileType: 'fileManager.invalidFileType',
     tagsOptions: {
       invoices: 'fileManager.tagsOptions.invoices',
       work: 'fileManager.tagsOptions.work',

@@ -1451,6 +1451,7 @@ export const rs = {
   [tokens.fileManager.createFolderTitle]: 'Kreiraj folder',
   [tokens.fileManager.folderNameLabel]: 'Naziv foldera',
   [tokens.fileManager.creatingFolder]: 'Kreiranje...',
+  [tokens.fileManager.invalidFileType]: 'Nepodržan tip fajla. Otpremite sliku ili dokument.',
   [tokens.fileManager.tagsOptions.invoices]: 'Računi',
   [tokens.fileManager.tagsOptions.work]: 'Posao',
   [tokens.fileManager.tagsOptions.business]: 'Biznis',

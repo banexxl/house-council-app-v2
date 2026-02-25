@@ -1528,6 +1528,7 @@ export const en = {
   [tokens.fileManager.createFolderTitle]: 'Create folder',
   [tokens.fileManager.folderNameLabel]: 'Folder name',
   [tokens.fileManager.creatingFolder]: 'Creating...',
+  [tokens.fileManager.invalidFileType]: 'Unsupported file type. Please upload an image or a document.',
   [tokens.fileManager.tagsOptions.invoices]: 'Invoices',
   [tokens.fileManager.tagsOptions.work]: 'Work',
   [tokens.fileManager.tagsOptions.business]: 'Business',

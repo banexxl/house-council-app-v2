@@ -1487,6 +1487,7 @@ export const es = {
   [tokens.fileManager.createFolderTitle]: 'Crear carpeta',
   [tokens.fileManager.folderNameLabel]: 'Nombre de la carpeta',
   [tokens.fileManager.creatingFolder]: 'Creando...',
+  [tokens.fileManager.invalidFileType]: 'Tipo de archivo no compatible. Sube una imagen o un documento.',
   [tokens.fileManager.tagsOptions.invoices]: 'Facturas',
   [tokens.fileManager.tagsOptions.work]: 'Trabajo',
   [tokens.fileManager.tagsOptions.business]: 'Negocios',
