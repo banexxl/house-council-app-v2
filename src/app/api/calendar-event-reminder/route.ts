@@ -129,7 +129,7 @@ export async function POST(req: NextRequest) {
                          if (alreadyNotified.has(uid)) continue;
 
                          const description = `Reminder: ${ev.title} starts in ${offsetMin} minutes.`;
-                         const url = '/dashboard/calendar/';
+                         const url = 'https://dashboard.nest-link.app/dashboard/calendar';
 
                          notifications.push(
                               createNotification({
