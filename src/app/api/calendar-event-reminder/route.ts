@@ -20,7 +20,41 @@ type CalendarEventRow = {
      start_date_time: string;
      end_date_time: string;
      building_id?: string | null;
+     timezone: string
 };
+
+function formatEventStartForEmail(
+     startUtcIso: string,
+     timezone?: string | null,
+     locale: string = 'sr-RS'
+): string {
+     const date = new Date(startUtcIso);
+
+     if (Number.isNaN(date.getTime())) {
+          return startUtcIso; // fallback safety
+     }
+
+     try {
+          return new Intl.DateTimeFormat(locale, {
+               timeZone: timezone ?? 'Europe/Belgrade',
+               day: '2-digit',
+               month: '2-digit',
+               year: 'numeric',
+               hour: '2-digit',
+               minute: '2-digit',
+          }).format(date);
+     } catch {
+          // fallback if invalid timezone somehow
+          return new Intl.DateTimeFormat(locale, {
+               timeZone: 'Europe/Belgrade',
+               day: '2-digit',
+               month: '2-digit',
+               year: 'numeric',
+               hour: '2-digit',
+               minute: '2-digit',
+          }).format(date);
+     }
+}
 
 export async function POST(req: NextRequest) {
      const t0 = Date.now();
@@ -47,7 +81,7 @@ export async function POST(req: NextRequest) {
      try {
           const { data: eventRows, error: eventsError } = await supabase
                .from(TABLES.CALENDAR_EVENTS)
-               .select('id,title,description,all_day,calendar_event_type,start_date_time,end_date_time,building_id')
+               .select('id,title,description,all_day,calendar_event_type,start_date_time,end_date_time,building_id,timezone')
                .gte('start_date_time', minIso)
                .lte('start_date_time', maxIso)
                .not('building_id', 'is', null);
@@ -150,16 +184,23 @@ export async function POST(req: NextRequest) {
 
                          if (t.email) {
                               emailsAttempted += 1;
+
                               const subject = `Reminder: ${ev.title}`;
-                              const startLocal = start.toLocaleString();
+
+                              const startLocal = formatEventStartForEmail(
+                                   ev.start_date_time,
+                                   ev.timezone
+                              );
+
                               const html = `
-							<p>This is a reminder for an upcoming calendar event.</p>
-							<p><strong>${ev.title}</strong></p>
-							<p>Starts: ${startLocal}</p>
-							<p>Time remaining: ${offsetMin} minutes</p>
-							${ev.description ? `<p>${String(ev.description)}</p>` : ''}
-							<p><a href="${url}">Open calendar</a></p>
-						`;
+                                   <p>This is a reminder for an upcoming calendar event.</p>
+                                   <p><strong>${ev.title}</strong></p>
+                                   <p><strong>Starts:</strong> ${startLocal}</p>
+                                   <p><strong>Time remaining:</strong> ${offsetMin} minutes</p>
+                                   ${ev.description ? `<p>${String(ev.description)}</p>` : ''}
+                                   <p><a href="${url}">Open calendar</a></p>
+                         `;
+
                               const res = await sendViaEmail(t.email, subject, html);
                               if (res.ok) emailsSent += 1;
                          }
