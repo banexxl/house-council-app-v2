@@ -461,58 +461,6 @@ export const updatePolarCustomerAction = async ({
 };
 
 /**
- * Delete a PolarCustomer via Polar SDK
- * @param customerId - Polar customer ID
- */
-export const deletePolarCustomerAction = async (
-     customerId: string
-): Promise<{
-     success: boolean;
-     error?: string;
-}> => {
-     const startTime = Date.now();
-
-     try {
-          // Delete customer via Polar SDK
-          await polar.customers.delete({ id: customerId });
-
-          await logServerAction({
-               action: 'Delete PolarCustomer via SDK - Success',
-               duration_ms: Date.now() - startTime,
-               error: '',
-               payload: { customerId },
-               status: 'success',
-               type: 'action',
-               user_id: customerId,
-          });
-
-          revalidatePath('/dashboard/customers');
-
-          return {
-               success: true,
-          };
-     } catch (error: any) {
-          const message = error?.message || 'Failed to delete customer';
-          log(`deletePolarCustomerAction error for customer ${customerId}: ${message}`, 'error');
-
-          await logServerAction({
-               action: 'Delete PolarCustomer via SDK - Failed',
-               duration_ms: Date.now() - startTime,
-               error: message,
-               payload: { customerId },
-               status: 'fail',
-               type: 'action',
-               user_id: customerId,
-          });
-
-          return {
-               success: false,
-               error: message,
-          };
-     }
-};
-
-/**
  * Get a PolarCustomer by ID via Polar SDK
  * @param customerId - Polar customer ID
  */
