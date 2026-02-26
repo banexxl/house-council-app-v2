@@ -6,6 +6,8 @@ import { emitNotifications } from 'src/app/actions/notification/emit-notificatio
 import { createNotification } from 'src/utils/notification';
 import { sendViaEmail } from 'src/app/actions/notification/senders';
 import { buildCalendarEventReminderEmail } from 'src/libs/email/messages/calendar-event-reminder';
+import { getServerI18n } from 'src/locales/i18n-server';
+import { tokens } from 'src/locales/tokens';
 
 // Expect a secret in header: x-cron-secret
 const CRON_SECRET = process.env.X_CRON_SECRET;
@@ -80,6 +82,7 @@ export async function POST(req: NextRequest) {
      }
 
      const locale = req.headers.get('x-locale') || 'rs';
+     const t = await getServerI18n(locale);
 
      const now = new Date();
      const nowIso = now.toISOString();
@@ -160,13 +163,20 @@ export async function POST(req: NextRequest) {
                if (userIds.length === 0) continue;
 
                for (const offsetMin of dueOffsetsMin) {
-                    const actionToken = `calendar_event_reminder_${offsetMin}m_${ev.id}`;
+                    const actionToken =
+                         offsetMin === 60
+                              ? tokens.notifications.actions.notificationActionCalendarEventReminder60
+                              : tokens.notifications.actions.notificationActionCalendarEventReminder30;
+
+                    // unique key for this event+offset (used for dedupe)
+                    const url = `/dashboard/calendar?eventId=${encodeURIComponent(ev.id)}&reminder=${offsetMin}`;
 
                     // Dedupe: if reminder notification already exists for this user+event+offset, skip
                     const { data: existingRows, error: existingErr } = await supabase
                          .from(TABLES.NOTIFICATIONS)
                          .select('user_id')
                          .eq('action_token', actionToken)
+                         .eq('url', url)
                          .in('user_id', userIds);
                     if (existingErr) continue;
 
@@ -180,8 +190,10 @@ export async function POST(req: NextRequest) {
                          if (!uid) continue;
                          if (alreadyNotified.has(uid)) continue;
 
-                         const description = `Reminder: ${ev.title} starts in ${offsetMin} minutes.`;
-                         const url = '/dashboard/calendar/';
+                         const description = (tokens.notifications.reminders.calendarEventStartsIn, {
+                              title: ev.title,
+                              minutes: offsetMin,
+                         });
 
                          notifications.push(
                               createNotification({

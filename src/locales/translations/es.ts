@@ -180,8 +180,11 @@ export const es = {
   // Notification Actions
   [tokens.notifications.actions.notificationActionAnnouncementPublished]: 'Anuncio publicado',
   [tokens.notifications.actions.notificationActionCalendarEventPublished]: 'Evento de calendario publicado',
+  [tokens.notifications.actions.notificationActionCalendarEventReminder60]: 'El evento comienza en 60 minutos',
+  [tokens.notifications.actions.notificationActionCalendarEventReminder30]: 'El evento comienza en 30 minutos',
   [tokens.notifications.actions.notificationActionPollPublished]: 'Encuesta publicada',
   [tokens.notifications.actions.notificationActionIncidentCreated]: 'Incidente creado',
+  [tokens.notifications.reminders.calendarEventStartsIn]: 'Recordatorio: {{title}} comienza en {{minutes}} minutos.',
   // Email
   [tokens.email.pollPublishedTitle]: 'Se ha publicado una nueva encuesta',
   [tokens.email.pollPublishedSubtitleForBuilding]: 'para el edificio {{address}}',

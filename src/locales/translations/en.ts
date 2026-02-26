@@ -998,8 +998,11 @@ export const en = {
   // Notification Actions
   [tokens.notifications.actions.notificationActionAnnouncementPublished]: 'Announcement published',
   [tokens.notifications.actions.notificationActionCalendarEventPublished]: 'Calendar event published',
+  [tokens.notifications.actions.notificationActionCalendarEventReminder60]: 'Event starts in 60 minutes',
+  [tokens.notifications.actions.notificationActionCalendarEventReminder30]: 'Event starts in 30 minutes',
   [tokens.notifications.actions.notificationActionPollPublished]: 'Poll published',
   [tokens.notifications.actions.notificationActionIncidentCreated]: 'Incident created',
+  [tokens.notifications.reminders.calendarEventStartsIn]: 'Reminder: {{title}} starts in {{minutes}} minutes.',
   // Email
   [tokens.email.pollPublishedTitle]: 'New poll has been published',
   [tokens.email.pollPublishedSubtitleForBuilding]: 'for building {{address}}',

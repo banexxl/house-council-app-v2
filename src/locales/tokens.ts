@@ -1306,8 +1306,13 @@ export const tokens = {
     actions: {
       notificationActionAnnouncementPublished: 'notifications.actions.notificationActionAnnouncementPublished',
       notificationActionCalendarEventPublished: 'notifications.actions.notificationActionCalendarEventPublished',
+      notificationActionCalendarEventReminder60: 'notifications.actions.notificationActionCalendarEventReminder60',
+      notificationActionCalendarEventReminder30: 'notifications.actions.notificationActionCalendarEventReminder30',
       notificationActionPollPublished: 'notifications.actions.notificationActionPollPublished',
       notificationActionIncidentCreated: 'notifications.actions.notificationActionIncidentCreated',
+    },
+    reminders: {
+      calendarEventStartsIn: 'notifications.reminders.calendarEventStartsIn',
     },
     tabs: {
       all: 'notifications.tabs.all',
