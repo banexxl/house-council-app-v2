@@ -20,6 +20,8 @@ export async function getServerI18n(locale: string = 'rs'): Promise<TFunction> {
                fallbackLng: 'en',
                interpolation: { escapeValue: false },
                initImmediate: false,
+               keySeparator: false,
+               nsSeparator: false,
           });
           initialized = true;
      }
