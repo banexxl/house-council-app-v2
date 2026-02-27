@@ -185,15 +185,18 @@ export async function POST(req: NextRequest) {
                     const createdAt = new Date().toISOString();
                     const notifications: any[] = [];
 
-                    for (const t of tenantRows) {
-                         const uid = t.user_id;
+                    for (const tenant of tenantRows) {
+                         const uid = tenant.user_id;
                          if (!uid) continue;
                          if (alreadyNotified.has(uid)) continue;
 
-                         const description = (tokens.notifications.reminders.calendarEventStartsIn, {
-                              title: ev.title,
-                              minutes: offsetMin,
-                         });
+                         const description = t(
+                              tokens.notifications.reminders.calendarEventStartsIn,
+                              {
+                                   title: ev.title,
+                                   minutes: offsetMin,
+                              }
+                         );
 
                          notifications.push(
                               createNotification({
@@ -212,7 +215,7 @@ export async function POST(req: NextRequest) {
                               })
                          );
 
-                         if (t.email) {
+                         if (tenant.email) {
                               emailsAttempted += 1;
 
                               const startLocal = formatEventStartForEmail(ev.start_date_time, ev.timezone, toIntlLocale(locale));
@@ -226,7 +229,7 @@ export async function POST(req: NextRequest) {
                                    calendarPath: url,
                               });
 
-                              const res = await sendViaEmail(t.email, subject, injectedHtml);
+                              const res = await sendViaEmail(tenant.email, subject, injectedHtml);
                               if (res.ok) emailsSent += 1;
                          }
                     }
