@@ -26,7 +26,7 @@ export const NOTIFICATION_TYPES_MAP: NotificationTypeMap[] = [
      { value: 'system', labelToken: tokens.notifications.tabs.system },
      { value: 'message', labelToken: tokens.notifications.tabs.message },
      { value: 'reminder', labelToken: tokens.notifications.tabs.reminder },
-     { value: 'alert', labelToken: tokens.notifications.tabs.alert },
+     // { value: 'alert', labelToken: tokens.notifications.tabs.alert },
      { value: 'announcement', labelToken: tokens.notifications.tabs.announcement },
      { value: 'social', labelToken: tokens.notifications.tabs.social },
      { value: 'poll', labelToken: tokens.notifications.tabs.poll },

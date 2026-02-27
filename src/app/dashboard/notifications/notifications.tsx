@@ -17,7 +17,7 @@ interface NotificationsClientProps {
 
 export default function NotificationsClient({ initialNotifications }: NotificationsClientProps) {
 
-     type Row = Notification & { id: string; created_at: string };
+     type Row = Notification & { id: string };
      const [type, setType] = useState<NotificationType>('all');
 
      // Normalize incoming notifications so that `type` is always a NotificationTypeMap object
@@ -47,7 +47,7 @@ export default function NotificationsClient({ initialNotifications }: Notificati
                { key: 'is_read', label: t(tokens.notifications.col.read) }
           ];
           if (type === 'reminder') {
-               base.splice(1, 0, { key: 'scheduled_for' as any, label: t(tokens.notifications.col.scheduledFor) });
+               base//.splice(1, 0, { key: 'scheduled_for' as any, label: t(tokens.notifications.col.scheduledFor) });
           }
           if (type === 'message') {
                // Cast to include potential sender/receiver fields
@@ -59,10 +59,10 @@ export default function NotificationsClient({ initialNotifications }: Notificati
           }
 
           if (type === 'announcement') {
-               base.splice(1, 0, { key: 'announcement_id' as any, label: t(tokens.notifications.col.created) });
+               base//.splice(1, 0, { key: 'announcement_id' as any, label: t(tokens.notifications.col.created) });
           }
           if (type === 'other') {
-               base.splice(1, 0, { key: 'other_id' as any, label: t(tokens.notifications.col.created) });
+               base//.splice(1, 0, { key: 'other_id' as any, label: t(tokens.notifications.col.created) });
           }
           if (type !== 'all') {
                base.unshift({ key: 'type', label: t(tokens.notifications.col.type), render: (_, row) => t(row.type.labelToken) });
