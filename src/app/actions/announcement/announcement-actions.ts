@@ -789,15 +789,21 @@ export async function publishAnnouncement(id: string, typeInfo?: NotificationTyp
                                    </p>
                               `;
 
-                              for (const tenant of tenants) {
-                                   const email = (tenant as any).email
-                                        || (tenant as any).user?.email
-                                        || (tenant as any).apartment?.tenant_email
-                                        || (tenant as any).apartment?.building?.client?.email;
-                                   if (!email) continue;
+                              const emails = Array.from(new Set(
+                                   (tenants || [])
+                                        .map((tenant: any) =>
+                                             tenant?.email
+                                             || tenant?.user?.email
+                                             || tenant?.apartment?.tenant_email
+                                             || tenant?.apartment?.building?.client?.email
+                                        )
+                                        .filter(Boolean)
+                                        .map((e: string) => e.trim().toLowerCase())
+                              ));
 
+                              if (emails.length) {
                                    // eslint-disable-next-line no-void
-                                   void sendViaEmail(email, subject, injectedHtml);
+                                   void sendViaEmail(emails, subject, injectedHtml);
                               }
                          }
                     }

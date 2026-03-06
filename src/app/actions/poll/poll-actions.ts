@@ -352,10 +352,8 @@ export async function updatePollStatus(id: string, status: PollStatus, locale: s
                                 fullAddress,
                             });
 
-                            for (const email of emails) {
-                                // eslint-disable-next-line no-void
-                                void sendViaEmail(email, subject, injectedHtml);
-                            }
+                            // eslint-disable-next-line no-void
+                            void sendViaEmail(emails, subject, injectedHtml);
                         }
                     }
                 }

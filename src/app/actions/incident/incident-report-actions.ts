@@ -112,11 +112,9 @@ export const createIncidentReport = async (
     // 1) Resolve all notification emails for this incident's building (client, members, tenants)
     if (incidentBuildingId) {
       const emails = await getNotificationEmailsForBuildings(supabase, [incidentBuildingId]);
-      for (const email of emails) {
-        const { ok, error } = await sendViaEmail(email, subject, injectedHtml);
-        if (!ok) {
-          log(`Error sending incident created email to ${email} for incident ID ${(data as any)?.id}: ${error}`);
-        }
+      const { ok, error } = await sendViaEmail(emails, subject, injectedHtml);
+      if (!ok) {
+        log(`Error sending incident created email to recipients for incident ID ${(data as any)?.id}: ${error}`);
       }
     }
 

@@ -237,11 +237,9 @@ export const createCalendarEvent = async (input: CalendarEvent, locale: string =
                               fullAddress,
                          });
 
-                         for (const email of emails) {
-                              const { ok, error } = await sendViaEmail(email, subject, injectedHtml);
-                              if (!ok) {
-                                   log(`Error sending calendar event email to ${email} for event ID ${mapped.id}: ${error}`);
-                              }
+                         const { ok, error } = await sendViaEmail(emails, subject, injectedHtml);
+                         if (!ok) {
+                              log(`Error sending calendar event email to recipients for event ID ${mapped.id}: ${error}`);
                          }
                     }
                } catch (e: any) {

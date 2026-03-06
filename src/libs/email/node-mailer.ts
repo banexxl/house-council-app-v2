@@ -133,18 +133,40 @@ export const sendNotificationEmail = async (
   to: string[],
   subject: string,
   html: string,
-  textFallback?: string
+  textFallback?: string,
+  options?: {
+    mode?: 'to' | 'bcc';
+  }
 ): Promise<{ ok: boolean; error?: string }> => {
   const htmlContent = buildNotificationGenericHtml(html, subject);
 
+  const recipients = (to || []).filter(Boolean);
+  const mode = options?.mode || 'to';
+
+  if (recipients.length === 0) {
+    return { ok: false, error: 'no recipients' };
+  }
+
   try {
-    const info = await transporter.sendMail({
-      from: process.env.EMAIL_SMTP_USER!,
-      to,
-      subject,
-      html: htmlContent,
-      text: textFallback || htmlToPlainText(html),
-    });
+    const from = process.env.EMAIL_SMTP_USER!;
+    const info = await transporter.sendMail(
+      mode === 'bcc' && recipients.length > 1
+        ? {
+          from,
+          to: from,
+          bcc: recipients,
+          subject,
+          html: htmlContent,
+          text: textFallback || htmlToPlainText(html),
+        }
+        : {
+          from,
+          to: recipients,
+          subject,
+          html: htmlContent,
+          text: textFallback || htmlToPlainText(html),
+        }
+    );
 
     if ((info as any)?.response) return { ok: true };
     if ((info as any)?.rejected?.length) return { ok: false, error: 'rejected' };

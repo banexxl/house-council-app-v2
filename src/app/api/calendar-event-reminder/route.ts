@@ -184,6 +184,7 @@ export async function POST(req: NextRequest) {
 
                     const createdAt = new Date().toISOString();
                     const notifications: any[] = [];
+                    const recipientEmails = new Set<string>();
 
                     for (const tenant of tenantRows) {
                          const uid = tenant.user_id;
@@ -216,22 +217,28 @@ export async function POST(req: NextRequest) {
                          );
 
                          if (tenant.email) {
-                              emailsAttempted += 1;
-
-                              const startLocal = formatEventStartForEmail(ev.start_date_time, ev.timezone, toIntlLocale(locale));
-
-                              const { subject, injectedHtml } = await buildCalendarEventReminderEmail({
-                                   locale,
-                                   title: ev.title,
-                                   description: ev.description,
-                                   startFormatted: startLocal,
-                                   minutesRemaining: offsetMin,
-                                   calendarPath: url,
-                              });
-
-                              const res = await sendViaEmail(tenant.email, subject, injectedHtml);
-                              if (res.ok) emailsSent += 1;
+                              const normalized = tenant.email.trim().toLowerCase();
+                              if (normalized) recipientEmails.add(normalized);
                          }
+                    }
+
+                    if (recipientEmails.size > 0) {
+                         const recipients = Array.from(recipientEmails);
+                         emailsAttempted += recipients.length;
+
+                         const startLocal = formatEventStartForEmail(ev.start_date_time, ev.timezone, toIntlLocale(locale));
+
+                         const { subject, injectedHtml } = await buildCalendarEventReminderEmail({
+                              locale,
+                              title: ev.title,
+                              description: ev.description,
+                              startFormatted: startLocal,
+                              minutesRemaining: offsetMin,
+                              calendarPath: url,
+                         });
+
+                         const res = await sendViaEmail(recipients, subject, injectedHtml);
+                         if (res.ok) emailsSent += recipients.length;
                     }
 
                     if (notifications.length > 0) {
