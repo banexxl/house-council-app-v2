@@ -29,6 +29,7 @@ const PUBLIC_ENDPOINTS = [
      '/api/ip',
      '/api/storage/sign-file',
      '/api/calendar-event-reminder',
+     '/api/notifications/worker'
 ] as const
 
 function getBearerToken(req: NextRequest): string | null {
