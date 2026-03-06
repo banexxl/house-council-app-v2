@@ -6,7 +6,7 @@ const expo = new Expo()
 const MAX_RETRIES = 5
 
 export async function POST(req: NextRequest) {
-
+     console.log('Processing notification queue with', req.headers)
      const authHeader = req.headers.get("x-cron-secret")
 
      if (authHeader !== process.env.X_CRON_SECRET) {
