@@ -76,7 +76,8 @@ export async function POST(req: NextRequest) {
                     sound: 'default',
                     title: notification.title,
                     body: notification.body,
-                    data: notification.data
+                    data: notification.data,
+                    channelId: 'default'
                })
 
                notificationMap[token] = notification.id

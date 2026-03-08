@@ -20,7 +20,7 @@ async function handlePushReceipts(
 
      for (const chunk of receiptIdChunks) {
           const receipts = await expo.getPushNotificationReceiptsAsync(chunk)
-
+          console.log('Expo receipts', receipts)
           for (const receiptId in receipts) {
                const receipt = receipts[receiptId]
 
