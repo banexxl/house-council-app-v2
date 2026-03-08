@@ -243,7 +243,7 @@ export async function POST(req: NextRequest) {
 
                     if (notifications.length > 0) {
                          notificationsPrepared += notifications.length;
-                         const emitted = await emitNotifications(notifications as any, supabase as any);
+                         const emitted = await emitNotifications(notifications);
                          if (emitted.success) notificationsInserted += emitted.inserted || 0;
                     }
                }
