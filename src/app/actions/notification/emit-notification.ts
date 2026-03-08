@@ -10,7 +10,7 @@ export async function emitNotifications(
      rows: Notification[],
 ): Promise<EmitResult> {
 
-     log(`Emitting ${rows.length} notifications`, 'warn');
+     console.log(`Emitting ${rows.length} notifications`);
      const time = Date.now();
 
      if (!rows || rows.length === 0) return { success: true, inserted: 0 };
@@ -36,7 +36,7 @@ export async function emitNotifications(
                     .insert(dbSlice as any);
 
                if (error) {
-                    log(`Error inserting notifications: ${error.message}`, 'error');
+                    console.log(`Error inserting notifications: ${error.message}`);
 
                     await logServerAction({
                          user_id: null,
@@ -76,6 +76,15 @@ export async function emitNotifications(
                     .insert(pushRows);
                if (queueError) {
                     console.log(`Error inserting push queue: ${queueError.message}`);
+                    await logServerAction({
+                         user_id: null,
+                         action: 'emitNotificationsInsert+Queue',
+                         duration_ms: Date.now() - time,
+                         error: queueError.message,
+                         payload: { inserted },
+                         status: 'fail',
+                         type: 'db'
+                    });
                }
           }
 
