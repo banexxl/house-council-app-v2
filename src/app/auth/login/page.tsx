@@ -1,7 +1,7 @@
 // src/app/auth/login/page.tsx
 import { Suspense } from 'react';
-import { DefaultPageSkeleton } from 'src/sections/dashboard/skeletons/default-page-skeleton';
 import LoginForm from './login-form';
+import { Box, CircularProgress } from '@mui/material';
 
 type LoginPageProps = {
   searchParams: Promise<{
@@ -20,7 +20,20 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       : '/dashboard';
 
   return (
-    <Suspense fallback={<DefaultPageSkeleton />}>
+    <Suspense
+      fallback={
+        <Box
+          sx={{
+            minHeight: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <CircularProgress color='primary' />
+        </Box>
+      }
+    >
       <LoginForm safeRedirect={safeRedirect} />
     </Suspense>
   );
