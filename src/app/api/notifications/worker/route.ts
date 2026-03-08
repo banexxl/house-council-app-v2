@@ -88,6 +88,7 @@ export async function POST(req: NextRequest) {
      for (const chunk of chunks) {
 
           const tickets = await expo.sendPushNotificationsAsync(chunk)
+          console.log('Expo async pushed notifications', tickets);
 
           for (let i = 0; i < tickets.length; i++) {
 
@@ -97,14 +98,16 @@ export async function POST(req: NextRequest) {
 
                if (ticket.status === 'ok') {
 
-                    await supabase
+                    const updateNotificationQueueResponse = await supabase
                          .from('tblNotificationQueue')
                          .update({
                               status: 'sent',
                               sent_at: new Date()
                          })
                          .eq('id', notificationId)
-
+                    if (updateNotificationQueueResponse.error) {
+                         console.error(`Error updating notification queue for id ${notificationId}: `, updateNotificationQueueResponse.error)
+                    }
                } else {
 
                     const { data } = await supabase
@@ -115,13 +118,16 @@ export async function POST(req: NextRequest) {
 
                     const attempts = (data?.attempts ?? 0) + 1
 
-                    await supabase
+                    const updateNotificationQueueResponse = await supabase
                          .from('tblNotificationQueue')
                          .update({
                               status: attempts >= MAX_RETRIES ? 'failed' : 'pending',
                               attempts
                          })
                          .eq('id', notificationId)
+                    if (updateNotificationQueueResponse.error) {
+                         console.error(`Error updating notification queue for id ${notificationId}: `, updateNotificationQueueResponse.error)
+                    }
                }
           }
      }
