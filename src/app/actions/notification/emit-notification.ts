@@ -75,9 +75,8 @@ export async function emitNotifications(
                const { error: queueError } = await supabase
                     .from('tblNotificationQueue')
                     .insert(pushRows);
-
                if (queueError) {
-                    log(`Error inserting push queue: ${queueError.message}`, 'error');
+                    console.log(`Error inserting push queue: ${queueError.message}`);
                }
           }
 
