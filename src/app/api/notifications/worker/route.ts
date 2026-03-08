@@ -14,12 +14,15 @@ export async function POST(req: NextRequest) {
 
      const supabase = await useServerSideSupabaseAnonClient()
 
-     const { data: notifications } = await supabase
+     const { data: notifications, error } = await supabase
           .from('tblNotificationQueue')
           .select('*')
           .eq('status', 'pending')
           .limit(50)
      console.log('Notifications fetched: ', notifications);
+     if (error) {
+          console.error('Error fetching notifications: ', error)
+     }
 
      if (!notifications?.length) {
           return NextResponse.json({ processed: 0 })
