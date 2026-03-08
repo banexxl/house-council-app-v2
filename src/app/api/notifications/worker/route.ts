@@ -19,6 +19,7 @@ export async function POST(req: NextRequest) {
           .select('*')
           .eq('status', 'pending')
           .limit(50)
+     console.log('Notifications fetched: ', notifications);
 
      if (!notifications?.length) {
           return NextResponse.json({ processed: 0 })
