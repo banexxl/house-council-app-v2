@@ -8,7 +8,6 @@ type EmitResult = { success: boolean; error?: string; inserted?: number };
 
 export async function emitNotifications(
      rows: Notification[],
-     supabaseOverride?: { from: (table: string) => any }
 ): Promise<EmitResult> {
 
      log(`Emitting ${rows.length} notifications`, 'warn');
@@ -18,7 +17,7 @@ export async function emitNotifications(
 
      try {
 
-          const supabase = supabaseOverride ?? (await useServerSideSupabaseAnonClient());
+          const supabase = await useServerSideSupabaseAnonClient()
 
           const BATCH = 500;
           let inserted = 0;
