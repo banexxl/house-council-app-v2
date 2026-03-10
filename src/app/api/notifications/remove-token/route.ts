@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import {
+     useServerSideSupabaseAnonClient,
+     useServerSideSupabaseServiceRoleAdminClient,
+} from "src/libs/supabase/sb-server";
 
 export async function POST(req: NextRequest) {
      try {
-          const { token } = await req.json();
+          const body = await req.json().catch(() => ({} as any));
+          const token = typeof body?.token === "string" ? body.token.trim() : "";
 
           if (!token) {
                return NextResponse.json(
@@ -12,19 +16,28 @@ export async function POST(req: NextRequest) {
                );
           }
 
-          const supabase = createClient(
-               process.env.NEXT_PUBLIC_SUPABASE_URL!,
-               process.env.SB_SERVICE_KEY!
-          );
+          // Authenticate the caller (cookie session or Authorization: Bearer <jwt>)
+          const authSb = await useServerSideSupabaseAnonClient();
+          const authHeader = req.headers.get("authorization");
+          const jwt = authHeader?.startsWith("Bearer ") ? authHeader.slice("Bearer ".length) : undefined;
+          const {
+               data: { user },
+               error: userErr,
+          } = jwt ? await authSb.auth.getUser(jwt) : await authSb.auth.getUser();
 
-          const { data: { user } } = await supabase.auth.getUser();
+          if (userErr || !user) {
+               return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+          }
+
+          // Use service role for the delete after verifying the user's identity
+          const supabase = await useServerSideSupabaseServiceRoleAdminClient();
 
 
           const { error } = await supabase
                .from("tblUserPushTokens")
                .delete()
-               .eq("user_id", user?.id)
-               .eq("push_token", token)
+               .eq("user_id", user.id)
+               .eq("push_token", token);
 
           if (error) {
                console.error("Remove push token error:", error);
