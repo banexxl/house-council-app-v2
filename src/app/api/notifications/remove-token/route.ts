@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
 
           const supabase = createClient(
                process.env.NEXT_PUBLIC_SUPABASE_URL!,
-               process.env.SUPABASE_SERVICE_ROLE_KEY!
+               process.env.SB_SERVICE_KEY!
           );
 
           const { data: { user } } = await supabase.auth.getUser();
