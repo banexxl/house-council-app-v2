@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
           if (error) {
                console.error("Remove push token error:", error);
                return NextResponse.json(
-                    { error: "Failed to remove token" },
+                    { error: "Failed to remove token", data: error.message },
                     { status: 500 }
                );
           }
