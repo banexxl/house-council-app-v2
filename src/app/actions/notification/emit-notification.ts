@@ -1,7 +1,6 @@
 import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { TABLES } from 'src/libs/supabase/tables';
-import log from 'src/utils/logger';
 import { Notification } from 'src/types/notification';
 
 type EmitResult = { success: boolean; error?: string; inserted?: number };
