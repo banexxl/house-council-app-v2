@@ -20,6 +20,7 @@ export async function POST(req: NextRequest) {
                     user_id: userId,
                     push_token: token
                })
+          console.log('error', error);
 
           if (error) {
                console.error(error)
