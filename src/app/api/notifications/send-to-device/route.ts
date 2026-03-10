@@ -19,6 +19,7 @@ export async function POST(req: NextRequest) {
                .from('tblUserPushTokens')
                .select('push_token')
                .eq('user_id', userId)
+          console.log('tokens', tokens, 'error', error);
 
           if (error) {
                return NextResponse.json(
@@ -28,6 +29,7 @@ export async function POST(req: NextRequest) {
           }
 
           const pushTokens = tokens?.map((t) => t.push_token) ?? []
+          console.log('pushTokens', pushTokens);
 
           if (pushTokens.length === 0) {
                return NextResponse.json({
@@ -42,6 +44,7 @@ export async function POST(req: NextRequest) {
                body,
                data
           )
+          console.log('tickets', tickets);
 
           return NextResponse.json({
                success: true,
