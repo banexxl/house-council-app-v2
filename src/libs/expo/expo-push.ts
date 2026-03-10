@@ -63,7 +63,7 @@ export async function sendPushNotification(
           }))
 
      const chunks = expo.chunkPushNotifications(messages)
-
+     console.log(`Sending ${messages.length} push notifications in ${chunks.length} chunks`)
      const tickets = []
 
      for (const chunk of chunks) {
