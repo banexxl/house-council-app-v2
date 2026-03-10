@@ -6,6 +6,8 @@ export async function POST(req: NextRequest) {
      try {
           const { userId, title, body, data } = await req.json()
 
+          console.log('POST /api/notifications/send-to-device request:', { userId, title, body, data })
+
           if (!userId) {
                return NextResponse.json(
                     { error: 'Missing userId' },
