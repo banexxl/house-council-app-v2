@@ -1,7 +1,42 @@
 import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
 import { TABLES } from 'src/libs/supabase/tables';
-import { Notification } from 'src/types/notification';
+import { Notification, NotificationType } from 'src/types/notification';
+
+const DEFAULT_NOTIFICATION_TITLES: Record<NotificationType, string> = {
+     all: 'All',
+     system: 'System',
+     message: 'Message',
+     reminder: 'Reminder',
+     alert: 'Alert',
+     calendar: 'Calendar',
+     announcement: 'Announcement',
+     social: 'Social',
+     poll: 'Poll',
+     incident: 'Incident',
+     other: 'Other',
+};
+
+function resolveTypeValue(notification: Notification): NotificationType {
+     const rawType = (notification as any)?.type;
+     if (typeof rawType === 'string') {
+          return rawType as NotificationType;
+     }
+     if (rawType && typeof rawType === 'object' && typeof rawType.value === 'string') {
+          return rawType.value as NotificationType;
+     }
+     return 'other';
+}
+
+function resolveQueueTitle(notification: Notification): string {
+     const explicitTitle = (notification as any)?.title;
+     if (typeof explicitTitle === 'string' && explicitTitle.trim().length > 0) {
+          return explicitTitle.trim();
+     }
+
+     const typeValue = resolveTypeValue(notification);
+     return DEFAULT_NOTIFICATION_TITLES[typeValue] ?? DEFAULT_NOTIFICATION_TITLES.other;
+}
 
 type EmitResult = { success: boolean; error?: string; inserted?: number };
 
@@ -27,7 +62,7 @@ export async function emitNotifications(
 
                const dbSlice = slice.map((r) => ({
                     ...r,
-                    type: r.type.value
+                    type: resolveTypeValue(r)
                }));
 
                const { error } = await supabase
@@ -60,7 +95,7 @@ export async function emitNotifications(
 
                const pushRows = slice.map((n) => ({
                     user_id: n.user_id,
-                    title: n.type.value,
+                    title: resolveQueueTitle(n),
                     body: n.description,
                     data: {
                          action: n.action_token,

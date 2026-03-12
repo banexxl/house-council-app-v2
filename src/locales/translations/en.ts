@@ -977,6 +977,7 @@ export const en = {
   [tokens.notifications.tabs.system]: 'System',
   [tokens.notifications.tabs.message]: 'Messages',
   [tokens.notifications.tabs.reminder]: 'Reminders',
+  [tokens.notifications.tabs.calendar]: 'Calendar',
   [tokens.notifications.tabs.alert]: 'Alerts',
   [tokens.notifications.tabs.announcement]: 'Announcement',
   [tokens.notifications.tabs.social]: 'Social',

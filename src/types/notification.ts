@@ -25,8 +25,9 @@ export const NOTIFICATION_TYPES_MAP: NotificationTypeMap[] = [
      { value: 'all', labelToken: tokens.notifications.tabs.all },
      { value: 'system', labelToken: tokens.notifications.tabs.system },
      { value: 'message', labelToken: tokens.notifications.tabs.message },
+     { value: 'calendar', labelToken: tokens.notifications.tabs.calendar },
      { value: 'reminder', labelToken: tokens.notifications.tabs.reminder },
-     // { value: 'alert', labelToken: tokens.notifications.tabs.alert },
+     { value: 'alert', labelToken: tokens.notifications.tabs.alert },
      { value: 'announcement', labelToken: tokens.notifications.tabs.announcement },
      { value: 'social', labelToken: tokens.notifications.tabs.social },
      { value: 'poll', labelToken: tokens.notifications.tabs.poll },
@@ -91,7 +92,16 @@ export interface IncidentNotification extends BaseNotification {
      description: string;
 }
 
-export type Notification = BaseNotification & (MessageNotification | AlertNotification | SocialNotification | PollPublishNotification | IncidentNotification);
+export type Notification = BaseNotification &
+     (
+          MessageNotification |
+          AlertNotification |
+          SocialNotification |
+          PollPublishNotification |
+          IncidentNotification |
+          CalendarNotification |
+          AnnouncementNotification
+     );
 
 // Contact shape you already retrieve:
 export type TenantContact = {

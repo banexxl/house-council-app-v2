@@ -159,6 +159,7 @@ export const es = {
   [tokens.notifications.tabs.system]: 'Sistema',
   [tokens.notifications.tabs.message]: 'Mensajes',
   [tokens.notifications.tabs.reminder]: 'Recordatorios',
+  [tokens.notifications.tabs.calendar]: 'Calendario',
   [tokens.notifications.tabs.alert]: 'Alertas',
   [tokens.notifications.tabs.announcement]: 'Anuncios',
   [tokens.notifications.tabs.social]: 'Social',

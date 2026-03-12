@@ -1319,6 +1319,7 @@ export const tokens = {
       system: 'notifications.tabs.system',
       message: 'notifications.tabs.message',
       reminder: 'notifications.tabs.reminder',
+      calendar: 'notifications.tabs.calendar',
       alert: 'notifications.tabs.alert',
       announcement: 'notifications.tabs.announcement',
       social: 'notifications.tabs.social',

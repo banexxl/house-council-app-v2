@@ -213,6 +213,7 @@ export const rs = {
   [tokens.notifications.tabs.system]: 'Sistem',
   [tokens.notifications.tabs.message]: 'Poruke',
   [tokens.notifications.tabs.reminder]: 'Podsetnici',
+  [tokens.notifications.tabs.calendar]: 'Kalendar',
   [tokens.notifications.tabs.alert]: 'Upozorenja',
   [tokens.notifications.tabs.announcement]: 'Obaveštenja',
   [tokens.notifications.tabs.social]: 'Društvena mreža',

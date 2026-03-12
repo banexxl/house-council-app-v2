@@ -207,7 +207,7 @@ export const createCalendarEvent = async (input: CalendarEvent, locale: string =
                               url: `/dashboard/calendar/`,
                          }) as any);
                          // Send notifications
-                         if (rows.length) {
+                         if (rows.length > 0) {
                               const emitted = await emitNotifications(rows);
                               if (!emitted.success) {
                                    await logServerAction({ user_id: null, action: 'createCalendarEventNotifications', duration_ms: 0, error: emitted.error || 'emitFailed', payload: { eventId: mapped.id, count: rows.length }, status: 'fail', type: 'db' });
