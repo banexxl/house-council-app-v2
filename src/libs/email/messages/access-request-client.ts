@@ -43,14 +43,14 @@ export const buildAccessRequestClientEmail = async (
 
   const injectedHtml = `
       <p>${intro}</p>
-      <table style="width:100%; border-collapse:collapse; margin-top:12px;">
+      <table style="border-collapse:collapse; margin:12px auto 0;">
         <tbody>
           ${rows
       .map(
         (r) => `
               <tr>
-                <td style="padding:6px 8px; font-weight:600; width:40%; vertical-align:top;">${r.label}:</td>
-                <td style="padding:6px 8px; text-align:left; width:60%;">${r.value}</td>
+                <td style="padding:4px 6px; font-weight:600; text-align:right; vertical-align:top;">${r.label}:</td>
+                <td style="padding:4px 6px; text-align:left;">${r.value}</td>
               </tr>`
       )
       .join('')}
