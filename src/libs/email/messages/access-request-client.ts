@@ -49,8 +49,8 @@ export const buildAccessRequestClientEmail = async (
       .map(
         (r) => `
               <tr>
-                <td style="padding:6px 4px; font-weight:600;">${r.label}:</td>
-                <td style="padding:6px 4px; text-align:right;">${r.value}</td>
+                <td style="padding:6px 8px; font-weight:600; width:40%; vertical-align:top;">${r.label}:</td>
+                <td style="padding:6px 8px; text-align:left; width:60%;">${r.value}</td>
               </tr>`
       )
       .join('')}
