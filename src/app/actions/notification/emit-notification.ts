@@ -28,6 +28,36 @@ function resolveTypeValue(notification: Notification): NotificationType {
      return 'other';
 }
 
+function resolveMobileScreen(notification: Notification): string {
+     const type = resolveTypeValue(notification);
+
+     switch (type) {
+          case 'announcement':
+               return 'announcements';
+
+          case 'message':
+               return 'chat';
+
+          case 'calendar':
+               return 'calendar';
+
+          case 'poll':
+               return 'polls';
+
+          case 'incident':
+               return 'issues';
+
+          case 'social':
+               return 'chat'; // or feed if you have one
+
+          case 'alert':
+          case 'system':
+          case 'reminder':
+          default:
+               return 'notifications'; // fallback screen
+     }
+}
+
 function resolveQueueTitle(notification: Notification): string {
      const explicitTitle = (notification as any)?.title;
      if (typeof explicitTitle === 'string' && explicitTitle.trim().length > 0) {
@@ -46,6 +76,7 @@ export async function emitNotifications(
 
      console.log(`Emitting ${rows.length} notifications`);
      const time = Date.now();
+
 
      if (!rows || rows.length === 0) return { success: true, inserted: 0 };
 
@@ -100,7 +131,7 @@ export async function emitNotifications(
                     data: {
                          action: n.action_token,
                          url: n.url,
-                         // notification_id: n.id
+                         mobileUrl: n.mobile_screen ?? resolveMobileScreen(n),
                     },
                     status: 'pending'
                }));
