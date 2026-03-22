@@ -408,7 +408,7 @@ export const IncidentCreate: FC<IncidentCreateProps> = ({
                       onBlur={formik.handleBlur}
                       disabled={!availableApartments.length}
                     >
-                      <MenuItem value="">None</MenuItem>
+                      <MenuItem value="">{t('notifications.none')}</MenuItem>
                       {availableApartments.map((apt) => (
                         <MenuItem key={apt.id} value={apt.id}>
                           {apt.apartment_number || apt.id}
@@ -435,7 +435,7 @@ export const IncidentCreate: FC<IncidentCreateProps> = ({
                       onChange={formik.handleChange}
                       onBlur={formik.handleBlur}
                     >
-                      <MenuItem value="">Unassigned</MenuItem>
+                      <MenuItem value="">{t('incident.formUnassigned')}</MenuItem>
                       {availableAssignees.map((option) => (
                         <MenuItem key={option.id} value={option.id}>
                           {option.label}
