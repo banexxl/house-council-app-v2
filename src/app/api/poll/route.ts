@@ -25,6 +25,6 @@ export async function POST(req: NextRequest) {
           await logServerAction({ action: 'activateAllScheduledPolls', duration_ms: 0, error: result.error || 'unknown error', payload: {}, status: 'fail', type: 'cron', user_id: null });
           return NextResponse.json({ success: false, error: result.error }, { status });
      }
-     await logServerAction({ action: 'activateAllScheduledPolls', duration_ms: 0, error: '', payload: { activated_count: result.data?.length || 0 }, status: 'success', type: 'cron', user_id: null });
+     // await logServerAction({ action: 'activateAllScheduledPolls', duration_ms: 0, error: '', payload: { activated_count: result.data?.length || 0 }, status: 'success', type: 'cron', user_id: null });
      return NextResponse.json({ success: true, polls: result.data }, { status: 200 });
 }

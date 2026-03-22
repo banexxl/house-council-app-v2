@@ -86,15 +86,15 @@ export async function POST(req: NextRequest) {
                if (!res.success) results.push({ id, success: false, error: res.error }); else results.push({ id, success: true });
           }
 
-          await logServerAction({
-               user_id: null,
-               action: 'cronPublishScheduledRun',
-               duration_ms: Date.now() - started,
-               error: '',
-               payload: { checked: drafts.length, published: results.filter(r => r.success).length },
-               status: 'success',
-               type: 'db'
-          });
+          // await logServerAction({
+          //      user_id: null,
+          //      action: 'cronPublishScheduledRun',
+          //      duration_ms: Date.now() - started,
+          //      error: '',
+          //      payload: { checked: drafts.length, published: results.filter(r => r.success).length },
+          //      status: 'success',
+          //      type: 'db'
+          // });
           revalidatePath('/dashboard/announcements');
           return NextResponse.json({
                success: true,

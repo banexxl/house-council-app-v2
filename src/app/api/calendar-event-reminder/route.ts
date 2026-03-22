@@ -249,26 +249,26 @@ export async function POST(req: NextRequest) {
                }
           }
 
-          await logServerAction({
-               user_id: null,
-               action: 'cronCalendarEventReminder',
-               duration_ms: Date.now() - t0,
-               error: '',
-               payload: {
-                    nowIso,
-                    windowMs: WINDOW_MS,
-                    range: { minIso, maxIso },
-                    eventsFetched: events.length,
-                    matchedEvents,
-                    tenantsConsidered,
-                    notificationsPrepared,
-                    notificationsInserted,
-                    emailsAttempted,
-                    emailsSent,
-               },
-               status: 'success',
-               type: 'db',
-          });
+          // await logServerAction({
+          //      user_id: null,
+          //      action: 'cronCalendarEventReminder',
+          //      duration_ms: Date.now() - t0,
+          //      error: '',
+          //      payload: {
+          //           nowIso,
+          //           windowMs: WINDOW_MS,
+          //           range: { minIso, maxIso },
+          //           eventsFetched: events.length,
+          //           matchedEvents,
+          //           tenantsConsidered,
+          //           notificationsPrepared,
+          //           notificationsInserted,
+          //           emailsAttempted,
+          //           emailsSent,
+          //      },
+          //      status: 'success',
+          //      type: 'db',
+          // });
 
           return NextResponse.json({
                success: true,
