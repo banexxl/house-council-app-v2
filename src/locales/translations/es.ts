@@ -1535,6 +1535,7 @@ export const es = {
   [tokens.incident.categoryMaintenance]: 'Mantenimiento',
   [tokens.incident.categoryLandscaping]: 'Jardinería',
   [tokens.incident.formUnassigned]: 'No asignado',
+  [tokens.incident.formNone]: 'Ninguno',
   [tokens.incident.formTitle]: 'Título',
   [tokens.incident.formDescription]: 'Descripción',
   [tokens.incident.formBuilding]: 'Edificio',

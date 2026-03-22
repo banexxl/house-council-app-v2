@@ -1499,6 +1499,7 @@ export const rs = {
   [tokens.incident.categoryMaintenance]: 'Održavanje',
   [tokens.incident.categoryLandscaping]: 'Uređenje',
   [tokens.incident.formUnassigned]: 'Ne dodeljeno',
+  [tokens.incident.formNone]: 'Ništa',
   [tokens.incident.formTitle]: 'Naslov',
   [tokens.incident.formDescription]: 'Opis',
   [tokens.incident.formBuilding]: 'Zgrada',

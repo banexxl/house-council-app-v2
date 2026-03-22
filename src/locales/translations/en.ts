@@ -1576,6 +1576,7 @@ export const en = {
   [tokens.incident.categoryMaintenance]: 'Maintenance',
   [tokens.incident.categoryLandscaping]: 'Landscaping',
   [tokens.incident.formUnassigned]: 'Unassigned',
+  [tokens.incident.formNone]: 'None',
   [tokens.incident.formTitle]: 'Title',
   [tokens.incident.formDescription]: 'Description',
   [tokens.incident.formBuilding]: 'Building',

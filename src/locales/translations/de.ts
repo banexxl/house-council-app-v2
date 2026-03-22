@@ -1541,6 +1541,7 @@ export const de = {
   [tokens.incident.categoryMaintenance]: 'Wartung',
   [tokens.incident.categoryLandscaping]: 'Landschaftsgestaltung',
   [tokens.incident.formUnassigned]: 'Nicht zugewiesen',
+  [tokens.incident.formNone]: 'Zuständigen auswählen',
   [tokens.incident.formTitle]: 'Vorgang melden',
   [tokens.incident.formDescription]: 'Beschreibung',
   [tokens.incident.formBuilding]: 'Gebäude',

@@ -1680,6 +1680,7 @@ export const tokens = {
     categoryMaintenance: 'incident.category.maintenance',
     // Incident form
     formUnassigned: 'incident.form.unassigned',
+    formNone: 'incident.form.none',
     formTitle: 'incident.form.title',
     formDescription: 'incident.form.description',
     formBuilding: 'incident.form.building',
