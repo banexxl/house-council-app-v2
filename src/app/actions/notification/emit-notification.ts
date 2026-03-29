@@ -48,11 +48,12 @@ function resolveMobileScreen(notification: Notification): string {
                return 'issues';
 
           case 'social':
-               return 'chat'; // or feed if you have one
+               return 'social'; // or feed if you have one
 
           case 'alert':
           case 'system':
           case 'reminder':
+               return 'calendar'
           default:
                return 'notifications'; // fallback screen
      }

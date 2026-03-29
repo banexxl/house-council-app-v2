@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
           .select('*')
           .eq('status', 'pending')
           .limit(50)
-     console.log('Notifications fetched: ', notifications);
+
      if (error) {
           console.error('Error fetching notifications: ', error)
      }
@@ -28,12 +28,15 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({ processed: 0 })
      }
 
-     const ids = notifications.map(n => n.id)
+     const updates = notifications.map((n) => ({
+          id: n.id,
+          status: 'processing',
+          attempts: (n.attempts ?? 0) + 1,
+     }))
 
      await supabase
           .from('tblNotificationQueue')
-          .update({ status: 'processing' })
-          .in('id', ids)
+          .upsert(updates, { onConflict: 'id' })
 
      const userIds = [...new Set(notifications.map(n => n.user_id))]
 
@@ -110,6 +113,12 @@ export async function POST(req: NextRequest) {
                          console.error(`Error updating notification queue for id ${notificationId}: `, updateNotificationQueueResponse.error)
                     }
                } else {
+                    console.error('Expo push failed', {
+                         notificationId,
+                         token,
+                         error: ticket.details?.error,
+                         message: ticket.message,
+                    })
 
                     const { data } = await supabase
                          .from('tblNotificationQueue')
