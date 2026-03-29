@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
      })
 
      const messages: any[] = []
-     const notificationMap: Record<string, string> = {}
+     const messageMeta: { notificationId: string }[] = []
 
      for (const notification of notifications) {
 
@@ -83,8 +83,20 @@ export async function POST(req: NextRequest) {
                     channelId: 'default'
                })
 
-               notificationMap[token] = notification.id
+               messageMeta.push({
+                    notificationId: notification.id
+               })
           }
+
+          if (!userTokens.some(t => Expo.isExpoPushToken(t))) {
+               await supabase
+                    .from('tblNotificationQueue')
+                    .update({ status: 'failed' })
+                    .eq('id', notification.id)
+
+               continue
+          }
+
      }
 
      const chunks = expo.chunkPushNotifications(messages)
@@ -98,7 +110,7 @@ export async function POST(req: NextRequest) {
 
                const ticket = tickets[i]
                const token = chunk[i].to as string
-               const notificationId = notificationMap[token]
+               const notificationId = messageMeta[i].notificationId
 
                if (ticket.status === 'ok') {
 
