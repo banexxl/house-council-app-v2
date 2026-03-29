@@ -17,20 +17,19 @@ export const getNotificationEmailsForBuildings = async (
      buildingIds: string[]
 ): Promise<string[]> => {
      const emails = new Set<string>();
-     const uniqueBuildingIds = Array.from(new Set((buildingIds || []).filter(Boolean)));
-     if (!uniqueBuildingIds.length) return [];
 
      // 1) Client + client email(s) for these buildings
      const { data: buildingRows } = await supabase
           .from(TABLES.BUILDINGS!)
-          .select('id, customerId, client:customerId ( email )')
-          .in('id', uniqueBuildingIds);
+          .select('id, customerId, polarCustomer:customerId ( email )')
+          .in('id', buildingIds);
 
-     const clientIds = Array.from(
+     // Collect client emails + customerIds for next step
+     Array.from(
           new Set(
                (buildingRows || [])
                     .map((row: any) => {
-                         const clientEmail = row?.client?.email as string | undefined;
+                         const clientEmail = row?.polarCustomer?.email as string | undefined;
                          if (clientEmail) emails.add(clientEmail);
                          return row?.customerId as string | undefined;
                     })
@@ -42,7 +41,7 @@ export const getNotificationEmailsForBuildings = async (
      const { data: apartments } = await supabase
           .from(TABLES.APARTMENTS!)
           .select('id, building_id')
-          .in('building_id', uniqueBuildingIds);
+          .in('building_id', buildingIds);
 
      const apartmentIds = (apartments || []).map((a: any) => a.id).filter(Boolean);
      if (apartmentIds.length) {
