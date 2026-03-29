@@ -6,20 +6,25 @@ const expo = new Expo()
 const MAX_RETRIES = 5
 
 export async function POST(req: NextRequest) {
+     console.log('--- CRON START ---')
+
      const authHeader = req.headers.get('x-cron-secret')
 
      if (authHeader !== process.env.X_CRON_SECRET) {
+          console.error('Unauthorized cron call')
           return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
      }
 
      const supabase = await useServerSideSupabaseAnonClient()
 
-     // 1. Get pending notifications
+     // 1. Fetch notifications
      const { data: notifications, error } = await supabase
           .from('tblNotificationQueue')
           .select('*')
           .eq('status', 'pending')
           .limit(50)
+
+     console.log('Fetched notifications:', notifications?.length)
 
      if (error) {
           console.error('Error fetching notifications:', error)
@@ -27,29 +32,42 @@ export async function POST(req: NextRequest) {
      }
 
      if (!notifications?.length) {
+          console.log('No notifications to process')
           return NextResponse.json({ processed: 0 })
      }
 
      // 2. Mark as processing + increment attempts
-     await Promise.all(
-          notifications.map((n) =>
-               supabase
-                    .from('tblNotificationQueue')
-                    .update({
-                         status: 'processing',
-                         attempts: (n.attempts ?? 0) + 1,
-                    })
-                    .eq('id', n.id)
-          )
-     )
+     for (const n of notifications) {
+          console.log('Updating to processing:', n.id)
 
-     // 3. Get tokens
+          const { error: updateError } = await supabase
+               .from('tblNotificationQueue')
+               .update({
+                    status: 'processing',
+                    attempts: (n.attempts ?? 0) + 1,
+               })
+               .eq('id', n.id)
+
+          if (updateError) {
+               console.error('Error updating to processing:', n.id, updateError)
+          }
+     }
+
+     // 3. Fetch tokens
      const userIds = [...new Set(notifications.map((n) => n.user_id))]
 
-     const { data: tokens } = await supabase
+     console.log('User IDs:', userIds)
+
+     const { data: tokens, error: tokenError } = await supabase
           .from('tblUserPushTokens')
           .select('user_id, push_token')
           .in('user_id', userIds)
+
+     if (tokenError) {
+          console.error('Error fetching tokens:', tokenError)
+     }
+
+     console.log('Fetched tokens:', tokens)
 
      const tokensByUser = new Map<string, string[]>()
 
@@ -65,13 +83,28 @@ export async function POST(req: NextRequest) {
 
      // 4. Build messages
      for (const notification of notifications) {
+          console.log('Processing notification:', notification.id)
+
           const userTokens = tokensByUser.get(notification.user_id) ?? []
+
+          console.log('USER TOKENS RAW:', {
+               notificationId: notification.id,
+               userId: notification.user_id,
+               tokens: userTokens,
+          })
 
           const validTokens = userTokens.filter((t) =>
                Expo.isExpoPushToken(t)
           )
 
+          console.log('VALID TOKENS:', {
+               notificationId: notification.id,
+               validTokens,
+          })
+
           if (!validTokens.length) {
+               console.error('NO VALID TOKENS → marking failed', notification.id)
+
                await supabase
                     .from('tblNotificationQueue')
                     .update({ status: 'failed' })
@@ -81,7 +114,7 @@ export async function POST(req: NextRequest) {
           }
 
           for (const token of validTokens) {
-               messages.push({
+               const payload = {
                     to: token,
                     sound: 'default',
                     title: notification.title,
@@ -91,7 +124,11 @@ export async function POST(req: NextRequest) {
                               ? notification.data
                               : {},
                     channelId: 'default',
-               })
+               }
+
+               console.log('PUSH PAYLOAD:', payload)
+
+               messages.push(payload)
 
                messageMeta.push({
                     notificationId: notification.id,
@@ -99,26 +136,35 @@ export async function POST(req: NextRequest) {
           }
      }
 
+     console.log('Total messages to send:', messages.length)
+
      if (!messages.length) {
+          console.log('No messages created → exiting')
           return NextResponse.json({ processed: 0 })
      }
 
      const chunks = expo.chunkPushNotifications(messages)
 
-     // Track results per notification
      const notificationResults: Record<string, boolean> = {}
 
      let globalIndex = 0
 
      // 5. Send notifications
      for (const chunk of chunks) {
+          console.log('Sending chunk:', chunk.length)
+
           const tickets = await expo.sendPushNotificationsAsync(chunk)
 
-          console.log('Expo tickets:', tickets)
+          console.log('Expo tickets:', JSON.stringify(tickets, null, 2))
 
           for (let i = 0; i < tickets.length; i++) {
                const ticket = tickets[i]
                const notificationId = messageMeta[globalIndex].notificationId
+
+               console.log('Ticket result:', {
+                    notificationId,
+                    ticket,
+               })
 
                globalIndex++
 
@@ -129,7 +175,7 @@ export async function POST(req: NextRequest) {
                if (ticket.status === 'ok') {
                     notificationResults[notificationId] = true
                } else {
-                    console.error('Expo push failed', {
+                    console.error('Expo push failed:', {
                          notificationId,
                          error: ticket.details?.error,
                          message: ticket.message,
@@ -138,10 +184,17 @@ export async function POST(req: NextRequest) {
           }
      }
 
-     // 6. Final update per notification
+     console.log('Aggregated results:', notificationResults)
+
+     // 6. Final DB update
      for (const notification of notifications) {
           const notificationId = notification.id
           const wasSuccessful = notificationResults[notificationId]
+
+          console.log('Finalizing notification:', {
+               notificationId,
+               wasSuccessful,
+          })
 
           if (wasSuccessful) {
                await supabase
@@ -154,6 +207,11 @@ export async function POST(req: NextRequest) {
           } else {
                const attempts = (notification.attempts ?? 0) + 1
 
+               console.log('Marking failed/pending:', {
+                    notificationId,
+                    attempts,
+               })
+
                await supabase
                     .from('tblNotificationQueue')
                     .update({
@@ -163,6 +221,8 @@ export async function POST(req: NextRequest) {
                     .eq('id', notificationId)
           }
      }
+
+     console.log('--- CRON END ---')
 
      return NextResponse.json({
           processed: notifications.length,
