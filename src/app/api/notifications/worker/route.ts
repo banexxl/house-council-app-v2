@@ -6,14 +6,15 @@ const expo = new Expo()
 const MAX_RETRIES = 5
 
 export async function POST(req: NextRequest) {
-     const authHeader = req.headers.get("x-cron-secret")
+     const authHeader = req.headers.get('x-cron-secret')
 
      if (authHeader !== process.env.X_CRON_SECRET) {
-          return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+          return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
      }
 
      const supabase = await useServerSideSupabaseAnonClient()
 
+     // 1. Get pending notifications
      const { data: notifications, error } = await supabase
           .from('tblNotificationQueue')
           .select('*')
@@ -21,24 +22,29 @@ export async function POST(req: NextRequest) {
           .limit(50)
 
      if (error) {
-          console.error('Error fetching notifications: ', error)
+          console.error('Error fetching notifications:', error)
+          return NextResponse.json({ error: 'DB error' }, { status: 500 })
      }
 
      if (!notifications?.length) {
           return NextResponse.json({ processed: 0 })
      }
 
-     const updates = notifications.map((n) => ({
-          id: n.id,
-          status: 'processing',
-          attempts: (n.attempts ?? 0) + 1,
-     }))
+     // 2. Mark as processing + increment attempts
+     await Promise.all(
+          notifications.map((n) =>
+               supabase
+                    .from('tblNotificationQueue')
+                    .update({
+                         status: 'processing',
+                         attempts: (n.attempts ?? 0) + 1,
+                    })
+                    .eq('id', n.id)
+          )
+     )
 
-     await supabase
-          .from('tblNotificationQueue')
-          .upsert(updates, { onConflict: 'id' })
-
-     const userIds = [...new Set(notifications.map(n => n.user_id))]
+     // 3. Get tokens
+     const userIds = [...new Set(notifications.map((n) => n.user_id))]
 
      const { data: tokens } = await supabase
           .from('tblUserPushTokens')
@@ -47,7 +53,7 @@ export async function POST(req: NextRequest) {
 
      const tokensByUser = new Map<string, string[]>()
 
-     tokens?.forEach(t => {
+     tokens?.forEach((t) => {
           if (!tokensByUser.has(t.user_id)) {
                tokensByUser.set(t.user_id, [])
           }
@@ -57,11 +63,15 @@ export async function POST(req: NextRequest) {
      const messages: any[] = []
      const messageMeta: { notificationId: string }[] = []
 
+     // 4. Build messages
      for (const notification of notifications) {
-
           const userTokens = tokensByUser.get(notification.user_id) ?? []
 
-          if (!userTokens.length) {
+          const validTokens = userTokens.filter((t) =>
+               Expo.isExpoPushToken(t)
+          )
+
+          if (!validTokens.length) {
                await supabase
                     .from('tblNotificationQueue')
                     .update({ status: 'failed' })
@@ -70,91 +80,91 @@ export async function POST(req: NextRequest) {
                continue
           }
 
-          for (const token of userTokens) {
-
-               if (!Expo.isExpoPushToken(token)) continue
-
+          for (const token of validTokens) {
                messages.push({
                     to: token,
                     sound: 'default',
                     title: notification.title,
                     body: notification.body,
-                    data: notification.data,
-                    channelId: 'default'
+                    data:
+                         typeof notification.data === 'object'
+                              ? notification.data
+                              : {},
+                    channelId: 'default',
                })
 
                messageMeta.push({
-                    notificationId: notification.id
+                    notificationId: notification.id,
                })
           }
+     }
 
-          if (!userTokens.some(t => Expo.isExpoPushToken(t))) {
-               await supabase
-                    .from('tblNotificationQueue')
-                    .update({ status: 'failed' })
-                    .eq('id', notification.id)
-
-               continue
-          }
-
+     if (!messages.length) {
+          return NextResponse.json({ processed: 0 })
      }
 
      const chunks = expo.chunkPushNotifications(messages)
 
-     for (const chunk of chunks) {
+     // Track results per notification
+     const notificationResults: Record<string, boolean> = {}
 
+     let globalIndex = 0
+
+     // 5. Send notifications
+     for (const chunk of chunks) {
           const tickets = await expo.sendPushNotificationsAsync(chunk)
-          console.log('Expo async pushed notifications', tickets);
+
+          console.log('Expo tickets:', tickets)
 
           for (let i = 0; i < tickets.length; i++) {
-
                const ticket = tickets[i]
-               const token = chunk[i].to as string
-               const notificationId = messageMeta[i].notificationId
+               const notificationId = messageMeta[globalIndex].notificationId
+
+               globalIndex++
+
+               if (!notificationResults[notificationId]) {
+                    notificationResults[notificationId] = false
+               }
 
                if (ticket.status === 'ok') {
-
-                    const updateNotificationQueueResponse = await supabase
-                         .from('tblNotificationQueue')
-                         .update({
-                              status: 'sent',
-                              sent_at: new Date()
-                         })
-                         .eq('id', notificationId)
-                    if (updateNotificationQueueResponse.error) {
-                         console.error(`Error updating notification queue for id ${notificationId}: `, updateNotificationQueueResponse.error)
-                    }
+                    notificationResults[notificationId] = true
                } else {
                     console.error('Expo push failed', {
                          notificationId,
-                         token,
                          error: ticket.details?.error,
                          message: ticket.message,
                     })
-
-                    const { data } = await supabase
-                         .from('tblNotificationQueue')
-                         .select('attempts')
-                         .eq('id', notificationId)
-                         .single()
-
-                    const attempts = (data?.attempts ?? 0) + 1
-
-                    const updateNotificationQueueResponse = await supabase
-                         .from('tblNotificationQueue')
-                         .update({
-                              status: attempts >= MAX_RETRIES ? 'failed' : 'pending',
-                              attempts
-                         })
-                         .eq('id', notificationId)
-                    if (updateNotificationQueueResponse.error) {
-                         console.error(`Error updating notification queue for id ${notificationId}: `, updateNotificationQueueResponse.error)
-                    }
                }
           }
      }
 
+     // 6. Final update per notification
+     for (const notification of notifications) {
+          const notificationId = notification.id
+          const wasSuccessful = notificationResults[notificationId]
+
+          if (wasSuccessful) {
+               await supabase
+                    .from('tblNotificationQueue')
+                    .update({
+                         status: 'sent',
+                         sent_at: new Date(),
+                    })
+                    .eq('id', notificationId)
+          } else {
+               const attempts = (notification.attempts ?? 0) + 1
+
+               await supabase
+                    .from('tblNotificationQueue')
+                    .update({
+                         status: attempts >= MAX_RETRIES ? 'failed' : 'pending',
+                         attempts,
+                    })
+                    .eq('id', notificationId)
+          }
+     }
+
      return NextResponse.json({
-          processed: notifications.length
+          processed: notifications.length,
      })
 }
