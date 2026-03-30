@@ -4,10 +4,10 @@ import { revalidatePath } from 'next/cache';
 import { TABLES } from 'src/libs/supabase/tables';
 import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
-import type { IncidentReport, IncidentReportDetails, IncidentStatus, IncidentCategory, IncidentPriority } from 'src/types/incident-report';
-import { getAllBuildingsFromClient, getBuildingIDsFromUserId, getBuildingAddressFromId, getNotificationEmailsForBuildings } from 'src/app/actions/building/building-actions';
+import type { IncidentReport, IncidentReportDetails, IncidentStatus } from 'src/types/incident-report';
+import { getAllBuildingsFromClient, getBuildingAddressFromId, getNotificationEmailsForBuildings } from 'src/app/actions/building/building-actions';
+import { readAllTenantsFromBuildingIds } from 'src/app/actions/tenant/tenant-actions';
 import log from 'src/utils/logger';
-import { getServerI18n, tokens as serverTokens } from 'src/locales/i18n-server';
 import { sendViaEmail } from 'src/app/actions/notification/senders';
 import { emitNotifications } from 'src/app/actions/notification/emit-notification';
 import { createIncidentNotification } from 'src/utils/notification';
@@ -72,8 +72,6 @@ export const createIncidentReport = async (
 
     const incidentBuildingId = (data as any)?.building_id as string | null;
     const incidentApartmentId = (data as any)?.apartment_id as string | null;
-    const incidentClientId = (data as any)?.customerId as string | null;
-    const reporterId = (data as any)?.reported_by as string | null;
 
     let fullAddress = '';
     let apartmentNumber: string | undefined;
@@ -118,42 +116,29 @@ export const createIncidentReport = async (
       }
     }
 
-    // 4) Also create an in-app notification for the reporter (if we can resolve them)
-    if (reporterId) {
-      const { data: reporterTenant } = await supabase
-        .from(TABLES.TENANTS!)
-        .select('user_id')
-        .eq('id', reporterId)
-        .maybeSingle();
-
-      const { data: reporterClient } = await supabase
-        .from(TABLES.POLAR_CUSTOMERS!)
-        .select('externalId')
-        .eq('id', reporterId)
-        .maybeSingle();
-
+    // 4) Create in-app notifications for all tenants in the building
+    if (incidentBuildingId) {
+      const { data: tenants } = await readAllTenantsFromBuildingIds([incidentBuildingId]);
       const createdAtISO = new Date().toISOString();
-      const building_id = incidentBuildingId || '';
-      const user_id =
-        (reporterTenant as any)?.user_id ||
-        (reporterClient as any)?.externalId ||
-        reporterId;
+      const incidentPath = `/dashboard/service-requests/${(data as any)?.id}`;
 
-      if (building_id && user_id) {
-        const incidentPath = `/dashboard/service-requests/${(data as any)?.id}`;
-        const incidentNotification = createIncidentNotification({
-          action_token: 'notifications.actions.notificationActionIncidentCreated',
-          description,
-          created_at: createdAtISO,
-          is_read: false,
-          incident_id: (data as any)?.id,
-          building_id,
-          user_id,
-          url: incidentPath,
-          title,
-        });
+      const rows = (tenants || [])
+        .filter((tenant) => tenant?.user_id)
+        .map((tenant) =>
+          createIncidentNotification({
+            action_token: 'notifications.actions.notificationActionIncidentCreated',
+            description,
+            created_at: createdAtISO,
+            is_read: false,
+            incident_id: (data as any)?.id,
+            building_id: tenant.apartment.building.id,
+            user_id: tenant.user_id!,
+            url: incidentPath,
+            title,
+          })
+        ) as unknown as BaseNotification[];
 
-        const rows = [incidentNotification] as unknown as BaseNotification[];
+      if (rows.length) {
         const emitted = await emitNotifications(rows as any);
         if (!emitted.success) {
           await logServerAction({
@@ -161,7 +146,7 @@ export const createIncidentReport = async (
             action: 'incident.create.notifications',
             duration_ms: 0,
             error: emitted.error || 'emitFailed',
-            payload: { incident_id: (data as any)?.id, reporterId },
+            payload: { incident_id: (data as any)?.id, count: rows.length },
             status: 'fail',
             type: 'db',
           });
@@ -171,7 +156,7 @@ export const createIncidentReport = async (
             action: 'incident.create.notifications',
             duration_ms: 0,
             error: '',
-            payload: { incident_id: (data as any)?.id, reporterId },
+            payload: { incident_id: (data as any)?.id, inserted: emitted.inserted ?? rows.length },
             status: 'success',
             type: 'db',
           });
