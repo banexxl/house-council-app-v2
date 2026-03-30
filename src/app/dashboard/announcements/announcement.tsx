@@ -29,7 +29,6 @@ import {
      TableBody,
      Divider,
      Tooltip,
-     Container,
      Card,
      CardHeader,
      Alert,
@@ -559,7 +558,7 @@ export default function Announcements({ customer, announcements, buildings }: An
 
 
      return (
-          <Container maxWidth="xl">
+          <Box sx={{ width: '100%', minWidth: 0 }}>
                <Stack spacing={4}>
                     <EntityFormHeader
                          backHref={paths.dashboard.index}
@@ -618,10 +617,10 @@ export default function Announcements({ customer, announcements, buildings }: An
                               )
                          }
                     />
-                    <Card>
-                         <Grid container>
+                    <Card sx={{ minWidth: 0 }}>
+                         <Grid container sx={{ minWidth: 0 }}>
                               {/* Table Column */}
-                              <Grid size={{ xs: 12, md: 6, lg: 5 }}>
+                              <Grid size={{ xs: 12, md: 6, lg: 5 }} sx={{ minWidth: 0 }}>
                                    <Paper variant="outlined" sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
                                         <Stack spacing={1} sx={{ mb: 2 }}>
                                              <Typography variant="h6">{t(tokens.announcements.table.heading)}</Typography>
@@ -729,15 +728,15 @@ export default function Announcements({ customer, announcements, buildings }: An
                                    </Paper>
                               </Grid>
                               {/* Form Column */}
-                              <Grid size={{ xs: 12, md: 6, lg: 7 }} sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                                   <Paper variant="outlined" sx={{ p: 3, position: 'relative', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                              <Grid size={{ xs: 12, md: 6, lg: 7 }} sx={{ display: 'flex', flexDirection: 'column', minWidth: 0, width: '100%' }}>
+                                   <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 }, position: 'relative', display: 'flex', flexDirection: 'column', minWidth: 0, width: '100%' }}>
                                         {uploadingBusy && (
                                              <Box sx={{ position: 'absolute', inset: 0, zIndex: 10, bgcolor: 'rgba(255,255,255,0.5)', backdropFilter: 'blur(2px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                   <Typography variant="body2" color="text.secondary">{t(tokens.announcements.uploadingImages)}</Typography>
                                              </Box>
                                         )}
-                                        <Box component="fieldset" disabled={inputsDisabled} sx={{ border: 0, p: 0, m: 0, pointerEvents: inputsDisabled ? 'none' : 'auto', opacity: inputsDisabled ? 0.6 : 1 }}>
-                                             <Stack spacing={2}>
+                                        <Box component="fieldset" disabled={inputsDisabled} sx={{ border: 0, p: 0, m: 0, minWidth: 0, pointerEvents: inputsDisabled ? 'none' : 'auto', opacity: inputsDisabled ? 0.6 : 1 }}>
+                                             <Stack spacing={2} sx={{ minWidth: 0 }}>
                                                   {/* Title Field with reserved helper space */}
                                                   <Box sx={{ minWidth: 0 }}>
                                                        <TextField
@@ -828,11 +827,26 @@ export default function Announcements({ customer, announcements, buildings }: An
                                                   {/* Buildings multi-select searchable Autocomplete */}
                                                   <FormControl fullWidth disabled={inputsDisabled} sx={{ minWidth: 0, width: '100%' }}>
                                                        <Autocomplete
-                                                            multiple
-                                                            disableCloseOnSelect
-                                                            options={(buildings || []).map(b => {
-                                                                 let label = b.id;
-                                                                 if (b?.building_location) {
+                                                             multiple
+                                                             disableCloseOnSelect
+                                                             sx={{
+                                                                  minWidth: 0,
+                                                                  width: '100%',
+                                                                  '& .MuiAutocomplete-inputRoot': {
+                                                                       alignItems: 'flex-start',
+                                                                       flexWrap: 'wrap',
+                                                                       minWidth: 0,
+                                                                  },
+                                                                  '& .MuiAutocomplete-tag': {
+                                                                       maxWidth: 'calc(100% - 8px)',
+                                                                  },
+                                                                  '& .MuiAutocomplete-input': {
+                                                                       minWidth: '80px !important',
+                                                                  },
+                                                             }}
+                                                             options={(buildings || []).map(b => {
+                                                                  let label = b.id;
+                                                                  if (b?.building_location) {
                                                                       const loc: any = b.building_location || {};
                                                                       const parts = [loc.street_address, loc.street_number, loc.city].filter(Boolean);
                                                                       if (parts.length) label = parts.join(' ');
@@ -855,16 +869,39 @@ export default function Announcements({ customer, announcements, buildings }: An
                                                                       formik.setFieldTouched('buildings', true, false);
                                                                  }
                                                             }}
-                                                            getOptionLabel={(option) => option.label}
-                                                            isOptionEqualToValue={(o, v) => o.id === v.id}
-                                                            renderInput={(params) => (
-                                                                 <TextField
-                                                                      {...params}
-                                                                      label={t('buildings.buildingsTitle')}
-                                                                      placeholder={t('common.search')}
-                                                                      size="small"
-                                                                 />
-                                                            )}
+                                                             getOptionLabel={(option) => option.label}
+                                                             isOptionEqualToValue={(o, v) => o.id === v.id}
+                                                             renderTags={(value, getTagProps) =>
+                                                                  value.map((option, index) => {
+                                                                       const { key, ...tagProps } = getTagProps({ index });
+                                                                       return (
+                                                                            <Chip
+                                                                                 key={key}
+                                                                                 {...tagProps}
+                                                                                 size="small"
+                                                                                 label={option.label}
+                                                                                 title={option.label}
+                                                                                 sx={{
+                                                                                      maxWidth: '100%',
+                                                                                      '& .MuiChip-label': {
+                                                                                           display: 'block',
+                                                                                           overflow: 'hidden',
+                                                                                           textOverflow: 'ellipsis',
+                                                                                      },
+                                                                                 }}
+                                                                            />
+                                                                       );
+                                                                  })
+                                                             }
+                                                             renderInput={(params) => (
+                                                                  <TextField
+                                                                       {...params}
+                                                                       label={t('buildings.buildingsTitle')}
+                                                                       placeholder={t('common.search')}
+                                                                       size="small"
+                                                                       fullWidth
+                                                                  />
+                                                             )}
                                                             renderOption={(props, option, { selected }) => {
                                                                  // Extract key so it isn't spread (React warns if key is inside spread object)
                                                                  const { key, ...rest } = props as any;
@@ -953,7 +990,7 @@ export default function Announcements({ customer, announcements, buildings }: An
                                                        sx={{ opacity: inputsDisabled ? 0.6 : 1, minWidth: 0 }}
                                                   >
                                                        <FormControlLabel
-                                                            sx={{ flexShrink: 0, mb: 1 }} // same bottom space as pickers
+                                                            sx={{ flexShrink: 1, maxWidth: '100%', mr: 0, mb: 1, '& .MuiFormControlLabel-label': { overflowWrap: 'anywhere' } }} // same bottom space as pickers
                                                             disabled={inputsDisabled}
                                                             control={
                                                                  <Checkbox
@@ -965,7 +1002,7 @@ export default function Announcements({ customer, announcements, buildings }: An
                                                        />
 
                                                        <FormControlLabel
-                                                            sx={{ flexShrink: 0, mb: 1 }}
+                                                            sx={{ flexShrink: 1, maxWidth: '100%', mr: 0, mb: 1, '& .MuiFormControlLabel-label': { overflowWrap: 'anywhere' } }}
                                                             disabled={inputsDisabled}
                                                             control={
                                                                  <Checkbox
@@ -1199,7 +1236,7 @@ export default function Announcements({ customer, announcements, buildings }: An
                          </PopupModal>
                     )
                }
-          </Container>
+          </Box>
 
      );
 }

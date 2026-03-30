@@ -144,18 +144,20 @@ export const EntityFormHeader = (props: EntityFormHeaderProps) => {
 
         {/* Row 2: Title + Action button on the same line */}
         <Stack
-          direction="row"
-          alignItems="center"
+          direction={{ xs: 'column', sm: 'row' }}
+          alignItems={{ xs: 'stretch', sm: 'center' }}
           justifyContent="space-between"
           spacing={{ xs: 1.5, sm: 2 }}
-          sx={{ mt: { xs: 1, sm: 2 } }}
+          sx={{ mt: { xs: 1, sm: 2 }, minWidth: 0 }}
         >
-          <Typography variant="h4">
-            {title}
-          </Typography>
+          <Box sx={{ minWidth: 0, flex: 1 }}>
+            <Typography variant="h4" sx={{ overflowWrap: 'anywhere' }}>
+              {title}
+            </Typography>
+          </Box>
 
           {renderedAction ? (
-            <Box sx={{ flexShrink: 0 }}>
+            <Box sx={{ flexShrink: { xs: 1, sm: 0 }, width: { xs: '100%', sm: 'auto' }, minWidth: 0 }}>
               {renderedAction}
             </Box>
           ) : null}
