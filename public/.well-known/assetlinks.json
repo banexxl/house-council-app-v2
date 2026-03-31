@@ -1,0 +1,15 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.banexxl.nestlinkapp",
+      "sha256_cert_fingerprints": [
+        "F9:8A:E9:8B:0E:05:1D:10:BC:0B:A6:9F:11:6D:95:D1:70:C3:55:69:89:99:DE:FA:FD:86:2D:39:72:12:4E:3E"
+      ]
+    }
+  }
+]
