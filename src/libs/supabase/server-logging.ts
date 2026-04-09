@@ -47,7 +47,9 @@ export const logServerAction = async ({
           duration_ms,
           type
      })
-
+     if (logInsertError) {
+          console.error("Error inserting server log:", logInsertError);
+     }
 }
 
 export const getAllLogsFromEmail = async (email: string): Promise<ServerLog[]> => {

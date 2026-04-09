@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { createClient } from "@supabase/supabase-js";
 import { getServerI18n, tokens as serverTokens } from "src/locales/i18n-server";
+import { logServerAction } from "src/libs/supabase/server-logging";
 
 /* ------------------------------------------------------------------ */
 /* Config                                                             */
@@ -157,6 +158,22 @@ export async function POST(req: Request) {
                .single();
 
           if (permErr || !incident) {
+               if (permErr) {
+                    await logServerAction({
+                         user_id: null,
+                         action: "incident_analyze_permission_check",
+                         payload: {
+                              incidentId,
+                              imageId,
+                              code: permErr.code,
+                              message: permErr.message,
+                         },
+                         status: "fail",
+                         error: permErr.message,
+                         duration_ms: 0,
+                         type: "db",
+                    });
+               }
                return NextResponse.json(
                     { ok: false, message: t(serverTokens.incident.aiAnalyze.notAllowedOrNotFound) },
                     { status: 403 }
@@ -178,10 +195,26 @@ export async function POST(req: Request) {
 
           /* -------------------- Mark analyzing -------------------- */
 
-          await sbAdmin
+          const { error: markErr } = await sbAdmin
                .from("tblIncidentReports")
                .update({ ai_status: "analyzing", ai_error: null })
                .eq("id", incidentId);
+          if (markErr) {
+               await logServerAction({
+                    user_id: null,
+                    action: "incident_analyze_mark_analyzing",
+                    payload: {
+                         incidentId,
+                         imageId,
+                         code: markErr.code,
+                         message: markErr.message,
+                    },
+                    status: "fail",
+                    error: markErr.message,
+                    duration_ms: 0,
+                    type: "db",
+               });
+          }
 
           /* -------------------- Signed image URL -------------------- */
 
@@ -278,7 +311,23 @@ Rules:
                .select("*")
                .single();
 
-          if (updErr) throw new Error(updErr.message);
+          if (updErr) {
+               await logServerAction({
+                    user_id: null,
+                    action: "incident_analyze_update_result",
+                    payload: {
+                         incidentId,
+                         imageId,
+                         code: updErr.code,
+                         message: updErr.message,
+                    },
+                    status: "fail",
+                    error: updErr.message,
+                    duration_ms: 0,
+                    type: "db",
+               });
+               throw new Error(updErr.message);
+          }
 
           return NextResponse.json({ ok: true, incident: updated }, { status: 200 });
      } catch (e: any) {
@@ -288,13 +337,29 @@ Rules:
           // best-effort failure update (store detailed message for you, not the user)
           if (incidentId) {
                try {
-                    await sbAdmin
+                    const { error: failUpdErr } = await sbAdmin
                          .from("tblIncidentReports")
                          .update({
                               ai_status: "failed",
                               ai_error: String(e?.message ?? "AI analysis failed"),
                          })
                          .eq("id", incidentId);
+                    if (failUpdErr) {
+                         await logServerAction({
+                              user_id: null,
+                              action: "incident_analyze_mark_failed",
+                              payload: {
+                                   incidentId,
+                                   imageId,
+                                   code: failUpdErr.code,
+                                   message: failUpdErr.message,
+                              },
+                              status: "fail",
+                              error: failUpdErr.message,
+                              duration_ms: 0,
+                              type: "db",
+                         });
+                    }
                } catch {
                     // ignore
                }
