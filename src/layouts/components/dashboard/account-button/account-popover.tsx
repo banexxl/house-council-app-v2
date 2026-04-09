@@ -121,50 +121,46 @@ export const AccountPopover: FC<AccountPopoverProps> = (props) => {
           </Typography>
         </Box>
       </Box>
-      {!user?.customer && (
-        <>
-          <Divider />
-          <Box sx={{ p: 1 }}>
-            <ListItemButton
-              component={RouterLink}
-              href={user?.admin ? paths.dashboard.index
-                : user?.customer ? paths.dashboard.account
-                  : user?.tenant ? paths.dashboard.social.profile
-                    : paths.dashboard.index
-              }
-              onClick={onClose}
-              sx={{
-                borderRadius: 1,
-                px: 1,
-                py: 0.5,
-              }}
-            >
-              <ListItemIcon>
-                <SvgIcon fontSize="small">
-                  <User03Icon />
-                </SvgIcon>
-              </ListItemIcon>
-              <ListItemText primary={<Typography variant="body1">{t('nav.profile')}</Typography>} />
-            </ListItemButton>
-            <ListItemButton
-              onClick={() => { handleDrawerOpen(); onClose?.(); }}
-              sx={{
-                borderRadius: 1,
-                px: 1,
-                py: 0.5,
-              }}
-            >
-              <ListItemIcon>
-                <SvgIcon fontSize="small">
-                  <Settings04Icon />
-                </SvgIcon>
-              </ListItemIcon>
-              <ListItemText primary={<Typography variant="body1">{t('common.settings')}</Typography>} />
-            </ListItemButton>
-          </Box>
-          <Divider sx={{ my: '0 !important' }} />
-        </>
-      )}
+      <Divider />
+      <Box sx={{ p: 1 }}>
+        <ListItemButton
+          component={RouterLink}
+          href={user?.admin ? paths.dashboard.index
+            : user?.customer ? paths.dashboard.account
+              : user?.tenant ? paths.dashboard.social.profile
+                : paths.dashboard.index
+          }
+          onClick={onClose}
+          sx={{
+            borderRadius: 1,
+            px: 1,
+            py: 0.5,
+          }}
+        >
+          <ListItemIcon>
+            <SvgIcon fontSize="small">
+              <User03Icon />
+            </SvgIcon>
+          </ListItemIcon>
+          <ListItemText primary={<Typography variant="body1">{t('nav.profile')}</Typography>} />
+        </ListItemButton>
+        <ListItemButton
+          onClick={() => { handleDrawerOpen(); onClose?.(); }}
+          sx={{
+            borderRadius: 1,
+            px: 1,
+            py: 0.5,
+          }}
+        >
+          <ListItemIcon>
+            <SvgIcon fontSize="small">
+              <Settings04Icon />
+            </SvgIcon>
+          </ListItemIcon>
+          <ListItemText primary={<Typography variant="body1">{t('common.settings')}</Typography>} />
+        </ListItemButton>
+      </Box>
+      <Divider sx={{ my: '0 !important' }} />
       <Box
         sx={{
           display: 'flex',
