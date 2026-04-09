@@ -6,6 +6,7 @@ import { en } from './translations/en';
 import { de } from './translations/de';
 import { es } from './translations/es';
 import { rs } from './translations/rs';
+import { ru } from './translations/ru';
 
 i18n.use(initReactI18next).init({
   resources: {
@@ -13,9 +14,10 @@ i18n.use(initReactI18next).init({
     de: { translation: de },
     es: { translation: es },
     rs: { translation: rs },
+    ru: { translation: ru }, // placeholder for Russian translations
   },
   lng: 'rs',
-  fallbackLng: 'rs',
+  fallbackLng: 'en',
   interpolation: {
     escapeValue: false,
   },

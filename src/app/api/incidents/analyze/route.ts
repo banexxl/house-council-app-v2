@@ -22,7 +22,7 @@ const sbAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE, {
 /* Helpers                                                            */
 /* ------------------------------------------------------------------ */
 
-const SUPPORTED_LOCALES = new Set(["en", "de", "es", "rs"]);
+const SUPPORTED_LOCALES = new Set(["en", "de", "es", "rs", "ru"]);
 
 function firstLanguageTag(raw?: string | null): string | null {
      if (!raw) return null;
@@ -48,6 +48,7 @@ function languageTagToName(tag?: string | null, locale?: string): string {
      if (t.startsWith("en")) return "English";
      if (t.startsWith("de")) return "German";
      if (t.startsWith("es")) return "Spanish";
+     if (t.startsWith("ru")) return "Russian";
 
      // fallback based on app locales
      switch ((locale || "").toLowerCase()) {
@@ -58,6 +59,9 @@ function languageTagToName(tag?: string | null, locale?: string): string {
           case "es":
                return "Spanish";
           case "rs":
+               return "Serbian";
+          case "ru":
+               return "Russian";
           default:
                return "Serbian";
      }
