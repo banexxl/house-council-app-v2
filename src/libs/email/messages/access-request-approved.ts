@@ -11,7 +11,7 @@ type AccessRequestApprovedData = {
 export const buildAccessRequestApprovedEmail = async (
   data: AccessRequestApprovedData
 ): Promise<{ subject: string; injectedHtml: string }> => {
-  const t = await getServerI18n(data.locale || 'rs');
+  const t = await getServerI18n(data.locale || 'en');
 
   const safe = (val?: string | null) => (val || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const name = safe(data.name) || t(serverTokens.email.accessApprovedGreetingFallback) || 'there';
@@ -64,7 +64,7 @@ export const buildAccessRequestApprovedEmail = async (
 export const buildAccessDeniedEmail = async (
   data: { locale: string; name: string; email: string; contactSupportUrl: string }
 ): Promise<{ subject: string; injectedHtml: string }> => {
-  const t = await getServerI18n(data.locale || 'rs');
+  const t = await getServerI18n(data.locale || 'en');
 
   const safe = (val?: string | null) => (val || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const name = safe(data.name) || t(serverTokens.email.accessDeniedGreetingFallback) || 'there';
