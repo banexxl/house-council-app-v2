@@ -17,21 +17,26 @@ import ChevronRightIcon from '@untitled-ui/icons-react/build/esm/ChevronRight';
 import { useTranslation } from 'react-i18next';
 
 import { useSignedUrl } from 'src/hooks/use-signed-urls';
-import type { TenantPostImage } from 'src/types/social';
 import { tokens } from 'src/locales/tokens';
 
+type SocialMediaItem = {
+  id?: string;
+  storage_bucket: string;
+  storage_path: string;
+};
+
 interface SocialPostMediaGridProps {
-  media: TenantPostImage[];
+  media: SocialMediaItem[];
 }
 
 const SIGN_OPTIONS = { ttlSeconds: 60 * 30, refreshSkewSeconds: 20 };
 
-const ThumbnailImage = ({
+export const ThumbnailImage = ({
   item,
   onClick,
   alt,
 }: {
-  item: TenantPostImage;
+  item: SocialMediaItem;
   onClick: () => void;
   alt: string;
 }) => {
@@ -86,7 +91,7 @@ const ThumbnailImage = ({
   );
 };
 
-const ViewerImage = ({ item, alt, loadErrorText }: { item: TenantPostImage; alt: string; loadErrorText: string }) => {
+export const ViewerImage = ({ item, alt, loadErrorText }: { item: SocialMediaItem; alt: string; loadErrorText: string }) => {
   const { url, loading, error } = useSignedUrl(item.storage_bucket, item.storage_path, SIGN_OPTIONS);
 
   if (!url) {

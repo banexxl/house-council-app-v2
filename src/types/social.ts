@@ -63,6 +63,15 @@ export interface TenantPostImage {
   updated_at?: string;
 }
 
+export interface TenantPostCommentImage {
+  id: string;
+  comment_id: string;
+  storage_bucket: string;
+  storage_path: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface TenantPostDocument {
   id: string;
   post_id: string;
@@ -133,6 +142,7 @@ export interface TenantPostComment {
   comment_text: string;
   created_at: string;
   updated_at: string;
+  images?: TenantPostCommentImage[];
   reactions?: EmojiReaction[];
   userReaction?: string | null;
 }

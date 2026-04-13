@@ -92,12 +92,22 @@ export async function getPostComments(
           const commentIds = comments.map((c: any) => c.id).filter(Boolean);
           let reactionMap = new Map<string, EmojiReaction[]>();
           let userReactionMap = new Map<string, string>();
+          let commentImagesData: any[] = [];
 
           if (commentIds.length) {
-               const { data: reactionRows, error: reactionError } = await supabase
-                    .from(TABLES.TENANT_COMMENT_LIKES)
-                    .select('comment_id, emoji, tenant_id')
-                    .in('comment_id', commentIds);
+               const [reactionRes, imagesRes] = await Promise.all([
+                    supabase
+                         .from(TABLES.TENANT_COMMENT_LIKES)
+                         .select('comment_id, emoji, tenant_id')
+                         .in('comment_id', commentIds),
+                    supabase
+                         .from(TABLES.TENANT_POST_COMMENT_IMAGES)
+                         .select('*')
+                         .in('comment_id', commentIds),
+               ]);
+
+               const { data: reactionRows, error: reactionError } = reactionRes;
+               const { data: imageRows, error: imagesError } = imagesRes;
 
                if (reactionError) {
                     console.error('Error loading comment reactions:', reactionError);
@@ -105,6 +115,12 @@ export async function getPostComments(
                     const aggregates = aggregateCommentReactions(reactionRows || [], currentUserId);
                     reactionMap = aggregates.reactionMap;
                     userReactionMap = aggregates.userReactionMap;
+               }
+
+               if (imagesError) {
+                    console.error('Error loading comment images:', imagesError);
+               } else {
+                    commentImagesData = imageRows || [];
                }
           }
 
@@ -116,6 +132,10 @@ export async function getPostComments(
                     last_name: comment.author?.last_name ?? 'User',
                     avatar_url: comment.author?.avatar_url ?? null,
                },
+               images: commentImagesData.filter((img: any) => {
+                    const imgCommentId = (img as any).comment_id ?? (img as any).commentId;
+                    return imgCommentId === comment.id;
+               }),
                reactions: reactionMap.get(comment.id) ?? [],
                userReaction: userReactionMap.get(comment.id) ?? null,
           })) as TenantPostCommentWithAuthor[];

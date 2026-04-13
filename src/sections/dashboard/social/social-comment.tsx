@@ -19,9 +19,10 @@ import { toast } from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 
 import { reactToComment } from 'src/app/actions/social/comment-actions';
-import type { EmojiReaction } from 'src/types/social';
+import type { EmojiReaction, TenantPostCommentImage } from 'src/types/social';
 import { getInitials } from 'src/utils/get-initials';
 import { tokens } from 'src/locales/tokens';
+import { SocialPostMediaGrid } from './social-post-media-grid';
 
 interface SocialCommentProps {
   commentId: string;
@@ -34,6 +35,7 @@ interface SocialCommentProps {
   userReaction?: string | null;
   onReactionsChange?: (payload: { reactions: EmojiReaction[]; userReaction: string | null }) => void;
   highlighted?: boolean;
+  media: TenantPostCommentImage[];
 }
 
 const REACTION_EMOJIS = ['👍', '❤️', '😂', '🎉', '😮', '😢', '👀'];
@@ -50,8 +52,10 @@ export const SocialComment: FC<SocialCommentProps> = (props) => {
     userReaction,
     onReactionsChange,
     highlighted = false,
+    media = [],
     ...other
   } = props;
+  console.log('props', props);
 
   const { t } = useTranslation();
   const [pickerAnchor, setPickerAnchor] = useState<HTMLElement | null>(null);
@@ -114,7 +118,7 @@ export const SocialComment: FC<SocialCommentProps> = (props) => {
       <Avatar
         component="a"
         href={profileLink}
-        src={authorAvatar}
+        src={`/${authorAvatar}`}
       >
         {getInitials(authorName)}
       </Avatar>
@@ -149,6 +153,11 @@ export const SocialComment: FC<SocialCommentProps> = (props) => {
           </Typography>
         </Stack>
         <Typography variant="body2">{message}</Typography>
+        {Array.isArray(media) && media.length > 0 && (
+          <Box sx={{ mt: 1.5 }}>
+            <SocialPostMediaGrid media={media} />
+          </Box>
+        )}
         <Stack direction="row" spacing={1} alignItems="center">
           {reactionList.length > 0 && (
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>

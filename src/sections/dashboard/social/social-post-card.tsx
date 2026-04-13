@@ -595,6 +595,7 @@ export const SocialPostCard: FC<SocialPostCardProps> = (props) => {
                           )
                         );
                       }}
+                      media={Array.isArray(comment.images) ? comment.images : []}
                     />
                   ))}
                   {hasMoreComments && (
