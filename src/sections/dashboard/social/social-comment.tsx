@@ -55,8 +55,6 @@ export const SocialComment: FC<SocialCommentProps> = (props) => {
     media = [],
     ...other
   } = props;
-  console.log('props', props);
-
   const { t } = useTranslation();
   const [pickerAnchor, setPickerAnchor] = useState<HTMLElement | null>(null);
   const profileLink = `/dashboard/social/profile/${authorId}`;
