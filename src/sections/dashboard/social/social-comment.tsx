@@ -116,7 +116,7 @@ export const SocialComment: FC<SocialCommentProps> = (props) => {
       <Avatar
         component="a"
         href={profileLink}
-        src={`/${authorAvatar}`}
+        src={authorAvatar}
       >
         {getInitials(authorName)}
       </Avatar>
