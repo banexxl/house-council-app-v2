@@ -622,7 +622,7 @@ export const rs = {
   [tokens.nav.ecommerce]: 'E-commerce',
   [tokens.nav.edit]: 'Uredi',
   [tokens.nav.error]: 'Greška',
-  [tokens.nav.feed]: 'Feed',
+  [tokens.nav.feed]: 'Objave',
   [tokens.nav.features]: 'Funkcije',
   [tokens.nav.fileManager]: 'Fajlovi',
   [tokens.nav.files]: 'Datoteke',
