@@ -97,11 +97,20 @@ export const createOrUpdateTenantAction = async (
           }
 
           // 2. Update auth user
-          const { data: updatedUser, error: updateUserError } = await adminSupabase.auth.admin.updateUserById(tenant.user_id!, {
+          const displayName = [updatedTenant.first_name, updatedTenant.last_name]
+               .filter(Boolean)
+               .join(' ')
+               .trim();
+          const authUserUpdates = {
                email: tenantData.email!,
                email_confirm: true,
                phone: tenantData.phone_number,
-          });
+               ...(displayName ? { user_metadata: { name: displayName } } : {}),
+          };
+          const { data: updatedUser, error: updateUserError } = await adminSupabase.auth.admin.updateUserById(
+               tenant.user_id!,
+               authUserUpdates
+          );
 
           if (updateUserError) {
                await logServerAction({
