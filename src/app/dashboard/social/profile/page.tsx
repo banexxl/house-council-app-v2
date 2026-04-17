@@ -8,6 +8,7 @@ import { getViewer } from 'src/libs/supabase/server-auth';
 import { getCustomerBuildingsForSocialProfile, type CustomerBuildingOption } from 'src/app/actions/customer/customer-actions';
 import type { TenantProfile } from 'src/types/social';
 import log from 'src/utils/logger';
+import { isUUIDv4 } from 'src/utils/uuid';
 
 const PROFILE_FEED_PAGE_SIZE = 5;
 
@@ -44,10 +45,9 @@ export async function ProfilePageContent({ profileId }: { profileId?: string }) 
           const profileResult = await getCurrentUserProfile();
           profile = profileResult.success ? profileResult.data! : null;
      }
-     log('Loaded profile page for profileId: ' + profileId + ', resolved profile id: ' + (JSON.stringify(profile)));
+
      const viewerProfileResult = await getCurrentUserProfile();
      const viewerProfile = viewerProfileResult.success ? viewerProfileResult.data : null;
-
      // Build a read-only profile for customers if none exists in tenant profiles
      if (!profile && customer && viewerCustomerId) {
           const now = new Date().toISOString();
@@ -86,39 +86,62 @@ export async function ProfilePageContent({ profileId }: { profileId?: string }) 
                updated_at: now,
           } as unknown as TenantProfile;
      }
-
-     const { data: buildingId } = profile.tenant_id ? await getBuildingIdFromTenantId(profile.tenant_id) : { data: null as string | null };
-     const resolvedBuildingId = buildingId ?? customerBuildings[0]?.id ?? '';
-     const postsResult = await getActivePostsPaginatedByProfileId({
-          profileId: profile.id,
-          limit: PROFILE_FEED_PAGE_SIZE,
-          offset: 0,
-     });
-     const posts = postsResult.success ? postsResult.data?.posts || [] : [];
-     const totalCount = postsResult.success ? postsResult.data?.total || posts.length : posts.length;
-     const isOwner = Boolean(profile.tenant_id && viewerTenantId === profile.tenant_id);
-
-     return (
-          <Box
-               component="main"
-               sx={{
-                    flexGrow: 1,
-                    py: 8,
-               }}
-          >
-               <Container maxWidth="lg">
-                    <ClientProfileWrapper
-                         posts={posts}
-                         profile={profile}
-                         buildingId={resolvedBuildingId}
-                         totalCount={totalCount}
-                         pageSize={PROFILE_FEED_PAGE_SIZE}
-                         isOwner={isOwner}
-                         currentUserProfile={viewerProfile ?? profile}
-                    />
-               </Container>
-          </Box>
-     );
+     const { data: buildingId } = profile.tenant_id ? await getBuildingIdFromTenantId(profile.tenant_id)
+          : { data: null as string | null };
+     if (isUUIDv4(buildingId)) {
+          const resolvedBuildingId = buildingId ?? customerBuildings[0]?.id ?? '';
+          const postsResult = await getActivePostsPaginatedByProfileId({
+               profileId: profile.id,
+               limit: PROFILE_FEED_PAGE_SIZE,
+               offset: 0,
+          });
+          const posts = postsResult.success ? postsResult.data?.posts || [] : [];
+          const totalCount = postsResult.success ? postsResult.data?.total || posts.length : posts.length;
+          const isOwner = Boolean(profile.tenant_id && viewerTenantId === profile.tenant_id);
+          return (
+               <Box
+                    component="main"
+                    sx={{
+                         flexGrow: 1,
+                         py: 8,
+                    }}
+               >
+                    <Container maxWidth="lg">
+                         <ClientProfileWrapper
+                              posts={posts}
+                              profile={profile}
+                              buildingId={resolvedBuildingId}
+                              totalCount={totalCount}
+                              pageSize={PROFILE_FEED_PAGE_SIZE}
+                              isOwner={isOwner}
+                              currentUserProfile={viewerProfile ?? profile}
+                         />
+                    </Container>
+               </Box>
+          );
+     } else {
+          return (
+               <Box
+                    component="main"
+                    sx={{
+                         flexGrow: 1,
+                         py: 8,
+                    }}
+               >
+                    <Container maxWidth="lg">
+                         <ClientProfileWrapper
+                              posts={[]}
+                              profile={profile}
+                              buildingId={null}
+                              totalCount={0}
+                              pageSize={PROFILE_FEED_PAGE_SIZE}
+                              isOwner={false}
+                              currentUserProfile={viewerProfile ?? profile}
+                         />
+                    </Container>
+               </Box>
+          );
+     }
 }
 
 const Page = async () => {

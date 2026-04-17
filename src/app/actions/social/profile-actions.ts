@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { TABLES } from 'src/libs/supabase/tables';
-import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
+import { useServerSideSupabaseAnonClient, useServerSideSupabaseServiceRoleClient } from 'src/libs/supabase/sb-server';
 import { getViewer } from 'src/libs/supabase/server-auth';
 import type {
      TenantProfile,
@@ -87,6 +87,7 @@ export async function getCurrentUserProfile(): Promise<ActionResponse<TenantProf
           }
 
           const supabase = await useServerSideSupabaseAnonClient();
+
           const filters = lookupIds
                .map((id) => [`id.eq.${id}`, `tenant_id.eq.${id}`])
                .flat()
@@ -105,7 +106,61 @@ export async function getCurrentUserProfile(): Promise<ActionResponse<TenantProf
           }
 
           if (!data) {
-               return { success: false, error: 'Profile not found' };
+               //Check if we can build a profile from auth.users for customers without an explicit profile
+               if (viewer.customer) {
+                    if (!viewer.customer.externalId) {
+                         return { success: false, error: 'Profile not found' };
+                    }
+
+                    const adminSupabase = await useServerSideSupabaseServiceRoleClient();
+                    const { data: authData, error: authError } = await adminSupabase.auth.admin.getUserById(
+                         viewer.customer.externalId
+                    );
+
+                    if (authError || !authData?.user) {
+                         log(`Error fetching auth user for customer profile fallback: ${authError?.message ?? 'Unknown error'}`, 'error');
+                         return { success: false, error: 'Profile not found' };
+                    }
+
+                    const authUser = authData.user;
+                    const displayName =
+                         (authUser.user_metadata as any)?.name ||
+                         (authUser.user_metadata as any)?.full_name ||
+                         '';
+                    const avatarUrl =
+                         (authUser.user_metadata as any)?.avatar_url ||
+                         (authUser.user_metadata as any)?.avatarUrl ||
+                         '';
+
+                    if (authUser) {
+                         const now = new Date().toISOString();
+                         const profileFromCustomer: TenantProfile = {
+                              id: viewer.customer.id,
+                              tenant_id: viewer.customer.id,
+                              first_name: displayName || '',
+                              last_name: '',
+                              email: authUser.email || '',
+                              phone_number: authUser.phone || (authUser.user_metadata as any)?.phone_number || '',
+                              bio: '',
+                              avatar_url: avatarUrl,
+                              cover_image_url: '',
+                              current_city: '',
+                              current_job_title: '',
+                              current_job_company: '',
+                              previous_job_title: '',
+                              previous_job_company: '',
+                              origin_city: '',
+                              quote: '',
+                              created_at: now,
+                              updated_at: now,
+                         };
+                         return { success: true, data: profileFromCustomer };
+                    }
+
+                    return { success: false, error: 'Profile not found' };
+               }
+
+               return { success: true, data };
           }
 
           return { success: true, data };

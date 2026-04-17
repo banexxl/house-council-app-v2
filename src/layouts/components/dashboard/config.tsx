@@ -218,7 +218,7 @@ const NAV_SECTIONS = (t: (key: string) => string): NavSection[] => [
         ),
         items: [
           { title: t(tokens.nav.feed), path: paths.dashboard.social.feed, roles: ["client", "admin", "tenant"], featureKey: 'social' },
-          { title: t(tokens.nav.profile), path: paths.dashboard.social.profile, roles: ["admin", "tenant"], featureKey: 'social' },
+          { title: t(tokens.nav.profile), path: paths.dashboard.social.profile, roles: ["client", "admin", "tenant"], featureKey: 'social' },
         ]
       },
       {

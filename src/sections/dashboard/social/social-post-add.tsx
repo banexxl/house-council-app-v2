@@ -29,7 +29,7 @@ import { tokens } from 'src/locales/tokens';
 
 interface SocialPostAddProps {
   user: TenantProfile;
-  buildingId: string;
+  buildingId: string | null;
   onPostCreated?: () => void;
 }
 
@@ -109,7 +109,7 @@ export const SocialPostAdd: FC<SocialPostAddProps> = (props) => {
       const result = await createTenantPost({
         tenant_id: user.tenant_id,
         content_text: content,
-        building_id: buildingId,
+        building_id: buildingId ?? '',
       });
 
       if (!result.success || !result.data) {

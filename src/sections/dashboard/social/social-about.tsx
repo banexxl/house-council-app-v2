@@ -129,21 +129,6 @@ export const SocialAbout: FC<SocialAboutProps> = (props) => {
                 }
               />
             </ListItem>
-            {/* <ListItem
-              disableGutters
-              divider
-            >
-              <ListItemAvatar>
-                <SvgIcon color="action">
-                  <BookOpen01Icon />
-                </SvgIcon>
-              </ListItemAvatar>
-              <ListItemText
-                primary={
-                    {t('tenants.socialAboutAddSchool')}
-                }
-              />
-            </ListItem> */}
             <ListItem
               disableGutters
               divider

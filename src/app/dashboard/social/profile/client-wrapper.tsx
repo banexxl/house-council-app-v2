@@ -38,7 +38,7 @@ import dayjs from 'dayjs';
 interface socialProfileWrapperProps {
      posts: TenantPostWithAuthor[];
      profile: TenantProfile;
-     buildingId: string;
+     buildingId: string | null;
      totalCount: number;
      pageSize: number;
      isOwner: boolean;

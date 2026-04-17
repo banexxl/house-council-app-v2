@@ -16,7 +16,7 @@ import { tokens } from 'src/locales/tokens';
 interface SocialProfileTimelineProps {
   posts?: TenantPostWithAuthor[];
   profile: TenantProfile;
-  buildingId: string;
+  buildingId: string | null;
   totalCount: number;
   pageSize: number;
   isOwner: boolean;

@@ -1261,7 +1261,6 @@ export const getBuildingIdFromTenantId = async (tenantId: string): Promise<{
      error?: string;
 }> => {
 
-
      if (!isUUID(tenantId)) {
           log(`Invalid tenant ID provided: ${tenantId}`);
           return { success: false, error: 'Invalid tenant ID' };
