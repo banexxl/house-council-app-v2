@@ -29,8 +29,7 @@ type StorageEntity =
      | 'poll-attachment'
      | 'post-image'
      | 'post-document'
-     | 'incident-image'
-     | 'incident-comment-image';
+     | 'incident-image';
 
 interface PathContext {
      entityId: string;
@@ -83,7 +82,6 @@ export interface UploadEntityFilesParams {
      buildingId?: string;
      apartmentId?: string | null;
      profileId?: string | null;
-     commentId?: string | null;
 }
 
 export interface UploadEntityFilesResult {
@@ -407,44 +405,6 @@ const ENTITY_CONFIG: Record<StorageEntity, StorageEntityConfig> = {
           },
           revalidate: (entityId) => [`/dashboard/service-requests/${entityId}`, '/dashboard/service-requests'],
      },
-     'incident-comment-image': {
-          bucket: DEFAULT_BUCKET,
-          requiresAuth: true,
-          getPathSegments: ({ userId, entityId, meta }) => {
-               const commentId = String(meta?.commentId ?? '').trim();
-               return [
-                    'clients',
-                    ensureValue(userId, 'userId is required'),
-                    'incidents',
-                    ensureValue(entityId, 'entityId is required'),
-                    'comments',
-                    ensureValue(commentId, 'commentId is required'),
-                    'images',
-               ];
-          },
-          validateFile: ({ file }) => {
-               const type = ((file as any)?.type || '').toString();
-               if (!type.startsWith('image/')) {
-                    return { ok: false, error: 'Only image files are allowed' };
-               }
-               return { ok: true };
-          },
-          db: {
-               table: TABLES.INCIDENT_REPORT_IMAGES ?? 'tblIncidentReportImages',
-               foreignKeyColumn: 'incident_id',
-               mode: 'insert',
-               extraColumns: (ctx) => {
-                    const now = new Date().toISOString();
-                    return {
-                         building_id: ctx.meta?.buildingId ?? ctx.meta?.building_id,
-                         apartment_id: ctx.meta?.apartmentId ?? ctx.meta?.apartment_id ?? null,
-                         created_at: now,
-                         updated_at: now,
-                    };
-               },
-          },
-          revalidate: (entityId) => [`/dashboard/service-requests/${entityId}`, '/dashboard/service-requests'],
-     },
 };
 
 export const uploadEntityFiles = async (
@@ -500,7 +460,6 @@ export const uploadEntityFiles = async (
                          buildingId: params.buildingId,
                          apartmentId: params.apartmentId ?? null,
                          uploaded_by_profile_id: params.profileId ?? null,
-                         commentId: params.commentId ?? null,
                     },
                };
 

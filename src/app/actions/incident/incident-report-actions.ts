@@ -217,9 +217,7 @@ export const getIncidentReportById = async (
   }
   const mapped: IncidentReportDetails = {
     ...(data as any),
-    images: Array.isArray((data as any)?.images)
-      ? (data as any).images.filter((img: any) => !String(img?.storage_path || '').includes('/comments/'))
-      : [],
+    images: Array.isArray((data as any)?.images) ? (data as any).images : [],
     building_label: (data as any)?.building?.name ?? null,
     apartment_number: (data as any)?.apartment?.apartment_number ?? null,
   };
@@ -250,7 +248,6 @@ export const listIncidentReportComments = async (
 ): Promise<{ success: boolean; data?: IncidentReportComment[]; error?: string }> => {
   const supabase = await useServerSideSupabaseAnonClient();
   const commentsTable = TABLES.INCIDENT_REPORT_COMMENTS ?? 'tblIncidentReportComments';
-  const imagesTable = TABLES.INCIDENT_REPORT_IMAGES ?? 'tblIncidentReportImages';
 
   const { data, error } = await supabase
     .from(commentsTable)
@@ -268,7 +265,7 @@ export const listIncidentReportComments = async (
 
   const userIds = Array.from(new Set(comments.map((c) => c.user_id).filter(Boolean)));
 
-  const [tenantRes, customerRes, imagesRes] = await Promise.all([
+  const [tenantRes, customerRes] = await Promise.all([
     supabase
       .from(TABLES.TENANTS)
       .select('user_id, first_name, last_name, email, id')
@@ -277,10 +274,6 @@ export const listIncidentReportComments = async (
       .from(TABLES.POLAR_CUSTOMERS)
       .select('externalId, name, email, id')
       .in('externalId', userIds),
-    supabase
-      .from(imagesTable)
-      .select('id, created_at, updated_at, storage_bucket, storage_path, building_id, apartment_id, incident_id')
-      .eq('incident_id', incidentId),
   ]);
 
   const tenantMap = new Map<string, string>();
@@ -296,17 +289,11 @@ export const listIncidentReportComments = async (
     customerMap.set((row as any).externalId, (row as any).name || (row as any).email || (row as any).id);
   }
 
-  const images = imagesRes.data ?? [];
-
   const mapped = comments.map((comment) => {
     const authorName = tenantMap.get(comment.user_id) || customerMap.get(comment.user_id) || comment.user_id;
-    const commentImages = images.filter((img: any) =>
-      String(img.storage_path || '').includes(`/comments/${comment.id}/`)
-    );
     return {
       ...comment,
       author_name: authorName,
-      images: commentImages as any,
     } as IncidentReportComment;
   });
 
@@ -390,7 +377,6 @@ export const deleteIncidentReportComment = async (
 ): Promise<{ success: boolean; error?: string }> => {
   const supabase = await useServerSideSupabaseAnonClient();
   const commentsTable = TABLES.INCIDENT_REPORT_COMMENTS ?? 'tblIncidentReportComments';
-  const imagesTable = TABLES.INCIDENT_REPORT_IMAGES ?? 'tblIncidentReportImages';
 
   const { data: authData, error: authError } = await supabase.auth.getUser();
   if (authError || !authData?.user) {
@@ -420,26 +406,6 @@ export const deleteIncidentReportComment = async (
   }
 
   if (incidentId) {
-    try {
-      const { data: images } = await supabase
-        .from(imagesTable)
-        .select('storage_bucket, storage_path')
-        .eq('incident_id', incidentId);
-
-      const commentImages = (images || []).filter((img: any) =>
-        String(img.storage_path || '').includes(`/comments/${commentId}/`)
-      );
-
-      for (const image of commentImages) {
-        const bucket = (image as any).storage_bucket;
-        const path = (image as any).storage_path;
-        if (!bucket || !path) continue;
-        await supabase.storage.from(bucket).remove([path]);
-        await supabase.from(imagesTable).delete().match({ incident_id: incidentId, storage_path: path });
-      }
-    } catch (cleanupError: any) {
-      log(`Error cleaning comment images for ${commentId}: ${cleanupError?.message || cleanupError}`);
-    }
     revalidatePath(`/dashboard/service-requests/${incidentId}`);
   }
   return { success: true };

@@ -52,7 +52,6 @@ import { FileDropzone, type File as DropFile, type DBStoredImage } from 'src/com
 import { uploadEntityFiles, removeEntityFile } from 'src/libs/supabase/sb-storage';
 import { useTheme } from '@mui/material';
 import { EntityFormHeader, type BreadcrumbItem } from 'src/components/entity-form-header';
-import { SocialPostMediaGrid } from 'src/sections/dashboard/social/social-post-media-grid';
 
 interface IncidentCreateProps {
   incident?: DBStoredImage & IncidentReportDetails;
@@ -123,8 +122,6 @@ export const IncidentCreate: FC<IncidentCreateProps> = ({
   const [comments, setComments] = useState<IncidentReportComment[]>([]);
   const [commentsLoading, setCommentsLoading] = useState(false);
   const [commentText, setCommentText] = useState('');
-  const [commentFiles, setCommentFiles] = useState<DropFile[]>([]);
-  const [commentUploadProgress, setCommentUploadProgress] = useState<number | undefined>(undefined);
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingMessage, setEditingMessage] = useState('');
   const theme = useTheme();
@@ -314,42 +311,9 @@ export const IncidentCreate: FC<IncidentCreateProps> = ({
       return;
     }
 
-    if (commentFiles.length > 0) {
-      let fakeProgress = 0;
-      setCommentUploadProgress(0);
-      const interval = setInterval(() => {
-        fakeProgress += 10;
-        if (fakeProgress <= 95) setCommentUploadProgress(fakeProgress);
-      }, 250);
-
-      try {
-        const uploadRes = await uploadEntityFiles({
-          entity: 'incident-comment-image',
-          entityId: incidentId,
-          files: commentFiles as unknown as File[],
-          clientId: formik.values.customerId,
-          buildingId: formik.values.building_id,
-          apartmentId: formik.values.apartment_id || null,
-          commentId: res.data.id,
-        });
-        clearInterval(interval);
-        setCommentUploadProgress(100);
-        setTimeout(() => setCommentUploadProgress(undefined), 500);
-
-        if (!uploadRes.success) {
-          toast.error(uploadRes.error || t('common.actionUploadError', 'Upload failed'));
-        }
-      } catch {
-        clearInterval(interval);
-        setCommentUploadProgress(undefined);
-        toast.error(t('common.actionUploadError', 'Upload failed'));
-      }
-    }
-
     setCommentText('');
-    setCommentFiles([]);
     await refreshComments();
-  }, [incidentId, commentText, commentFiles, formik.values, refreshComments, t]);
+  }, [incidentId, commentText, refreshComments, t]);
 
   const handleStartEdit = useCallback((comment: IncidentReportComment) => {
     setEditingCommentId(comment.id);
@@ -387,28 +351,6 @@ export const IncidentCreate: FC<IncidentCreateProps> = ({
     [refreshComments, t]
   );
 
-  const handleRemoveCommentImage = useCallback(
-    async (commentId: string, image: DBStoredImage) => {
-      if (!incidentId) return;
-      const result = await removeEntityFile({
-        entity: 'incident-comment-image',
-        entityId: incidentId,
-        storagePathOrUrl: image.storage_path,
-      });
-      if (!result.success) {
-        toast.error(result.error || t('common.actionDeleteError', 'Failed to delete'));
-        return;
-      }
-      setComments((prev) =>
-        prev.map((comment) =>
-          comment.id === commentId
-            ? { ...comment, images: (comment.images || []).filter((img) => img.id !== image.id) }
-            : comment
-        )
-      );
-    },
-    [incidentId, t]
-  );
 
   return (
     <Box
@@ -541,14 +483,6 @@ export const IncidentCreate: FC<IncidentCreateProps> = ({
                             value={commentText}
                             onChange={(e) => setCommentText(e.target.value)}
                           />
-                          <FileDropzone
-                            accept={{ 'image/*': [] }}
-                            files={commentFiles}
-                            uploadProgress={commentUploadProgress}
-                            onRemoveFile={(file) => setCommentFiles((prev) => prev.filter((f) => f !== file))}
-                            onRemoveAll={() => setCommentFiles([])}
-                            onDropAccepted={(files) => setCommentFiles((prev) => [...prev, ...files])}
-                          />
                           <Button
                             variant="contained"
                             onClick={handleCreateComment}
@@ -620,26 +554,6 @@ export const IncidentCreate: FC<IncidentCreateProps> = ({
                               <Typography variant="body2">{comment.message}</Typography>
                             )}
 
-                            {Array.isArray(comment.images) && comment.images.length > 0 && (
-                              <Stack spacing={1}>
-                                <SocialPostMediaGrid media={comment.images} />
-                                {isAuthor && (
-                                  <Stack direction="row" flexWrap="wrap" spacing={1}>
-                                    {comment.images.map((image) => (
-                                      <Button
-                                        key={image.id}
-                                        size="small"
-                                        color="error"
-                                        variant="text"
-                                        onClick={() => handleRemoveCommentImage(comment.id, image)}
-                                      >
-                                        {t('common.btnDelete', 'Delete')}
-                                      </Button>
-                                    ))}
-                                  </Stack>
-                                )}
-                              </Stack>
-                            )}
                           </Stack>
                         );
                       })}

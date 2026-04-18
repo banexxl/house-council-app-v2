@@ -74,7 +74,6 @@ export interface IncidentReportComment {
      message: string;
      created_at: string;
      author_name?: string | null;
-     images?: (DBStoredImage & IncidentReportImage)[];
 }
 
 export const INCIDENT_STATUS_TOKENS: Record<IncidentStatus, string> = {
