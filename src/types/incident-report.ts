@@ -70,9 +70,11 @@ export interface IncidentReportDetails extends IncidentReport {
 export interface IncidentReportComment {
      id: string;
      incident_id: string;
-     author_profile_id: string;
+     user_id: string;
      message: string;
      created_at: string;
+     author_name?: string | null;
+     images?: (DBStoredImage & IncidentReportImage)[];
 }
 
 export const INCIDENT_STATUS_TOKENS: Record<IncidentStatus, string> = {

@@ -162,6 +162,7 @@ const Page = async ({ params }: PageProps) => {
       defaultReporterName={defaultReporterName}
       defaultReporterId={defaultReporterId}
       defaultAssigneeProfileId={defaultAssigneeProfile}
+      currentUserId={userData?.id ?? null}
       buildingOptions={buildingOptions}
       assigneeOptions={assigneeOptions}
       incident={found ? (incident as (DBStoredImage & IncidentReportDetails)) : undefined}

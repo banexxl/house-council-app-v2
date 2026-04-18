@@ -1,7 +1,8 @@
 'use client';
 
 import type { FC } from 'react';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { formatDistanceToNowStrict } from 'date-fns';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import ArrowLeftIcon from '@untitled-ui/icons-react/build/esm/ArrowLeft';
@@ -22,10 +23,25 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
-import { createIncidentReport, updateIncidentReport } from 'src/app/actions/incident/incident-report-actions';
+import {
+  createIncidentReport,
+  updateIncidentReport,
+  listIncidentReportComments,
+  createIncidentReportComment,
+  updateIncidentReportComment,
+  deleteIncidentReportComment,
+} from 'src/app/actions/incident/incident-report-actions';
 import { RouterLink } from 'src/components/router-link';
 import { paths } from 'src/paths';
-import type { IncidentReport, IncidentCategory, IncidentPriority, IncidentStatus, IncidentReportDetails, IncidentReportImage } from 'src/types/incident-report';
+import type {
+  IncidentReport,
+  IncidentCategory,
+  IncidentPriority,
+  IncidentStatus,
+  IncidentReportDetails,
+  IncidentReportImage,
+  IncidentReportComment,
+} from 'src/types/incident-report';
 import {
   INCIDENT_CATEGORY_TOKENS,
   INCIDENT_PRIORITY_TOKENS,
@@ -36,6 +52,7 @@ import { FileDropzone, type File as DropFile, type DBStoredImage } from 'src/com
 import { uploadEntityFiles, removeEntityFile } from 'src/libs/supabase/sb-storage';
 import { useTheme } from '@mui/material';
 import { EntityFormHeader, type BreadcrumbItem } from 'src/components/entity-form-header';
+import { SocialPostMediaGrid } from 'src/sections/dashboard/social/social-post-media-grid';
 
 interface IncidentCreateProps {
   incident?: DBStoredImage & IncidentReportDetails;
@@ -47,6 +64,7 @@ interface IncidentCreateProps {
   defaultReporterId?: string | null;
   defaultReporterName?: string | null;
   defaultAssigneeProfileId?: string | null;
+  currentUserId?: string | null;
   buildingOptions?: Array<{
     id: string;
     label: string;
@@ -92,6 +110,7 @@ export const IncidentCreate: FC<IncidentCreateProps> = ({
   defaultReporterId,
   defaultReporterName,
   defaultAssigneeProfileId,
+  currentUserId,
   buildingOptions,
   assigneeOptions,
 }) => {
@@ -101,6 +120,13 @@ export const IncidentCreate: FC<IncidentCreateProps> = ({
   const [incidentId, setIncidentId] = useState<string | null>(incident?.id ?? null);
   const [incidentImages, setIncidentImages] = useState<(DBStoredImage & IncidentReportImage)[]>(incident?.images ?? []);
   const [uploadProgress, setUploadProgress] = useState<number | undefined>(undefined);
+  const [comments, setComments] = useState<IncidentReportComment[]>([]);
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const [commentText, setCommentText] = useState('');
+  const [commentFiles, setCommentFiles] = useState<DropFile[]>([]);
+  const [commentUploadProgress, setCommentUploadProgress] = useState<number | undefined>(undefined);
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingMessage, setEditingMessage] = useState('');
   const theme = useTheme();
   const [isHeaderNavigating, setIsHeaderNavigating] = useState(false);
   const [isHeaderCreating, setIsHeaderCreating] = useState(false);
@@ -259,6 +285,131 @@ export const IncidentCreate: FC<IncidentCreateProps> = ({
     [incidentId, t]
   );
 
+  const refreshComments = useCallback(async () => {
+    if (!incidentId) return;
+    setCommentsLoading(true);
+    const res = await listIncidentReportComments(incidentId);
+    if (res.success && res.data) {
+      setComments(res.data);
+    }
+    setCommentsLoading(false);
+  }, [incidentId]);
+
+  useEffect(() => {
+    if (!incidentId) return;
+    refreshComments();
+  }, [incidentId, refreshComments]);
+
+  const handleCreateComment = useCallback(async () => {
+    if (!incidentId) {
+      toast.error(t('common.actionSaveFirst', 'Save the incident before adding comments'));
+      return;
+    }
+    const trimmed = commentText.trim();
+    if (!trimmed) return;
+
+    const res = await createIncidentReportComment(incidentId, trimmed);
+    if (!res.success || !res.data) {
+      toast.error(res.error || t('common.actionSaveError', 'Failed to save comment'));
+      return;
+    }
+
+    if (commentFiles.length > 0) {
+      let fakeProgress = 0;
+      setCommentUploadProgress(0);
+      const interval = setInterval(() => {
+        fakeProgress += 10;
+        if (fakeProgress <= 95) setCommentUploadProgress(fakeProgress);
+      }, 250);
+
+      try {
+        const uploadRes = await uploadEntityFiles({
+          entity: 'incident-comment-image',
+          entityId: incidentId,
+          files: commentFiles as unknown as File[],
+          clientId: formik.values.customerId,
+          buildingId: formik.values.building_id,
+          apartmentId: formik.values.apartment_id || null,
+          commentId: res.data.id,
+        });
+        clearInterval(interval);
+        setCommentUploadProgress(100);
+        setTimeout(() => setCommentUploadProgress(undefined), 500);
+
+        if (!uploadRes.success) {
+          toast.error(uploadRes.error || t('common.actionUploadError', 'Upload failed'));
+        }
+      } catch {
+        clearInterval(interval);
+        setCommentUploadProgress(undefined);
+        toast.error(t('common.actionUploadError', 'Upload failed'));
+      }
+    }
+
+    setCommentText('');
+    setCommentFiles([]);
+    await refreshComments();
+  }, [incidentId, commentText, commentFiles, formik.values, refreshComments, t]);
+
+  const handleStartEdit = useCallback((comment: IncidentReportComment) => {
+    setEditingCommentId(comment.id);
+    setEditingMessage(comment.message);
+  }, []);
+
+  const handleCancelEdit = useCallback(() => {
+    setEditingCommentId(null);
+    setEditingMessage('');
+  }, []);
+
+  const handleSaveEdit = useCallback(async () => {
+    if (!editingCommentId) return;
+    const trimmed = editingMessage.trim();
+    if (!trimmed) return;
+    const res = await updateIncidentReportComment(editingCommentId, trimmed);
+    if (!res.success) {
+      toast.error(res.error || t('common.actionSaveError', 'Failed to update comment'));
+      return;
+    }
+    setEditingCommentId(null);
+    setEditingMessage('');
+    await refreshComments();
+  }, [editingCommentId, editingMessage, refreshComments, t]);
+
+  const handleDeleteComment = useCallback(
+    async (commentId: string) => {
+      const res = await deleteIncidentReportComment(commentId);
+      if (!res.success) {
+        toast.error(res.error || t('common.actionDeleteError', 'Failed to delete comment'));
+        return;
+      }
+      await refreshComments();
+    },
+    [refreshComments, t]
+  );
+
+  const handleRemoveCommentImage = useCallback(
+    async (commentId: string, image: DBStoredImage) => {
+      if (!incidentId) return;
+      const result = await removeEntityFile({
+        entity: 'incident-comment-image',
+        entityId: incidentId,
+        storagePathOrUrl: image.storage_path,
+      });
+      if (!result.success) {
+        toast.error(result.error || t('common.actionDeleteError', 'Failed to delete'));
+        return;
+      }
+      setComments((prev) =>
+        prev.map((comment) =>
+          comment.id === commentId
+            ? { ...comment, images: (comment.images || []).filter((img) => img.id !== image.id) }
+            : comment
+        )
+      );
+    },
+    [incidentId, t]
+  );
+
   return (
     <Box
       component="main"
@@ -371,6 +522,127 @@ export const IncidentCreate: FC<IncidentCreateProps> = ({
                         onDropAccepted={handleFilesDrop}
                         disabled={!incidentId || !formik.values.building_id}
                       />
+                    </Stack>
+
+                    <Stack spacing={2}>
+                      <Typography variant="subtitle2">{t('incident.comments', 'Comments')}</Typography>
+                      {!incidentId && (
+                        <Typography variant="caption" color={theme.palette.error.main}>
+                          {t('common.actionSaveFirst', 'Save the incident before adding comments')}
+                        </Typography>
+                      )}
+                      {incidentId && (
+                        <>
+                          <TextField
+                            fullWidth
+                            multiline
+                            minRows={3}
+                            label={t('incident.comment', 'Add comment')}
+                            value={commentText}
+                            onChange={(e) => setCommentText(e.target.value)}
+                          />
+                          <FileDropzone
+                            accept={{ 'image/*': [] }}
+                            files={commentFiles}
+                            uploadProgress={commentUploadProgress}
+                            onRemoveFile={(file) => setCommentFiles((prev) => prev.filter((f) => f !== file))}
+                            onRemoveAll={() => setCommentFiles([])}
+                            onDropAccepted={(files) => setCommentFiles((prev) => [...prev, ...files])}
+                          />
+                          <Button
+                            variant="contained"
+                            onClick={handleCreateComment}
+                            disabled={!commentText.trim()}
+                          >
+                            {t('incident.commentAdd', 'Add comment')}
+                          </Button>
+                        </>
+                      )}
+
+                      {commentsLoading && (
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <CircularProgress size={16} />
+                          <Typography variant="caption">{t('common.loading', 'Loading...')}</Typography>
+                        </Stack>
+                      )}
+
+                      {comments.map((comment) => {
+                        const isAuthor = currentUserId && comment.user_id === currentUserId;
+                        const createdAt = comment.created_at ? new Date(comment.created_at) : null;
+                        const timeAgo = createdAt
+                          ? formatDistanceToNowStrict(createdAt, { addSuffix: true })
+                          : '';
+
+                        return (
+                          <Stack key={comment.id} spacing={1} sx={{ p: 2, borderRadius: 1, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
+                            <Stack direction="row" spacing={1} alignItems="center">
+                              <Typography variant="subtitle2">
+                                {comment.author_name || comment.user_id}
+                              </Typography>
+                              <Box sx={{ flexGrow: 1 }} />
+                              <Typography variant="caption" color="text.secondary">
+                                {timeAgo}
+                              </Typography>
+                              {isAuthor && (
+                                <Stack direction="row" spacing={1}>
+                                  {editingCommentId === comment.id ? (
+                                    <>
+                                      <Button size="small" variant="text" onClick={handleSaveEdit}>
+                                        {t('common.btnSave', 'Save')}
+                                      </Button>
+                                      <Button size="small" variant="text" onClick={handleCancelEdit}>
+                                        {t('common.btnCancel', 'Cancel')}
+                                      </Button>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Button size="small" variant="text" onClick={() => handleStartEdit(comment)}>
+                                        {t('common.btnEdit', 'Edit')}
+                                      </Button>
+                                      <Button size="small" color="error" variant="text" onClick={() => handleDeleteComment(comment.id)}>
+                                        {t('common.btnDelete', 'Delete')}
+                                      </Button>
+                                    </>
+                                  )}
+                                </Stack>
+                              )}
+                            </Stack>
+
+                            {editingCommentId === comment.id ? (
+                              <TextField
+                                fullWidth
+                                multiline
+                                minRows={2}
+                                value={editingMessage}
+                                onChange={(e) => setEditingMessage(e.target.value)}
+                              />
+                            ) : (
+                              <Typography variant="body2">{comment.message}</Typography>
+                            )}
+
+                            {Array.isArray(comment.images) && comment.images.length > 0 && (
+                              <Stack spacing={1}>
+                                <SocialPostMediaGrid media={comment.images} />
+                                {isAuthor && (
+                                  <Stack direction="row" flexWrap="wrap" spacing={1}>
+                                    {comment.images.map((image) => (
+                                      <Button
+                                        key={image.id}
+                                        size="small"
+                                        color="error"
+                                        variant="text"
+                                        onClick={() => handleRemoveCommentImage(comment.id, image)}
+                                      >
+                                        {t('common.btnDelete', 'Delete')}
+                                      </Button>
+                                    ))}
+                                  </Stack>
+                                )}
+                              </Stack>
+                            )}
+                          </Stack>
+                        );
+                      })}
                     </Stack>
                   </Stack>
                 </Grid>

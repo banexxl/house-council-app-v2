@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { TABLES } from 'src/libs/supabase/tables';
 import { useServerSideSupabaseAnonClient } from 'src/libs/supabase/sb-server';
 import { logServerAction } from 'src/libs/supabase/server-logging';
-import type { IncidentReport, IncidentReportDetails, IncidentStatus } from 'src/types/incident-report';
+import type { IncidentReport, IncidentReportComment, IncidentReportDetails, IncidentStatus } from 'src/types/incident-report';
 import { getAllBuildingsFromClient, getBuildingAddressFromId, getNotificationEmailsForBuildings } from 'src/app/actions/building/building-actions';
 import { readAllTenantsFromBuildingIds } from 'src/app/actions/tenant/tenant-actions';
 import log from 'src/utils/logger';
@@ -217,7 +217,9 @@ export const getIncidentReportById = async (
   }
   const mapped: IncidentReportDetails = {
     ...(data as any),
-    images: Array.isArray((data as any)?.images) ? (data as any).images : [],
+    images: Array.isArray((data as any)?.images)
+      ? (data as any).images.filter((img: any) => !String(img?.storage_path || '').includes('/comments/'))
+      : [],
     building_label: (data as any)?.building?.name ?? null,
     apartment_number: (data as any)?.apartment?.apartment_number ?? null,
   };
@@ -241,6 +243,206 @@ export const getIncidentReportById = async (
     mapped.building_label = mapped.building_id;
   }
   return { success: true, data: mapped };
+};
+
+export const listIncidentReportComments = async (
+  incidentId: string
+): Promise<{ success: boolean; data?: IncidentReportComment[]; error?: string }> => {
+  const supabase = await useServerSideSupabaseAnonClient();
+  const commentsTable = TABLES.INCIDENT_REPORT_COMMENTS ?? 'tblIncidentReportComments';
+  const imagesTable = TABLES.INCIDENT_REPORT_IMAGES ?? 'tblIncidentReportImages';
+
+  const { data, error } = await supabase
+    .from(commentsTable)
+    .select('id, incident_id, user_id, message, created_at')
+    .eq('incident_id', incidentId)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    log(`Error listing incident comments for incident ${incidentId}: ${error.message}`);
+    return { success: false, error: error.message };
+  }
+
+  const comments = (data ?? []) as IncidentReportComment[];
+  if (!comments.length) return { success: true, data: [] };
+
+  const userIds = Array.from(new Set(comments.map((c) => c.user_id).filter(Boolean)));
+
+  const [tenantRes, customerRes, imagesRes] = await Promise.all([
+    supabase
+      .from(TABLES.TENANTS)
+      .select('user_id, first_name, last_name, email, id')
+      .in('user_id', userIds),
+    supabase
+      .from(TABLES.POLAR_CUSTOMERS)
+      .select('externalId, name, email, id')
+      .in('externalId', userIds),
+    supabase
+      .from(imagesTable)
+      .select('id, created_at, updated_at, storage_bucket, storage_path, building_id, apartment_id, incident_id')
+      .eq('incident_id', incidentId),
+  ]);
+
+  const tenantMap = new Map<string, string>();
+  for (const row of tenantRes.data ?? []) {
+    const first = (row as any).first_name || '';
+    const last = (row as any).last_name || '';
+    const name = `${first} ${last}`.trim();
+    tenantMap.set((row as any).user_id, name || (row as any).email || (row as any).id);
+  }
+
+  const customerMap = new Map<string, string>();
+  for (const row of customerRes.data ?? []) {
+    customerMap.set((row as any).externalId, (row as any).name || (row as any).email || (row as any).id);
+  }
+
+  const images = imagesRes.data ?? [];
+
+  const mapped = comments.map((comment) => {
+    const authorName = tenantMap.get(comment.user_id) || customerMap.get(comment.user_id) || comment.user_id;
+    const commentImages = images.filter((img: any) =>
+      String(img.storage_path || '').includes(`/comments/${comment.id}/`)
+    );
+    return {
+      ...comment,
+      author_name: authorName,
+      images: commentImages as any,
+    } as IncidentReportComment;
+  });
+
+  return { success: true, data: mapped };
+};
+
+export const createIncidentReportComment = async (
+  incidentId: string,
+  message: string
+): Promise<{ success: boolean; data?: IncidentReportComment; error?: string }> => {
+  const supabase = await useServerSideSupabaseAnonClient();
+  const commentsTable = TABLES.INCIDENT_REPORT_COMMENTS ?? 'tblIncidentReportComments';
+
+  const { data: authData, error: authError } = await supabase.auth.getUser();
+  if (authError || !authData?.user) {
+    return { success: false, error: authError?.message ?? 'User not authenticated' };
+  }
+
+  const { data, error } = await supabase
+    .from(commentsTable)
+    .insert({ incident_id: incidentId, user_id: authData.user.id, message })
+    .select('id, incident_id, user_id, message, created_at')
+    .single();
+
+  if (error) {
+    log(`Error creating incident comment: ${error.message}`);
+    return { success: false, error: error.message };
+  }
+
+  revalidatePath(`/dashboard/service-requests/${incidentId}`);
+  return { success: true, data: data as IncidentReportComment };
+};
+
+export const updateIncidentReportComment = async (
+  commentId: string,
+  message: string
+): Promise<{ success: boolean; data?: IncidentReportComment; error?: string }> => {
+  const supabase = await useServerSideSupabaseAnonClient();
+  const commentsTable = TABLES.INCIDENT_REPORT_COMMENTS ?? 'tblIncidentReportComments';
+
+  const { data: authData, error: authError } = await supabase.auth.getUser();
+  if (authError || !authData?.user) {
+    return { success: false, error: authError?.message ?? 'User not authenticated' };
+  }
+
+  const { data: existing, error: fetchError } = await supabase
+    .from(commentsTable)
+    .select('id, incident_id, user_id')
+    .eq('id', commentId)
+    .maybeSingle();
+
+  if (fetchError || !existing) {
+    return { success: false, error: fetchError?.message ?? 'Comment not found' };
+  }
+
+  if ((existing as any).user_id !== authData.user.id) {
+    return { success: false, error: 'You can only edit your own comments' };
+  }
+
+  const { data, error } = await supabase
+    .from(commentsTable)
+    .update({ message })
+    .eq('id', commentId)
+    .select('id, incident_id, user_id, message, created_at')
+    .single();
+
+  if (error) {
+    log(`Error updating incident comment: ${error.message}`);
+    return { success: false, error: error.message };
+  }
+
+  const incidentId = (data as any)?.incident_id;
+  if (incidentId) {
+    revalidatePath(`/dashboard/service-requests/${incidentId}`);
+  }
+  return { success: true, data: data as IncidentReportComment };
+};
+
+export const deleteIncidentReportComment = async (
+  commentId: string
+): Promise<{ success: boolean; error?: string }> => {
+  const supabase = await useServerSideSupabaseAnonClient();
+  const commentsTable = TABLES.INCIDENT_REPORT_COMMENTS ?? 'tblIncidentReportComments';
+  const imagesTable = TABLES.INCIDENT_REPORT_IMAGES ?? 'tblIncidentReportImages';
+
+  const { data: authData, error: authError } = await supabase.auth.getUser();
+  if (authError || !authData?.user) {
+    return { success: false, error: authError?.message ?? 'User not authenticated' };
+  }
+
+  const { data: existing, error: fetchError } = await supabase
+    .from(commentsTable)
+    .select('id, incident_id, user_id')
+    .eq('id', commentId)
+    .maybeSingle();
+
+  if (fetchError || !existing) {
+    return { success: false, error: fetchError?.message ?? 'Comment not found' };
+  }
+
+  if ((existing as any).user_id !== authData.user.id) {
+    return { success: false, error: 'You can only delete your own comments' };
+  }
+
+  const incidentId = (existing as any)?.incident_id;
+  const { error } = await supabase.from(commentsTable).delete().eq('id', commentId);
+
+  if (error) {
+    log(`Error deleting incident comment: ${error.message}`);
+    return { success: false, error: error.message };
+  }
+
+  if (incidentId) {
+    try {
+      const { data: images } = await supabase
+        .from(imagesTable)
+        .select('storage_bucket, storage_path')
+        .eq('incident_id', incidentId);
+
+      const commentImages = (images || []).filter((img: any) =>
+        String(img.storage_path || '').includes(`/comments/${commentId}/`)
+      );
+
+      for (const image of commentImages) {
+        const bucket = (image as any).storage_bucket;
+        const path = (image as any).storage_path;
+        if (!bucket || !path) continue;
+        await supabase.storage.from(bucket).remove([path]);
+        await supabase.from(imagesTable).delete().match({ incident_id: incidentId, storage_path: path });
+      }
+    } catch (cleanupError: any) {
+      log(`Error cleaning comment images for ${commentId}: ${cleanupError?.message || cleanupError}`);
+    }
+    revalidatePath(`/dashboard/service-requests/${incidentId}`);
+  }
+  return { success: true };
 };
 
 export const listIncidentReports = async (filters?: {
