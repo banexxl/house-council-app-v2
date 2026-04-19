@@ -62,6 +62,7 @@ interface IncidentCreateProps {
   defaultReporterProfileId?: string | null; // retained for compatibility, not used
   defaultReporterId?: string | null;
   defaultReporterName?: string | null;
+  defaultReporterEmail?: string | null;
   defaultAssigneeProfileId?: string | null;
   currentUserId?: string | null;
   buildingOptions?: Array<{
@@ -108,6 +109,7 @@ export const IncidentCreate: FC<IncidentCreateProps> = ({
   defaultApartmentId,
   defaultReporterId,
   defaultReporterName,
+  defaultReporterEmail,
   defaultAssigneeProfileId,
   currentUserId,
   buildingOptions,
@@ -604,8 +606,15 @@ export const IncidentCreate: FC<IncidentCreateProps> = ({
 
                     <TextField
                       fullWidth
+                      multiline
+                      minRows={2}
                       label={t('incident.form.reporter', 'Reporter')}
-                      value={defaultReporterName || formik.values.reported_by || defaultReporterId || ''}
+                      value={
+                        [
+                          defaultReporterName || formik.values.reported_by || defaultReporterId || '',
+                          defaultReporterEmail || '',
+                        ].filter(Boolean).join('\n')
+                      }
                       disabled
                       error={formik.touched.reported_by && Boolean(formik.errors.reported_by)}
                       helperText={formik.touched.reported_by && formik.errors.reported_by}

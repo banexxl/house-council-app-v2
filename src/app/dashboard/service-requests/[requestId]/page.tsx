@@ -52,6 +52,36 @@ const resolveReporterName = async (id: string | null | undefined): Promise<strin
   }
 };
 
+const resolveReporterEmail = async (id: string | null | undefined): Promise<string> => {
+  if (!id) return '';
+  try {
+    const supabase = await useServerSideSupabaseAnonClient();
+
+    const { data: clientRow } = await supabase
+      .from(TABLES.POLAR_CUSTOMERS)
+      .select('email, id, externalId')
+      .or(`id.eq.${id},externalId.eq.${id}`)
+      .maybeSingle();
+    if (clientRow) {
+      return (clientRow as any).email || '';
+    }
+
+    const { data: tenantRow } = await supabase
+      .from(TABLES.TENANTS)
+      .select('email, id, user_id')
+      .or(`id.eq.${id},user_id.eq.${id}`)
+      .maybeSingle();
+    if (tenantRow) {
+      return (tenantRow as any).email || '';
+    }
+
+    return '';
+  } catch (e: any) {
+    log(`resolveReporterEmail failed for ${id}: ${e?.message || e}`);
+    return '';
+  }
+};
+
 const Page = async ({ params }: PageProps) => {
   const resolvedParams = await params;
   const incidentId = resolvedParams?.requestId;
@@ -65,6 +95,7 @@ const Page = async ({ params }: PageProps) => {
   let buildingOptions: Array<{ id: string; label: string; apartments: { id: string; apartment_number: string }[] }> = [];
   let defaultAssigneeProfile = incident?.assigned_to ?? '';
   let defaultReporterName = incident?.reported_by ?? '';
+  let defaultReporterEmail = '';
   let defaultReporterId = incident?.reported_by ?? userData?.id ?? '';
   let assigneeOptions: Array<{ id: string; label: string; buildingId?: string | null }> = [];
 
@@ -126,22 +157,26 @@ const Page = async ({ params }: PageProps) => {
       currentProfile.id;
     defaultAssigneeProfile = defaultAssigneeProfile || currentProfile.id;
     defaultReporterName = defaultReporterName || displayName;
+    defaultReporterEmail = defaultReporterEmail || currentProfile.email || '';
     assigneeOptions.push({ id: currentProfile.id, label: displayName, buildingId: defaultBuildingId });
   } else if (customer) {
     const idValue = customer.externalId || customer.id;
     defaultAssigneeProfile = defaultAssigneeProfile || idValue;
     defaultReporterName = defaultReporterName || customer.name || customer.id;
+    defaultReporterEmail = defaultReporterEmail || customer.email || '';
     defaultReporterId = defaultReporterId || idValue;
     assigneeOptions.push({ id: idValue, label: customer.name || customer.id });
   } else if (tenant) {
     const label = `${tenant.first_name ?? ''} ${tenant.last_name ?? ''}`.trim() || tenant.id;
     defaultAssigneeProfile = defaultAssigneeProfile || tenant.id;
     defaultReporterName = defaultReporterName || label;
+    defaultReporterEmail = defaultReporterEmail || tenant.email || '';
     defaultReporterId = defaultReporterId || tenant.id;
     assigneeOptions.push({ id: tenant.id, label, buildingId: defaultBuildingId });
   } else if (userData?.id) {
     defaultAssigneeProfile = defaultAssigneeProfile || userData.id;
     defaultReporterName = defaultReporterName || (userData.email ?? userData.id);
+    defaultReporterEmail = defaultReporterEmail || userData.email || '';
     defaultReporterId = defaultReporterId || userData.id;
   }
 
@@ -151,6 +186,7 @@ const Page = async ({ params }: PageProps) => {
 
   if (incident?.reported_by) {
     defaultReporterName = await resolveReporterName(incident.reported_by);
+    defaultReporterEmail = defaultReporterEmail || await resolveReporterEmail(incident.reported_by);
   }
 
   return (
@@ -160,6 +196,7 @@ const Page = async ({ params }: PageProps) => {
       defaultClientId={defaultClientId}
       defaultTenantId={defaultTenantId}
       defaultReporterName={defaultReporterName}
+      defaultReporterEmail={defaultReporterEmail}
       defaultReporterId={defaultReporterId}
       defaultAssigneeProfileId={defaultAssigneeProfile}
       currentUserId={userData?.id ?? null}
